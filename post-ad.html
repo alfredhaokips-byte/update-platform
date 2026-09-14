@@ -10,7 +10,7 @@
 
 <div class="app-shell">
   <div class="back-row row between">
-    <a href="index.html" class="icon-btn" aria-label="Back" id="back-btn"></a>
+    <a href="index.html" class="icon-btn" aria-label="Back">←</a>
     <span class="header-title">Post an ad</span>
     <span style="width:40px;"></span>
   </div>
@@ -87,11 +87,11 @@
     const slots = selectedPhotos.map((p, i) => `
       <div class="img-drop filled">
         <img src="${p.previewUrl}" alt="Photo ${i + 1}" />
-        <button type="button" class="img-remove-btn" onclick="removePhoto(${i})" aria-label="Remove photo">${ICONS.close}</button>
+        <button type="button" class="img-remove-btn" onclick="removePhoto(${i})" aria-label="Remove photo">✕</button>
       </div>
     `);
     if (selectedPhotos.length < MAX_PHOTOS) {
-      slots.push(`<div class="img-drop add-slot" onclick="document.getElementById('f-photos').click()">${ICONS.camera}</div>`);
+      slots.push(`<div class="img-drop add-slot" onclick="document.getElementById('f-photos').click()">📷</div>`);
     }
     el.innerHTML = slots.join("");
   }
@@ -154,9 +154,9 @@
     const count = existing ? existing.count : 0;
     const after = count + 1;
     if (after >= TAG_GRADUATION_THRESHOLD) {
-      hint.innerHTML = existing
-        ? `${ICONS.check} Joins ${count} other listing${count === 1 ? "" : "s"} already tagged "${escapeHtml(existing.tag)}" — this is a featured category.`
-        : `${ICONS.check} This will immediately become a featured category.`;
+      hint.textContent = existing
+        ? `✓ Joins ${count} other listing${count === 1 ? "" : "s"} already tagged "${existing.tag}" — this is a featured category.`
+        : `✓ This will immediately become a featured category.`;
     } else {
       const need = TAG_GRADUATION_THRESHOLD - after;
       hint.textContent = `You'll be the first to use "${tag}" — ${need} more listing${need === 1 ? "" : "s"} with this tag will turn it into a featured category.`;
@@ -165,7 +165,6 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage("sell");
-    document.getElementById("back-btn").innerHTML = ICONS.back;
     const session = await Auth.requireAuth();
     if (!session) return; // requireAuth already redirected to login
 
@@ -178,7 +177,7 @@
       document.querySelector(".app-shell").innerHTML = `
         ${backRowHtml("Post an ad")}
         <div class="empty-state">
-          <div class="big">${ICONS.mail}</div>
+          <div class="big">📧</div>
           <h3>Confirm your email first</h3>
           <p>We sent a confirmation link when you signed up — posting opens up once it's clicked.</p>
           <a href="account.html" class="btn btn-fill" style="margin-top:14px;">Back to account</a>

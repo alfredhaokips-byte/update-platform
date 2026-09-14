@@ -10,14 +10,14 @@
 
 <div class="app-shell">
   <div class="back-row row between">
-    <a href="account.html" class="icon-btn" aria-label="Back" id="back-btn"></a>
+    <a href="account.html" class="icon-btn" aria-label="Back">←</a>
     <span class="header-title">Saved listings</span>
     <span style="width:40px;"></span>
   </div>
 
   <div class="product-grid" id="saved-grid" style="margin-top:6px;"></div>
   <div class="empty-state" id="empty-state" hidden>
-    <div class="big" id="empty-icon"></div>
+    <div class="big">♡</div>
     <h3>Nothing saved yet</h3>
     <p>Tap the heart on any listing to save it here.</p>
     <a href="index.html" class="btn btn-fill" style="margin-top:14px;">Browse listings</a>
@@ -35,8 +35,6 @@
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage("account");
-    document.getElementById("back-btn").innerHTML = ICONS.back;
-    document.getElementById("empty-icon").innerHTML = ICONS.heart;
     const session = await Auth.requireAuth();
     if (!session) return;
 

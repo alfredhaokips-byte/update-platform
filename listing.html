@@ -17,7 +17,7 @@
 <!-- Chat modal -->
 <div class="modal-overlay" id="chat-modal" hidden>
   <div class="modal">
-    <button class="close-x" id="chat-modal-close" onclick="closeModal('chat-modal')"></button>
+    <button class="close-x" onclick="closeModal('chat-modal')">✕</button>
     <h3 id="chat-modal-title">Chat with seller</h3>
     <p class="sub">Your phone number stays private until you choose to share it.</p>
     <div class="stack-gap">
@@ -31,11 +31,11 @@
 <!-- Buy now modal -->
 <div class="modal-overlay" id="buy-modal" hidden>
   <div class="modal">
-    <button class="close-x" id="buy-modal-close" onclick="closeModal('buy-modal')"></button>
+    <button class="close-x" onclick="closeModal('buy-modal')">✕</button>
     <h3>Buy now</h3>
     <p class="sub">This sends the seller a message that you'd like to buy at the asking price and lets you arrange payment &amp; pickup in chat. No online payment is processed.</p>
     <div class="stack-gap">
-      <button class="btn btn-fill btn-block" id="buy-confirm-btn" onclick="sendBuyNow()">Confirm &amp; message seller</button>
+      <button class="btn btn-fill btn-block" onclick="sendBuyNow()">✓ Confirm & message seller</button>
       <button class="btn btn-outline btn-block" onclick="closeModal('buy-modal')">Cancel</button>
     </div>
   </div>
@@ -51,7 +51,7 @@
   let listing = null;
 
   function listingConfidenceItem(isTrue, label) {
-    return `<div class="confidence-item ${isTrue ? "yes" : "no"}"><span class="mark">${isTrue ? ICONS.check : "–"}</span>${escapeHtml(label)}</div>`;
+    return `<div class="confidence-item ${isTrue ? "yes" : "no"}"><span class="mark">${isTrue ? "✓" : "–"}</span>${escapeHtml(label)}</div>`;
   }
 
   function requireLoginOr(action) {
@@ -66,7 +66,7 @@
     const root = document.getElementById("listing-root");
     listing = await Store.getListingById(listingId);
     if (!listing) {
-      root.innerHTML = backRowHtml("Listing") + `<div class="empty-state"><div class="big">${ICONS.box}</div><h3>Listing not found</h3><p>It may have been sold or removed.</p></div>`;
+      root.innerHTML = backRowHtml("Listing") + `<div class="empty-state"><div class="big">🙈</div><h3>Listing not found</h3><p>It may have been sold or removed.</p></div>`;
       return;
     }
     const seller = getSellerById(listing.sellerId);
@@ -80,7 +80,7 @@
     const isMine = Store.isLoggedIn() && Store.getUser().id === listing.sellerId;
 
     root.innerHTML = `
-      ${backRowHtml(null, `<div class="row" style="gap:8px;"><a class="icon-btn" href="help.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}" title="Report this listing">${ICONS.flag}</a><a class="icon-btn" href="javascript:void(0)" onclick="toast('Link copied (demo)')">${ICONS.share}</a></div>`)}
+      ${backRowHtml(null, `<div class="row" style="gap:8px;"><a class="icon-btn" href="help.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}" title="Report this listing">⚑</a><a class="icon-btn" href="javascript:void(0)" onclick="toast('Link copied (demo)')">↗</a></div>`)}
       <div class="detail-wrap">
         <div class="detail-imgs">
           ${galleryUrls.map((url) => `<div class="detail-img"><img src="${url}" alt="${escapeHtml(listing.title)}" /></div>`).join("")}
@@ -90,7 +90,7 @@
           <span class="badge badge-new">${listing.condition}</span>
         </div>
         <p class="detail-price">${formatPrice(listing.price)}</p>
-        <p class="detail-meta">${ICONS.pin} ${listing.locality}, ${listing.city} · Posted ${timeAgo(listing.createdAt).toLowerCase()} · ${listing.views} views</p>
+        <p class="detail-meta">📍 ${listing.locality}, ${listing.city} · Posted ${timeAgo(listing.createdAt).toLowerCase()} · ${listing.views} views</p>
         <a href="browse.html?cat=${encodeURIComponent(listing.category)}" class="cat-chip" style="display:inline-flex;margin-bottom:14px;">${tagIcon(listing.category)} ${escapeHtml(listing.category)}</a>
 
         <a href="profile.html?seller=${seller.id}" class="seller-card row">
@@ -100,11 +100,11 @@
             <p class="seller-sub">Member since ${seller.memberSince} · ${seller.deals} deal${seller.deals === 1 ? "" : "s"}${trust.responseRatePct !== null ? ` · ${trust.responseRatePct}% response rate` : ""}</p>
             ${sellerStats.count > 0 ? `<p class="seller-sub" style="margin-top:2px;">${starsHtml(sellerStats.avg, 11)} <b style="color:var(--ink-mid);">${sellerStats.avg}</b> (${sellerStats.count} review${sellerStats.count === 1 ? "" : "s"})</p>` : ""}
             <div class="trust-badges-row" style="margin-top:8px;">
-              <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? ICONS.check : "○"} Email</span>
-              <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? ICONS.check : "○"} Selfie</span>
+              <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? "✓" : "○"} Email</span>
+              <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? "✓" : "○"} Selfie</span>
             </div>
           </div>
-          ${seller.verified ? `<span class="badge badge-verified">${ICONS.check} Verified</span>` : `<span class="badge badge-new">New seller</span>`}
+          ${seller.verified ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">New seller</span>`}
         </a>
 
         <div class="detail-info" style="margin-bottom:16px;">
@@ -120,7 +120,7 @@
         <p class="detail-desc">${escapeHtml(listing.desc)}</p>
 
         <div class="community-box">
-          <p class="community-title">${ICONS.community} Community Q&amp;A</p>
+          <p class="community-title">💬 Community Q&amp;A</p>
           <div class="thread" id="qa-thread"></div>
           <form class="qa-form" id="qa-form">
             <input type="text" id="qa-input" placeholder="Ask the seller or community a question..." autocomplete="off" />
@@ -132,13 +132,13 @@
           <p style="text-align:center;font-size:13px;color:var(--muted);padding:10px 0;">This is your own listing.</p>
         ` : `
           <div class="cta-row">
-            <button class="btn btn-outline" onclick="openModal('chat-modal')">${ICONS.community} Chat</button>
+            <button class="btn btn-outline" onclick="openModal('chat-modal')">💬 Chat</button>
             <button class="btn btn-fill" onclick="openModal('buy-modal')">Buy now</button>
           </div>
         `}
-        <button class="btn btn-outline btn-block" id="save-toggle-btn" style="margin-bottom:8px;" onclick="toggleSaveDetail()">${saved ? ICONS.heartFill + " Saved" : ICONS.heart + " Save listing"}</button>
+        <button class="btn btn-outline btn-block" id="save-toggle-btn" style="margin-bottom:8px;" onclick="toggleSaveDetail()">${saved ? "♥ Saved" : "♡ Save listing"}</button>
 
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:8px;">${ICONS.shield} Meet in public, inspect before paying, avoid advance payments to unverified sellers.</p>
+        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:8px;">🛡️ Meet in public, inspect before paying, avoid advance payments to unverified sellers.</p>
 
         <p class="section-title" style="padding:0;margin-top:18px;">More tagged "${escapeHtml(listing.category)}"</p>
         <div class="product-grid" id="similar-grid" style="padding:0;margin-top:10px;"></div>
@@ -185,9 +185,9 @@
     return `
       <div class="thread-item" style="${isReply ? "margin-left:26px;" : ""}">
         <div class="vote-col">
-          <button onclick="voteQA('${q.id}',1)" aria-label="Upvote">${ICONS.upvote}</button>
+          <button onclick="voteQA('${q.id}',1)" aria-label="Upvote">▲</button>
           <span class="n">${q.votes}</span>
-          <button onclick="voteQA('${q.id}',-1)" aria-label="Downvote" style="transform:rotate(180deg);">${ICONS.upvote}</button>
+          <button onclick="voteQA('${q.id}',-1)" aria-label="Downvote">▼</button>
         </div>
         <div class="thread-body">
           <p class="thread-user">${escapeHtml(user ? user.name : "Unknown")} ${flair ? `<span class="flair">· ${escapeHtml(flair)}</span>` : ""}</p>
@@ -207,7 +207,7 @@
 
   async function toggleSaveDetail() {
     const isSaved = await Store.toggleSaved(listing.id);
-    document.getElementById("save-toggle-btn").innerHTML = isSaved ? ICONS.heartFill + " Saved" : ICONS.heart + " Save listing";
+    document.getElementById("save-toggle-btn").textContent = isSaved ? "♥ Saved" : "♡ Save listing";
     toast(isSaved ? "Saved to your list" : "Removed from saved");
   }
 
@@ -229,9 +229,6 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage(null);
-    document.getElementById("chat-modal-close").innerHTML = ICONS.close;
-    document.getElementById("buy-modal-close").innerHTML = ICONS.close;
-    document.getElementById("buy-confirm-btn").innerHTML = ICONS.check + " Confirm & message seller";
     await renderListing();
   });
 </script>

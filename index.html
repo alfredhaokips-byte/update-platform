@@ -246,13 +246,13 @@
     <div class="row between loc-row" id="loc-row" onclick="openLocationPicker()">
       <div>
         <p class="loc-label">Location</p>
-        <p class="loc-value" id="loc-value"></p>
+        <p class="loc-value" id="loc-value">📍 Delhi NCR</p>
       </div>
-      <a href="messages.html" class="icon-btn" id="bell-icon-btn"></a>
+      <a href="messages.html" class="icon-btn">🔔<span class="dot"></span></a>
     </div>
     <div class="row search-row">
-      <a href="browse.html" class="search-bar" id="search-shortcut">What are you looking for?</a>
-      <a href="browse.html" class="icon-btn" id="filter-btn"></a>
+      <a href="browse.html" class="search-bar">🔍 What are you looking for?</a>
+      <a href="browse.html" class="icon-btn">⚙️</a>
     </div>
     <div class="cats" id="scope-cats">
       <button class="pill-btn active" data-scope="nearby" onclick="setScope('nearby')">Nearby</button>
@@ -261,7 +261,7 @@
     <div class="cats" id="cat-cats"></div>
   </div>
 
-  <p class="section-title" id="trending-title"></p>
+  <p class="section-title">🔥 Trending in your community</p>
   <div class="product-grid" id="trending-grid"></div>
 
   <div style="height:24px;"></div>
@@ -272,7 +272,7 @@
 <!-- Location picker -->
 <div class="modal-overlay" id="loc-modal" hidden>
   <div class="modal" style="max-width:420px;">
-    <button class="close-x" id="loc-modal-close" onclick="closeModal('loc-modal')"></button>
+    <button class="close-x" onclick="closeModal('loc-modal')">✕</button>
     <h3>Choose your locality</h3>
     <p class="sub">"Nearby" shows listings from your area — pick where you actually are.</p>
     <div class="stack-gap" id="loc-options" style="max-height:340px;overflow-y:auto;"></div>
@@ -308,15 +308,15 @@
     const trending = [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
     document.getElementById("trending-grid").innerHTML = trending.length
       ? trending.map(listingCardHtml).join("")
-      : `<div class="empty-state" style="grid-column:1/-1;"><div class="big">${ICONS.community}</div><h3>No listings yet</h3><p>Try "All India" to see more.</p></div>`;
+      : `<div class="empty-state" style="grid-column:1/-1;"><div class="big">📭</div><h3>No listings yet</h3><p>Try "All India" to see more.</p></div>`;
   }
 
   function renderLocValue() {
     const user = Store.getUser();
-    const label = user && user.locality ? `${user.locality}, ${user.city}`
-      : user ? "Set your locality"
-      : `${HOME_CITY}`;
-    document.getElementById("loc-value").innerHTML = `${ICONS.pin} ${escapeHtml(label)}`;
+    const label = user && user.locality ? `📍 ${user.locality}, ${user.city}`
+      : user ? "📍 Set your locality"
+      : `📍 ${HOME_CITY}`;
+    document.getElementById("loc-value").textContent = label;
   }
 
   function openLocationPicker() {
@@ -328,7 +328,7 @@
     const el = document.getElementById("loc-options");
     el.innerHTML = LOCALITIES.map((name) => `
       <button type="button" class="btn ${name === current ? "btn-fill" : "btn-outline"} btn-block" onclick="pickLocality('${name.replace(/'/g, "\\'")}')">
-        ${name === current ? ICONS.check : ICONS.pin} ${escapeHtml(name)}
+        ${name === current ? "✓ " : "📍 "}${escapeHtml(name)}
       </button>
     `).join("");
     openModal("loc-modal");
@@ -349,7 +349,7 @@
   }
 
   /* ---------- Landing page: trust tabs (real features, not decorative) ---------- */
-  const TRUST_ICONS = {
+  const ICONS = {
     shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/><path d="M9 12l2 2 4-4"/></svg>`,
     badge: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="5"/><path d="M9 12.5 7 21l5-3 5 3-2-8.5"/></svg>`,
     star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.2L12 16.9 6.4 20l1.4-6.2-4.8-4.3 6.4-.6z"/></svg>`,
@@ -397,7 +397,7 @@
       <div class="feature-card ${c.dark ? "dark" : ""}">
         <div class="feature-visual">
           ${c.badge ? `<div class="feature-badge">${CHECK_SVG}${escapeHtml(c.badge)}</div>` : ""}
-          <div style="color:${c.dark ? "rgba(255,255,255,0.75)" : "#5C5C63"};">${TRUST_ICONS[c.icon]}</div>
+          <div style="color:${c.dark ? "rgba(255,255,255,0.75)" : "#5C5C63"};">${ICONS[c.icon]}</div>
         </div>
         <div class="feature-text">
           <h3>${escapeHtml(c.title)}</h3>
@@ -411,14 +411,14 @@
     const seller = getSellerById(listing.sellerId);
     const saved = Store.isSaved(listing.id);
     const trust = seller && (seller.verified || seller.emailVerified)
-      ? `${TRUST_ICONS.badge.replace("<svg ", '<svg style="width:12px;height:12px;color:#3FA98A;flex-shrink:0;" ')}Verified · ${escapeHtml(listing.locality)}`
+      ? `${ICONS.badge.replace("<svg ", '<svg style="width:12px;height:12px;color:#3FA98A;flex-shrink:0;" ')}Verified · ${escapeHtml(listing.locality)}`
       : `New seller · ${escapeHtml(listing.locality)}`;
     return `
       <a href="listing.html?id=${listing.id}" class="show-card">
         <div class="show-thumb">
           <img src="${listingThumbUrl(listing, 400, 300)}" alt="${escapeHtml(listing.title)}" loading="lazy" />
           <span class="show-cond">${escapeHtml(listing.condition)}</span>
-          <button class="show-save ${saved ? "active" : ""}" title="Save" onclick="handleSaveClick(event,'${listing.id}')">${saved ? ICONS.heartFill : ICONS.heart}</button>
+          <button class="show-save ${saved ? "active" : ""}" title="Save" onclick="handleSaveClick(event,'${listing.id}')">${saved ? "♥" : "♡"}</button>
         </div>
         <div class="show-body">
           <div class="name">${escapeHtml(listing.title)}</div>
@@ -468,19 +468,14 @@
     const officialTags = getOfficialTags();
     catCats.innerHTML = officialTags.length
       ? officialTags.map((t) => `<a href="browse.html?cat=${encodeURIComponent(t.tag)}" class="cat-chip">${tagIcon(t.tag)} ${escapeHtml(t.tag)}</a>`).join("")
-        + `<a href="browse.html" class="cat-chip" style="color:var(--muted);">${ICONS.tag} More tags…</a>`
-      : `<a href="browse.html" class="cat-chip">${ICONS.tag} Browse all tags</a>`;
+        + `<a href="browse.html" class="cat-chip" style="color:var(--muted);">🏷️ More tags…</a>`
+      : `<a href="browse.html" class="cat-chip">🏷️ Browse all tags</a>`;
 
     renderTrending();
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
     requireSupabaseConfigured();
-    document.getElementById("bell-icon-btn").innerHTML = ICONS.bell + '<span class="dot" id="msg-dot" hidden></span>';
-    document.getElementById("search-shortcut").innerHTML = ICONS.search + " What are you looking for?";
-    document.getElementById("filter-btn").innerHTML = ICONS.filter;
-    document.getElementById("trending-title").innerHTML = ICONS.flame + " Trending in your community";
-    document.getElementById("loc-modal-close").innerHTML = ICONS.close;
     await Store.primeCache();
     await Store.loadLocalities();
 

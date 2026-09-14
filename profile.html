@@ -10,7 +10,7 @@
 
 <div class="app-shell">
   <div class="back-row row between">
-    <a href="javascript:history.back()" class="icon-btn" aria-label="Back" id="back-btn"></a>
+    <a href="javascript:history.back()" class="icon-btn" aria-label="Back">←</a>
     <span class="header-title">Profile</span>
     <span style="width:40px;"></span>
   </div>
@@ -22,7 +22,7 @@
   <p class="section-title" id="listings-heading">Listings</p>
   <div class="product-grid" id="seller-grid"></div>
   <div class="empty-state" id="empty-state" hidden>
-    <div class="big" id="empty-icon"></div>
+    <div class="big">📦</div>
     <h3>No active listings</h3>
     <p>This seller hasn't posted anything yet.</p>
   </div>
@@ -39,7 +39,7 @@
 <!-- Write a review modal -->
 <div class="modal-overlay" id="review-modal" hidden>
   <div class="modal">
-    <button class="close-x" id="review-modal-close" onclick="closeModal('review-modal')"></button>
+    <button class="close-x" onclick="closeModal('review-modal')">✕</button>
     <h3 id="review-modal-title">Write a review</h3>
     <p class="sub">Share how your deal went — this helps other buyers and sellers trust each other.</p>
     <div class="star-picker" id="star-picker"></div>
@@ -60,21 +60,18 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage(null);
-    document.getElementById("back-btn").innerHTML = ICONS.back;
-    document.getElementById("empty-icon").innerHTML = ICONS.box;
-    document.getElementById("review-modal-close").innerHTML = ICONS.close;
 
     sellerId = qs("seller") || (Store.getUser() ? Store.getUser().id : null);
     const root = document.getElementById("profile-root");
 
     if (!sellerId) {
-      root.innerHTML = `<div class="empty-state"><div class="big">${ICONS.account}</div><h3>Sign in to view your profile</h3></div>`;
+      root.innerHTML = `<div class="empty-state"><div class="big">👤</div><h3>Sign in to view your profile</h3></div>`;
       return;
     }
 
     seller = getSellerById(sellerId) || await Store.fetchProfile(sellerId);
     if (!seller) {
-      root.innerHTML = `<div class="empty-state"><div class="big">${ICONS.account}</div><h3>Profile not found</h3></div>`;
+      root.innerHTML = `<div class="empty-state"><div class="big">🙈</div><h3>Profile not found</h3></div>`;
       return;
     }
 
@@ -85,12 +82,12 @@
       <div class="account-head">
         <div class="avatar" style="width:62px;height:62px;font-size:20px;"><img src="${avatarUrl(seller.avatarSeed, 124)}" alt="${escapeHtml(seller.name)}" /></div>
         <div>
-          <h2>${escapeHtml(seller.name)} ${seller.verified ? `<span class="badge badge-verified">${ICONS.check} Verified</span>` : `<span class="badge badge-new">New seller</span>`}</h2>
-          <div class="sub">${ICONS.pin} ${seller.locality || "Locality not set"}, ${seller.city} · Member since ${seller.memberSince}</div>
+          <h2>${escapeHtml(seller.name)} ${seller.verified ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">New seller</span>`}</h2>
+          <div class="sub">📍 ${seller.locality || "Locality not set"}, ${seller.city} · Member since ${seller.memberSince}</div>
         </div>
       </div>
       <div class="account-stats" id="profile-stats"></div>
-      ${!isMe ? `<div style="padding:0 18px 8px;"><button class="btn btn-fill btn-block" onclick="toast('Open a listing to start chatting with ${escapeHtml(seller.name).replace(/'/g, "\\'")}')">${ICONS.reply} Message ${escapeHtml(seller.name).replace(/'/g, "\\'")}</button></div>` : ""}
+      ${!isMe ? `<div style="padding:0 18px 8px;"><button class="btn btn-fill btn-block" onclick="toast('Open a listing to start chatting with ${escapeHtml(seller.name).replace(/'/g, "\\'")}')">💬 Message ${escapeHtml(seller.name).replace(/'/g, "\\'")}</button></div>` : ""}
     `;
 
     const allListings = await Store.getListings();
@@ -98,7 +95,7 @@
     document.getElementById("profile-stats").innerHTML = `
       <div><strong>${seller.deals}</strong><span>DEALS DONE</span></div>
       <div><strong>${listings.length}</strong><span>ACTIVE ADS</span></div>
-      <div><strong>${seller.verified ? ICONS.check : "—"}</strong><span>VERIFIED</span></div>
+      <div><strong>${seller.verified ? "✓" : "—"}</strong><span>VERIFIED</span></div>
     `;
     document.getElementById("listings-heading").textContent = isMe ? "Your listings" : seller.name + "'s listings";
     const grid = document.getElementById("seller-grid");
@@ -112,7 +109,7 @@
     if (!isMe) {
       document.getElementById("report-row").innerHTML = `
         <div style="padding:4px 18px 8px;">
-          <button class="btn btn-outline btn-block" style="color:var(--danger);border-color:var(--danger);" onclick="location.href='help.html?type=Abusive%20or%20unsafe%20behavior&seller=${sellerId}'">${ICONS.flag} Report this seller</button>
+          <button class="btn btn-outline btn-block" style="color:var(--danger);border-color:var(--danger);" onclick="location.href='help.html?type=Abusive%20or%20unsafe%20behavior&seller=${sellerId}'">⚑ Report this seller</button>
         </div>
       `;
     }
@@ -126,9 +123,9 @@
       <p class="section-title" style="margin-top:8px;">Trust &amp; verification</p>
       <div class="form-wrap" style="padding-top:0;">
         <div class="trust-badges-row">
-          <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? ICONS.check : "○"} Email</span>
-          <span class="trust-badge ${seller.phoneVerified ? "yes" : "no"}">${seller.phoneVerified ? ICONS.check : "○"} Phone</span>
-          <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? ICONS.check + " Selfie verified" : "○ Selfie — coming soon"}</span>
+          <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? "✓" : "○"} Email</span>
+          <span class="trust-badge ${seller.phoneVerified ? "yes" : "no"}">${seller.phoneVerified ? "✓" : "○"} Phone</span>
+          <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? "✓ Selfie verified" : "○ Selfie — coming soon"}</span>
         </div>
         <div class="trust-stat-grid">
           <div class="trust-stat"><strong>${seller.deals}</strong><span>Deals (from reviews)</span></div>
