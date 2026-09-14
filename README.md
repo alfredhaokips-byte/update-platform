@@ -1,4 +1,4 @@
-# Marketplace — Landing Page + Trust System
+# Marketplace — Landing Page + Trust System + Email Notifications
 
 Static HTML/CSS/vanilla JS site, backed by Supabase (Postgres + Auth + Storage).
 No build step, no framework — open any `.html` file's script tags to see
@@ -119,6 +119,45 @@ single listing post against a real database. Fixed, along with three bare
 `profiles(*)` embeds (in `getListings`, `getListingById`, `getQA`) that were
 unambiguous today but fragile — all six profile embeds in `js/data.js` now
 explicitly name their foreign key.
+
+## Email notifications on new messages
+
+Each user gets emailed when they receive a new chat message — not just an
+in-app dot. Setup, one time:
+
+1. **Sign up at [resend.com](https://resend.com)** (free tier is plenty to
+   start) → **API Keys** → create one → copy it.
+2. **Install & link the Supabase CLI** (already installed via Homebrew here):
+   ```
+   supabase login
+   supabase link --project-ref ecdsteardeybzfnnidym
+   ```
+   `login` opens a browser to authorize — has to be you, not something I can
+   do on your behalf.
+3. **Set the Resend key as a function secret** (never goes in client code):
+   ```
+   supabase secrets set RESEND_API_KEY=re_your_key_here
+   ```
+4. **Deploy the function**:
+   ```
+   supabase functions deploy notify-new-message
+   ```
+5. **Wire it up to new messages** — Supabase Dashboard → **Database →
+   Webhooks** → **Create a new webhook**:
+   - Table: `messages`
+   - Events: `INSERT`
+   - Type: **Supabase Edge Function**
+   - Function: `notify-new-message`
+
+That's it — send a test message between two accounts and the recipient
+should get an email within a few seconds.
+
+**Free-tier limit worth knowing**: until you verify a sending domain in
+Resend, you can only send *from* `onboarding@resend.dev` and *to* the email
+address your Resend account itself is registered with — fine for testing
+with your own account, but real users won't receive anything until a domain
+is verified (Resend → Domains → Add Domain → a few DNS records). Not
+blocking for building/testing this now, just for it working on strangers.
 
 ## What's NOT built yet
 
