@@ -30,7 +30,7 @@
   }
 
   function renderList() {
-    mountBottomNav("community");
+    mountBottomNav(null);
     const root = document.getElementById("page-root");
     let threads = allThreads;
     if (activeTab !== "all") threads = threads.filter((t) => t.tag === activeTab);
@@ -39,9 +39,9 @@
       <div class="page-top" style="padding-top:18px;">
         <div class="row between">
           <p class="chats-title">Chats</p>
-          <a href="account.html" class="icon-btn">🔔<span class="dot"></span></a>
+          <a href="account.html" class="icon-btn">${ICONS.bell}<span class="dot"></span></a>
         </div>
-        <div class="search-bar" style="margin-bottom:0;">🔍 <input type="text" id="chat-search" placeholder="Search chats" /></div>
+        <div class="search-bar" style="margin-bottom:0;">${ICONS.search} <input type="text" id="chat-search" placeholder="Search chats" /></div>
       </div>
       <div class="chat-tabs">
         <button class="pill-btn ${activeTab === "all" ? "active" : ""}" onclick="setTab('all')">All</button>
@@ -53,7 +53,7 @@
 
     const listEl = document.getElementById("chat-list");
     if (threads.length === 0) {
-      listEl.innerHTML = `<div class="empty-state"><div class="big">📭</div><h3>No conversations yet</h3><p>Message a seller from any listing.</p></div>`;
+      listEl.innerHTML = `<div class="empty-state"><div class="big">${ICONS.community}</div><h3>No conversations yet</h3><p>Message a seller from any listing.</p></div>`;
       return;
     }
     listEl.innerHTML = threads.map((t) => {
@@ -99,11 +99,11 @@
     const seller = getSellerById(thread.sellerId);
 
     root.innerHTML = `
-      ${backRowHtml(null, `<a class="icon-btn" href="help.html?type=${encodeURIComponent("Abusive or unsafe behavior")}&seller=${thread.sellerId}&listing=${thread.listingId}" title="Report this conversation">⋯</a>`)}
+      ${backRowHtml(null, `<a class="icon-btn" href="help.html?type=${encodeURIComponent("Abusive or unsafe behavior")}&seller=${thread.sellerId}&listing=${thread.listingId}" title="Report this conversation">${ICONS.flag}</a>`)}
       <div class="row" style="padding:0 18px 14px;gap:10px;">
         <div class="avatar"><img src="${avatarUrl(seller.avatarSeed, 72)}" alt="${escapeHtml(seller.name)}" /></div>
         <div>
-          <p class="seller-name">${escapeHtml(seller.name)} ${seller.verified ? "✓" : ""}</p>
+          <p class="seller-name">${escapeHtml(seller.name)} ${seller.verified ? ICONS.check : ""}</p>
           <a href="listing.html?id=${listing ? listing.id : ""}" style="font-size:12px;color:var(--ink-soft);">${listing ? escapeHtml(listing.title) + " · " + formatPrice(listing.price) : "Listing removed"}</a>
         </div>
       </div>
@@ -119,7 +119,7 @@
       </form>
     `;
     renderChatBody(thread);
-    mountBottomNav("community");
+    mountBottomNav(null);
 
     document.getElementById("chat-form").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -154,7 +154,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    await initPage("community");
+    await initPage(null);
     const session = await Auth.requireAuth();
     if (!session) return;
 

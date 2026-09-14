@@ -10,7 +10,7 @@
 
 <div class="app-shell">
   <div class="back-row row between">
-    <a href="account.html" class="icon-btn" aria-label="Back">←</a>
+    <a href="account.html" class="icon-btn" aria-label="Back" id="back-btn"></a>
     <span class="header-title">Help &amp; Safety</span>
     <span style="width:40px;"></span>
   </div>
@@ -18,10 +18,10 @@
   <div class="form-wrap" style="padding-top:6px;">
     <p class="section-title" style="padding:0;margin-bottom:4px;">Staying safe</p>
     <div style="margin-bottom:8px;">
-      <div class="safety-tip-row"><span class="ic">🤝</span><p>Meet in a public place, ideally during daytime, for any handover.</p></div>
-      <div class="safety-tip-row"><span class="ic">🔍</span><p>Inspect the item carefully before paying — don't rely on photos alone.</p></div>
-      <div class="safety-tip-row"><span class="ic">💳</span><p>Avoid advance payments, especially to sellers who aren't verified.</p></div>
-      <div class="safety-tip-row"><span class="ic">💬</span><p>Keep the conversation in Marketplace chat until you're ready to meet — it keeps a record if something goes wrong.</p></div>
+      <div class="safety-tip-row"><span class="ic" id="tip-meet"></span><p>Meet in a public place, ideally during daytime, for any handover.</p></div>
+      <div class="safety-tip-row"><span class="ic" id="tip-inspect"></span><p>Inspect the item carefully before paying — don't rely on photos alone.</p></div>
+      <div class="safety-tip-row"><span class="ic" id="tip-pay"></span><p>Avoid advance payments, especially to sellers who aren't verified.</p></div>
+      <div class="safety-tip-row"><span class="ic" id="tip-chat"></span><p>Keep the conversation in Marketplace chat until you're ready to meet — it keeps a record if something goes wrong.</p></div>
     </div>
 
     <p class="section-title" style="padding:0;margin-top:22px;margin-bottom:2px;">Raise a concern</p>
@@ -45,7 +45,7 @@
     <p class="section-title" style="padding:0;margin-top:26px;">Your reports</p>
     <div id="reports-list"></div>
     <div class="empty-state" id="reports-empty" hidden style="padding:30px 20px;">
-      <div class="big">🛡️</div>
+      <div class="big" id="reports-empty-icon"></div>
       <h3>No reports filed</h3>
       <p>Anything you report will show up here with its status.</p>
     </div>
@@ -88,7 +88,7 @@
     const seller = ctxSellerId ? getSellerById(ctxSellerId) : null;
     if (!listing && !seller) { el.innerHTML = ""; return; }
     const label = listing ? `Reporting listing: ${listing.title}` : `Reporting user: ${seller.name}`;
-    el.innerHTML = `<div class="review-card" style="margin-bottom:14px;"><p style="font-size:12.5px;font-weight:700;">📎 ${escapeHtml(label)}</p></div>`;
+    el.innerHTML = `<div class="review-card" style="margin-bottom:14px;"><p style="font-size:12.5px;font-weight:700;">${ICONS.paperclip} ${escapeHtml(label)}</p></div>`;
   }
 
   async function renderReports() {
@@ -116,6 +116,12 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage("account");
+    document.getElementById("back-btn").innerHTML = ICONS.back;
+    document.getElementById("tip-meet").innerHTML = ICONS.handshake;
+    document.getElementById("tip-inspect").innerHTML = ICONS.search;
+    document.getElementById("tip-pay").innerHTML = ICONS.card;
+    document.getElementById("tip-chat").innerHTML = ICONS.community;
+    document.getElementById("reports-empty-icon").innerHTML = ICONS.shield;
     const session = await Auth.requireAuth();
     if (!session) return;
 

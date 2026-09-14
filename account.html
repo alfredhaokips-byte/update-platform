@@ -17,14 +17,14 @@
   <div class="account-stats" id="account-stats"></div>
 
   <div class="menu-list">
-    <a href="my-ads.html" class="menu-item"><span class="ic">📋</span>My ads<span class="chev">›</span></a>
-    <a href="saved.html" class="menu-item"><span class="ic">♡</span>Saved items<span class="chev">›</span></a>
-    <a href="verify.html" class="menu-item"><span class="ic">✓</span>Get verified<span class="chev">›</span></a>
-    <button class="menu-item" onclick="toast('Edit profile — demo mode')"><span class="ic">✏️</span>Edit profile<span class="chev">›</span></button>
-    <button class="menu-item" onclick="toast('Notification settings — demo mode')"><span class="ic">🔔</span>Notifications<span class="chev">›</span></button>
-    <a href="help.html" class="menu-item"><span class="ic">🛡️</span>Safety &amp; help<span class="chev">›</span></a>
-    <button class="menu-item" onclick="toast('r/DelhiMarketplace-style community guidelines — demo mode')"><span class="ic">📜</span>Community guidelines<span class="chev">›</span></button>
-    <button class="menu-item" id="logout-btn" style="color:var(--danger);"><span class="ic">↪</span>Log out</button>
+    <a href="my-ads.html" class="menu-item"><span class="ic" id="mi-ads"></span>My ads<span class="chev">›</span></a>
+    <a href="saved.html" class="menu-item"><span class="ic" id="mi-saved"></span>Saved items<span class="chev">›</span></a>
+    <a href="verify.html" class="menu-item"><span class="ic" id="mi-verify"></span>Get verified<span class="chev">›</span></a>
+    <button class="menu-item" onclick="toast('Edit profile — demo mode')"><span class="ic" id="mi-edit"></span>Edit profile<span class="chev">›</span></button>
+    <button class="menu-item" onclick="toast('Notification settings — demo mode')"><span class="ic" id="mi-notif"></span>Notifications<span class="chev">›</span></button>
+    <a href="help.html" class="menu-item"><span class="ic" id="mi-help"></span>Safety &amp; help<span class="chev">›</span></a>
+    <button class="menu-item" onclick="toast('r/DelhiMarketplace-style community guidelines — demo mode')"><span class="ic" id="mi-guide"></span>Community guidelines<span class="chev">›</span></button>
+    <button class="menu-item" id="logout-btn" style="color:var(--danger);"><span class="ic" id="mi-logout"></span>Log out</button>
   </div>
   <div style="height:24px;"></div>
 </div>
@@ -39,12 +39,20 @@
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage("account");
+    document.getElementById("mi-ads").innerHTML = ICONS.box;
+    document.getElementById("mi-saved").innerHTML = ICONS.heart;
+    document.getElementById("mi-verify").innerHTML = ICONS.check;
+    document.getElementById("mi-edit").innerHTML = ICONS.edit;
+    document.getElementById("mi-notif").innerHTML = ICONS.bell;
+    document.getElementById("mi-help").innerHTML = ICONS.shield;
+    document.getElementById("mi-guide").innerHTML = ICONS.scroll;
+    document.getElementById("mi-logout").innerHTML = ICONS.logout;
     const user = Store.getUser();
 
     if (!user) {
       document.getElementById("account-head").innerHTML = `
         <div style="padding:20px 0;text-align:center;width:100%;">
-          <div style="font-size:34px;margin-bottom:8px;">👤</div>
+          <div style="font-size:34px;margin-bottom:8px;">${ICONS.account}</div>
           <h3 style="margin-bottom:6px;">You're browsing as a guest</h3>
           <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Sign in to post ads, save items, chat, and leave reviews.</p>
           <div class="stack-gap" style="max-width:260px;margin:0 auto;">
@@ -61,8 +69,8 @@
     document.getElementById("account-head").innerHTML = `
       <div class="avatar"><img src="${avatarUrl(user.avatarSeed, 124)}" alt="You" /></div>
       <div>
-        <h2>${escapeHtml(user.name)} ${user.verified ? `<span class="badge badge-verified">✓ Verified</span>` : ""}</h2>
-        <div class="sub">📍 ${user.locality || "No locality set"}, ${user.city} · Member since ${user.memberSince}</div>
+        <h2>${escapeHtml(user.name)} ${user.verified ? `<span class="badge badge-verified">${ICONS.check} Verified</span>` : ""}</h2>
+        <div class="sub">${ICONS.pin} ${user.locality || "No locality set"}, ${user.city} · Member since ${user.memberSince}</div>
       </div>
     `;
     const allListings = await Store.getListings();

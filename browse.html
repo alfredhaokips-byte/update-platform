@@ -10,7 +10,7 @@
 
 <div class="app-shell">
   <div class="back-row row between">
-    <a href="index.html" class="icon-btn" aria-label="Back">←</a>
+    <a href="index.html" class="icon-btn" aria-label="Back" id="back-btn"></a>
     <span class="header-title" id="browse-title">Browse</span>
     <span style="width:40px;"></span>
   </div>
@@ -18,7 +18,7 @@
   <div class="page-top" style="padding-top:10px;">
     <div class="row search-row">
       <form class="search-bar" id="search-form" style="cursor:default;">
-        <span>🔍</span>
+        <span id="search-icon"></span>
         <input type="text" id="search-input" placeholder="What are you looking for?" />
       </form>
     </div>
@@ -38,7 +38,7 @@
 
   <div class="product-grid" id="results-grid"></div>
   <div class="empty-state" id="empty-state" hidden>
-    <div class="big">🔍</div>
+    <div class="big" id="empty-icon"></div>
     <h3>No listings match</h3>
     <p>Try a different category, locality, or search term.</p>
   </div>
@@ -97,6 +97,9 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage("home");
+    document.getElementById("back-btn").innerHTML = ICONS.back;
+    document.getElementById("search-icon").innerHTML = ICONS.search;
+    document.getElementById("empty-icon").innerHTML = ICONS.search;
     allListings = await Store.getListings();
     await Store.loadLocalities();
 

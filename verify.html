@@ -10,7 +10,7 @@
 
 <div class="app-shell">
   <div class="back-row row between">
-    <a href="account.html" class="icon-btn" aria-label="Back">←</a>
+    <a href="account.html" class="icon-btn" aria-label="Back" id="back-btn"></a>
     <span class="header-title">Get verified</span>
     <span style="width:40px;"></span>
   </div>
@@ -20,7 +20,7 @@
 
     <div class="review-card" style="margin-top:16px;">
       <div class="verify-row">
-        <span class="ic">📧</span>
+        <span class="ic" id="ic-email"></span>
         <div class="body">
           <strong>Email</strong>
           <p id="email-status">Checking...</p>
@@ -30,7 +30,7 @@
 
       <div class="verify-row" style="align-items:flex-start;flex-direction:column;">
         <div class="row" style="width:100%;">
-          <span class="ic">📱</span>
+          <span class="ic" id="ic-phone"></span>
           <div class="body">
             <strong>Phone number</strong>
             <p id="phone-status">Not added yet</p>
@@ -44,7 +44,7 @@
       </div>
 
       <div class="verify-row">
-        <span class="ic">🤳</span>
+        <span class="ic" id="ic-selfie"></span>
         <div class="body">
           <strong>Selfie verification</strong>
           <p>Required to sell items over <span id="threshold-label-2"></span>. Camera-based liveness check is coming in a future update.</p>
@@ -65,6 +65,10 @@
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage("account");
+    document.getElementById("back-btn").innerHTML = ICONS.back;
+    document.getElementById("ic-email").innerHTML = ICONS.mail;
+    document.getElementById("ic-phone").innerHTML = ICONS.phone;
+    document.getElementById("ic-selfie").innerHTML = ICONS.camera;
     const session = await Auth.requireAuth();
     if (!session) return;
 
@@ -75,7 +79,7 @@
     const user = Store.getUser();
     const emailStatusEl = document.getElementById("email-status");
     if (user.emailVerified) {
-      emailStatusEl.textContent = "✓ Verified";
+      emailStatusEl.innerHTML = `${ICONS.check} Verified`;
       emailStatusEl.style.color = "var(--verified-fg)";
     } else {
       emailStatusEl.textContent = "Check your inbox for a confirmation link";
