@@ -349,7 +349,7 @@
   }
 
   /* ---------- Landing page: trust tabs (real features, not decorative) ---------- */
-  const ICONS = {
+  const TRUST_ICONS = {
     shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/><path d="M9 12l2 2 4-4"/></svg>`,
     badge: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="5"/><path d="M9 12.5 7 21l5-3 5 3-2-8.5"/></svg>`,
     star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.2L12 16.9 6.4 20l1.4-6.2-4.8-4.3 6.4-.6z"/></svg>`,
@@ -397,7 +397,7 @@
       <div class="feature-card ${c.dark ? "dark" : ""}">
         <div class="feature-visual">
           ${c.badge ? `<div class="feature-badge">${CHECK_SVG}${escapeHtml(c.badge)}</div>` : ""}
-          <div style="color:${c.dark ? "rgba(255,255,255,0.75)" : "#5C5C63"};">${ICONS[c.icon]}</div>
+          <div style="color:${c.dark ? "rgba(255,255,255,0.75)" : "#5C5C63"};">${TRUST_ICONS[c.icon]}</div>
         </div>
         <div class="feature-text">
           <h3>${escapeHtml(c.title)}</h3>
@@ -411,7 +411,7 @@
     const seller = getSellerById(listing.sellerId);
     const saved = Store.isSaved(listing.id);
     const trust = seller && (seller.verified || seller.emailVerified)
-      ? `${ICONS.check.replace("<svg ", '<svg style="width:12px;height:12px;color:#3FA98A;flex-shrink:0;" ')}Verified · ${escapeHtml(listing.locality)}`
+      ? `${TRUST_ICONS.badge.replace("<svg ", '<svg style="width:12px;height:12px;color:#3FA98A;flex-shrink:0;" ')}Verified · ${escapeHtml(listing.locality)}`
       : `New seller · ${escapeHtml(listing.locality)}`;
     return `
       <a href="listing.html?id=${listing.id}" class="show-card">
