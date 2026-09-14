@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "marketplace-static",
+      "name": "marketplace-v2",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8934", "--directory", "/Users/alfred/Desktop/marketplace"],
-      "port": 8934
+      "runtimeArgs": ["-m", "http.server", "8951", "--directory", "/Users/alfred/Desktop/marketplace"],
+      "port": 8951
     }
   ]
 }

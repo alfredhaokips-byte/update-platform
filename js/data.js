@@ -10,7 +10,7 @@
    (Store.primeCache(), Store.getListings(), ...), which populate the cache,
    and the sync helpers just read from it afterwards. */
 
-const HOME_CITY = "Guwahati, Assam";
+const HOME_CITY = "Delhi NCR";
 const TAG_GRADUATION_THRESHOLD = 2;
 const TAG_ICON_PALETTE = ["📦", "🔌", "🛋️", "🚗", "👕", "🍳", "📚", "🏸", "📱", "🎸", "🧸", "🪴", "🖼️", "⌚", "🎮", "🚲"];
 const CONDITIONS = ["New", "Used"];
