@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Account — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="page-top" style="padding-top:18px;padding-bottom:4px;">
+    <p class="chats-title">Account</p>
+  </div>
+
+  <div class="account-head" id="account-head"></div>
+  <div class="account-stats" id="account-stats"></div>
+
+  <div class="menu-list">
+    <a href="my-ads.html" class="menu-item"><span class="ic">📋</span>My ads<span class="chev">›</span></a>
+    <a href="saved.html" class="menu-item"><span class="ic">♡</span>Saved items<span class="chev">›</span></a>
+    <a href="verify.html" class="menu-item"><span class="ic">✓</span>Get verified<span class="chev">›</span></a>
+    <button class="menu-item" onclick="toast('Edit profile — demo mode')"><span class="ic">✏️</span>Edit profile<span class="chev">›</span></button>
+    <button class="menu-item" onclick="toast('Notification settings — demo mode')"><span class="ic">🔔</span>Notifications<span class="chev">›</span></button>
+    <a href="help.html" class="menu-item"><span class="ic">🛡️</span>Safety &amp; help<span class="chev">›</span></a>
+    <button class="menu-item" onclick="toast('r/DelhiMarketplace-style community guidelines — demo mode')"><span class="ic">📜</span>Community guidelines<span class="chev">›</span></button>
+    <button class="menu-item" id="logout-btn" style="color:var(--danger);"><span class="ic">↪</span>Log out</button>
+  </div>
+  <div style="height:24px;"></div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage("account");
+    const user = Store.getUser();
+
+    if (!user) {
+      document.getElementById("account-head").innerHTML = `
+        <div style="padding:20px 0;text-align:center;width:100%;">
+          <div style="font-size:34px;margin-bottom:8px;">👤</div>
+          <h3 style="margin-bottom:6px;">You're browsing as a guest</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Sign in to post ads, save items, chat, and leave reviews.</p>
+          <div class="stack-gap" style="max-width:260px;margin:0 auto;">
+            <a href="login.html" class="btn btn-fill btn-block">Sign in</a>
+            <a href="signup.html" class="btn btn-outline btn-block">Create account</a>
+          </div>
+        </div>
+      `;
+      document.getElementById("account-stats").innerHTML = "";
+      document.getElementById("logout-btn").hidden = true;
+      return;
+    }
+
+    document.getElementById("account-head").innerHTML = `
+      <div class="avatar"><img src="${avatarUrl(user.avatarSeed, 124)}" alt="You" /></div>
+      <div>
+        <h2>${escapeHtml(user.name)} ${user.verified ? `<span class="badge badge-verified">✓ Verified</span>` : ""}</h2>
+        <div class="sub">📍 ${user.locality || "No locality set"}, ${user.city} · Member since ${user.memberSince}</div>
+      </div>
+    `;
+    const allListings = await Store.getListings();
+    const myListings = allListings.filter((l) => l.sellerId === user.id).length;
+    document.getElementById("account-stats").innerHTML = `
+      <div><strong>${myListings}</strong><span>ACTIVE ADS</span></div>
+      <div><strong>${user.deals}</strong><span>DEALS DONE</span></div>
+      <div><strong>${Store.getSaved().length}</strong><span>SAVED</span></div>
+    `;
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      await Auth.signOut();
+      window.location.href = "index.html";
+    });
+  });
+</script>
+</body>
+</html>

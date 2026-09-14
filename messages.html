@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Community — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="page-root"></div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  let activeTab = "all";
+  let activeThreadId = null;
+  let allThreads = [];
+  let allListingsById = new Map();
+
+  async function refreshThreads() {
+    allThreads = await Store.getThreads();
+  }
+
+  function renderList() {
+    mountBottomNav("community");
+    const root = document.getElementById("page-root");
+    let threads = allThreads;
+    if (activeTab !== "all") threads = threads.filter((t) => t.tag === activeTab);
+
+    root.innerHTML = `
+      <div class="page-top" style="padding-top:18px;">
+        <div class="row between">
+          <p class="chats-title">Chats</p>
+          <a href="account.html" class="icon-btn">🔔<span class="dot"></span></a>
+        </div>
+        <div class="search-bar" style="margin-bottom:0;">🔍 <input type="text" id="chat-search" placeholder="Search chats" /></div>
+      </div>
+      <div class="chat-tabs">
+        <button class="pill-btn ${activeTab === "all" ? "active" : ""}" onclick="setTab('all')">All</button>
+        <button class="pill-btn ${activeTab === "buying" ? "active" : ""}" onclick="setTab('buying')">Buying</button>
+        <button class="pill-btn ${activeTab === "selling" ? "active" : ""}" onclick="setTab('selling')">Selling</button>
+      </div>
+      <div class="chat-list" id="chat-list"></div>
+    `;
+
+    const listEl = document.getElementById("chat-list");
+    if (threads.length === 0) {
+      listEl.innerHTML = `<div class="empty-state"><div class="big">📭</div><h3>No conversations yet</h3><p>Message a seller from any listing.</p></div>`;
+      return;
+    }
+    listEl.innerHTML = threads.map((t) => {
+      const listing = allListingsById.get(t.listingId);
+      const seller = getSellerById(t.sellerId);
+      const last = t.messages[t.messages.length - 1];
+      if (!seller) return "";
+      return `
+        <button class="chat-item" onclick="openThread('${t.id}')">
+          <div class="avatar"><img src="${avatarUrl(seller.avatarSeed, 84)}" alt="${escapeHtml(seller.name)}" /></div>
+          <div class="chat-info">
+            <div class="chat-top">
+              <p class="chat-name">${escapeHtml(seller.name)} <span class="chat-tag ${t.tag === "buying" ? "tag-buying" : "tag-selling"}">${t.tag === "buying" ? "Buying" : "Selling"}</span></p>
+              <span class="chat-time">${last ? last.time : ""}</span>
+            </div>
+            <p class="chat-msg">${listing ? escapeHtml(listing.title) + " — " : ""}${escapeHtml(last ? last.text : "")}</p>
+          </div>
+          ${t.unread ? `<div class="unread">${t.unread}</div>` : ""}
+        </button>
+      `;
+    }).join("");
+
+    document.getElementById("chat-search").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll(".chat-item").forEach((el) => {
+        el.style.display = el.textContent.toLowerCase().includes(q) ? "" : "none";
+      });
+    });
+  }
+
+  function setTab(tab) { activeTab = tab; renderList(); }
+
+  async function openThread(id) {
+    activeThreadId = id;
+    const thread = allThreads.find((t) => t.id === id);
+
+    const root = document.getElementById("page-root");
+    if (!thread) { root.innerHTML = backRowHtml("Chat") + `<div class="empty-state">Conversation not found</div>`; return; }
+
+    if (thread.unread) { thread.unread = 0; Store.markThreadRead(id); }
+
+    const listing = allListingsById.get(thread.listingId);
+    const seller = getSellerById(thread.sellerId);
+
+    root.innerHTML = `
+      ${backRowHtml(null, `<a class="icon-btn" href="help.html?type=${encodeURIComponent("Abusive or unsafe behavior")}&seller=${thread.sellerId}&listing=${thread.listingId}" title="Report this conversation">⋯</a>`)}
+      <div class="row" style="padding:0 18px 14px;gap:10px;">
+        <div class="avatar"><img src="${avatarUrl(seller.avatarSeed, 72)}" alt="${escapeHtml(seller.name)}" /></div>
+        <div>
+          <p class="seller-name">${escapeHtml(seller.name)} ${seller.verified ? "✓" : ""}</p>
+          <a href="listing.html?id=${listing ? listing.id : ""}" style="font-size:12px;color:var(--ink-soft);">${listing ? escapeHtml(listing.title) + " · " + formatPrice(listing.price) : "Listing removed"}</a>
+        </div>
+      </div>
+      <div class="chat-thread-body" id="chat-body"></div>
+      <div class="chat-quick">
+        <button onclick="quickSend('Is this still available?')">Is this still available?</button>
+        <button onclick="quickSend('Can you share more photos?')">Can you share more photos?</button>
+        <button onclick="quickSend('What is your best price?')">What's your best price?</button>
+      </div>
+      <form class="chat-input-row" id="chat-form">
+        <input type="text" id="chat-text" placeholder="Type a message..." autocomplete="off" />
+        <button type="submit" class="btn btn-fill btn-sm">Send</button>
+      </form>
+    `;
+    renderChatBody(thread);
+    mountBottomNav("community");
+
+    document.getElementById("chat-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = document.getElementById("chat-text");
+      if (!input.value.trim()) return;
+      sendInThread(input.value.trim());
+      input.value = "";
+    });
+  }
+
+  function renderChatBody(thread) {
+    const body = document.getElementById("chat-body");
+    if (!body) return;
+    body.innerHTML = thread.messages.length
+      ? thread.messages.map((m) => `<div class="bubble ${m.from === "me" ? "me" : "them"}">${escapeHtml(m.text)}<span class="time">${m.time}</span></div>`).join("")
+      : `<p style="text-align:center;color:var(--muted);font-size:12.5px;padding:20px;">Say hello — replies show up here once the other person answers.</p>`;
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function quickSend(text) { sendInThread(text); }
+
+  async function sendInThread(text) {
+    const thread = allThreads.find((t) => t.id === activeThreadId);
+    if (!thread) return;
+    try {
+      await Store.sendMessage(activeThreadId, text);
+      thread.messages.push({ from: "me", text, time: new Date().toLocaleString("en-IN", { hour: "numeric", minute: "2-digit" }) });
+      renderChatBody(thread);
+    } catch (err) {
+      toast(err.message || "Couldn't send — try again");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage("community");
+    const session = await Auth.requireAuth();
+    if (!session) return;
+
+    const listings = await Store.getListings();
+    allListingsById = new Map(listings.map((l) => [l.id, l]));
+    await refreshThreads();
+
+    if (qs("open") && allThreads.find((t) => t.id === qs("open"))) openThread(qs("open"));
+    else renderList();
+  });
+</script>
+</body>
+</html>

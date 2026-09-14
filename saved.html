@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Saved — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="back-row row between">
+    <a href="account.html" class="icon-btn" aria-label="Back">←</a>
+    <span class="header-title">Saved listings</span>
+    <span style="width:40px;"></span>
+  </div>
+
+  <div class="product-grid" id="saved-grid" style="margin-top:6px;"></div>
+  <div class="empty-state" id="empty-state" hidden>
+    <div class="big">♡</div>
+    <h3>Nothing saved yet</h3>
+    <p>Tap the heart on any listing to save it here.</p>
+    <a href="index.html" class="btn btn-fill" style="margin-top:14px;">Browse listings</a>
+  </div>
+  <div style="height:24px;"></div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage("account");
+    const session = await Auth.requireAuth();
+    if (!session) return;
+
+    const savedIds = new Set(Store.getSaved());
+    const allListings = await Store.getListings();
+    const listings = allListings.filter((l) => savedIds.has(l.id));
+    const grid = document.getElementById("saved-grid");
+    const empty = document.getElementById("empty-state");
+    if (listings.length === 0) { empty.hidden = false; }
+    else { grid.innerHTML = listings.map(listingCardHtml).join(""); }
+  });
+</script>
+</body>
+</html>

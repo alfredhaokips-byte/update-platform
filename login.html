@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="back-row row between">
+    <a href="index.html" class="icon-btn" aria-label="Back">←</a>
+    <span class="header-title">Sign in</span>
+    <span style="width:40px;"></span>
+  </div>
+
+  <div class="form-wrap" style="padding-top:20px;">
+    <form id="login-form">
+      <div class="form-row">
+        <label for="f-email">Email</label>
+        <input type="text" id="f-email" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+      <div class="form-row">
+        <label for="f-password">Password</label>
+        <input type="text" id="f-password" placeholder="••••••••" required autocomplete="current-password" style="-webkit-text-security:disc;text-security:disc;" />
+      </div>
+      <p id="login-error" style="color:var(--danger);font-size:13px;margin-bottom:14px;" hidden></p>
+      <button type="submit" class="btn btn-fill btn-block" id="login-btn">Sign in</button>
+    </form>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:18px;">
+      New here? <a href="signup.html" style="color:var(--ink);font-weight:700;">Create an account</a>
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    requireSupabaseConfigured();
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById("login-error");
+      const btn = document.getElementById("login-btn");
+      errEl.hidden = true;
+      btn.disabled = true;
+      btn.textContent = "Signing in...";
+      try {
+        await Auth.signIn({
+          email: document.getElementById("f-email").value.trim(),
+          password: document.getElementById("f-password").value,
+        });
+        const redirect = qs("redirect") || "index.html";
+        window.location.href = redirect;
+      } catch (err) {
+        errEl.textContent = err.message || "Couldn't sign in — check your details and try again.";
+        errEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = "Sign in";
+      }
+    });
+  });
+</script>
+</body>
+</html>

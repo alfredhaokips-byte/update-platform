@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Browse — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="back-row row between">
+    <a href="index.html" class="icon-btn" aria-label="Back">←</a>
+    <span class="header-title" id="browse-title">Browse</span>
+    <span style="width:40px;"></span>
+  </div>
+
+  <div class="page-top" style="padding-top:10px;">
+    <div class="row search-row">
+      <form class="search-bar" id="search-form" style="cursor:default;">
+        <span>🔍</span>
+        <input type="text" id="search-input" placeholder="What are you looking for?" />
+      </form>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <select id="f-cat"><option value="">All categories</option></select>
+    <select id="f-loc"><option value="">All localities</option></select>
+    <select id="f-cond"><option value="">Any condition</option></select>
+    <select id="f-sort">
+      <option value="new">Newest first</option>
+      <option value="low">Price: low to high</option>
+      <option value="high">Price: high to low</option>
+    </select>
+  </div>
+  <p class="result-count" id="result-count"></p>
+
+  <div class="product-grid" id="results-grid"></div>
+  <div class="empty-state" id="empty-state" hidden>
+    <div class="big">🔍</div>
+    <h3>No listings match</h3>
+    <p>Try a different category, locality, or search term.</p>
+  </div>
+
+  <div style="height:24px;"></div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  let allListings = [];
+
+  function fillSelect(id, items, current) {
+    const el = document.getElementById(id);
+    items.forEach(({ value, label }) => {
+      const opt = document.createElement("option");
+      opt.value = value; opt.textContent = label;
+      if (value === current) opt.selected = true;
+      el.appendChild(opt);
+    });
+  }
+
+  function render() {
+    const q = (document.getElementById("search-input").value || "").trim().toLowerCase();
+    const cat = document.getElementById("f-cat").value;
+    const loc = document.getElementById("f-loc").value;
+    const cond = document.getElementById("f-cond").value;
+    const sort = document.getElementById("f-sort").value;
+
+    let listings = allListings.filter((l) => {
+      if (q && !l.title.toLowerCase().includes(q) && !l.desc.toLowerCase().includes(q)) return false;
+      if (cat && l.category !== cat) return false;
+      if (loc && l.locality !== loc) return false;
+      if (cond && l.condition !== cond) return false;
+      return true;
+    });
+
+    if (sort === "low") listings.sort((a, b) => a.price - b.price);
+    else if (sort === "high") listings.sort((a, b) => b.price - a.price);
+    else listings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const grid = document.getElementById("results-grid");
+    const empty = document.getElementById("empty-state");
+    document.getElementById("result-count").textContent = listings.length + " result" + (listings.length === 1 ? "" : "s");
+
+    if (listings.length === 0) { grid.innerHTML = ""; empty.hidden = false; }
+    else { empty.hidden = true; grid.innerHTML = listings.map(listingCardHtml).join(""); }
+
+    document.getElementById("browse-title").textContent = cat ? (tagIcon(cat) + " " + cat) : "Browse";
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage("home");
+    allListings = await Store.getListings();
+    await Store.loadLocalities();
+
+    fillSelect("f-cat", getAllTagsSorted().map(t => ({ value: t.tag, label: `${tagIcon(t.tag)} ${t.tag} (${t.count})` })), qs("cat"));
+    fillSelect("f-loc", LOCALITIES.map(l => ({ value: l, label: l })), qs("loc"));
+    fillSelect("f-cond", CONDITIONS.map(c => ({ value: c, label: c })), "");
+    if (qs("q")) document.getElementById("search-input").value = qs("q");
+
+    ["f-cat", "f-loc", "f-cond", "f-sort"].forEach((id) => document.getElementById(id).addEventListener("change", render));
+    document.getElementById("search-input").addEventListener("input", render);
+    document.getElementById("search-form").addEventListener("submit", (e) => e.preventDefault());
+
+    render();
+  });
+</script>
+</body>
+</html>

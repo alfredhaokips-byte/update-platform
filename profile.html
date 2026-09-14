@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Seller profile — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="back-row row between">
+    <a href="javascript:history.back()" class="icon-btn" aria-label="Back">←</a>
+    <span class="header-title">Profile</span>
+    <span style="width:40px;"></span>
+  </div>
+
+  <div id="profile-root"></div>
+
+  <div id="trust-section"></div>
+
+  <p class="section-title" id="listings-heading">Listings</p>
+  <div class="product-grid" id="seller-grid"></div>
+  <div class="empty-state" id="empty-state" hidden>
+    <div class="big">📦</div>
+    <h3>No active listings</h3>
+    <p>This seller hasn't posted anything yet.</p>
+  </div>
+
+  <div id="reviews-section"></div>
+
+  <div id="report-row"></div>
+
+  <div style="height:24px;"></div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<!-- Write a review modal -->
+<div class="modal-overlay" id="review-modal" hidden>
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('review-modal')">✕</button>
+    <h3 id="review-modal-title">Write a review</h3>
+    <p class="sub">Share how your deal went — this helps other buyers and sellers trust each other.</p>
+    <div class="star-picker" id="star-picker"></div>
+    <div class="form-row">
+      <textarea id="review-text" placeholder="What was your experience like?" maxlength="300" style="min-height:80px;"></textarea>
+    </div>
+    <button class="btn btn-fill btn-block" onclick="submitReview()">Post review</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  let sellerId, seller, isMe, pickedStars = 0;
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage(null);
+
+    sellerId = qs("seller") || (Store.getUser() ? Store.getUser().id : null);
+    const root = document.getElementById("profile-root");
+
+    if (!sellerId) {
+      root.innerHTML = `<div class="empty-state"><div class="big">👤</div><h3>Sign in to view your profile</h3></div>`;
+      return;
+    }
+
+    seller = getSellerById(sellerId) || await Store.fetchProfile(sellerId);
+    if (!seller) {
+      root.innerHTML = `<div class="empty-state"><div class="big">🙈</div><h3>Profile not found</h3></div>`;
+      return;
+    }
+
+    isMe = Store.isLoggedIn() && sellerId === Store.getUser().id;
+    document.title = seller.name + " — Marketplace";
+
+    root.innerHTML = `
+      <div class="account-head">
+        <div class="avatar" style="width:62px;height:62px;font-size:20px;"><img src="${avatarUrl(seller.avatarSeed, 124)}" alt="${escapeHtml(seller.name)}" /></div>
+        <div>
+          <h2>${escapeHtml(seller.name)} ${seller.verified ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">New seller</span>`}</h2>
+          <div class="sub">📍 ${seller.locality || "Locality not set"}, ${seller.city} · Member since ${seller.memberSince}</div>
+        </div>
+      </div>
+      <div class="account-stats" id="profile-stats"></div>
+      ${!isMe ? `<div style="padding:0 18px 8px;"><button class="btn btn-fill btn-block" onclick="toast('Open a listing to start chatting with ${escapeHtml(seller.name).replace(/'/g, "\\'")}')">💬 Message ${escapeHtml(seller.name).replace(/'/g, "\\'")}</button></div>` : ""}
+    `;
+
+    const allListings = await Store.getListings();
+    const listings = allListings.filter((l) => l.sellerId === sellerId);
+    document.getElementById("profile-stats").innerHTML = `
+      <div><strong>${seller.deals}</strong><span>DEALS DONE</span></div>
+      <div><strong>${listings.length}</strong><span>ACTIVE ADS</span></div>
+      <div><strong>${seller.verified ? "✓" : "—"}</strong><span>VERIFIED</span></div>
+    `;
+    document.getElementById("listings-heading").textContent = isMe ? "Your listings" : seller.name + "'s listings";
+    const grid = document.getElementById("seller-grid");
+    const empty = document.getElementById("empty-state");
+    if (listings.length === 0) { empty.hidden = false; }
+    else { grid.innerHTML = listings.map(listingCardHtml).join(""); }
+
+    await renderTrustSection();
+    await renderReviews();
+
+    if (!isMe) {
+      document.getElementById("report-row").innerHTML = `
+        <div style="padding:4px 18px 8px;">
+          <button class="btn btn-outline btn-block" style="color:var(--danger);border-color:var(--danger);" onclick="location.href='help.html?type=Abusive%20or%20unsafe%20behavior&seller=${sellerId}'">⚑ Report this seller</button>
+        </div>
+      `;
+    }
+  });
+
+  async function renderTrustSection() {
+    const trust = await Store.getSellerTrustStats(sellerId).catch(() => ({ threadsReceived: 0, threadsReplied: 0, responseRatePct: null }));
+    const accountAgeDays = Math.floor((Date.now() - new Date(seller.memberSinceDate).getTime()) / 86400000);
+
+    document.getElementById("trust-section").innerHTML = `
+      <p class="section-title" style="margin-top:8px;">Trust &amp; verification</p>
+      <div class="form-wrap" style="padding-top:0;">
+        <div class="trust-badges-row">
+          <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? "✓" : "○"} Email</span>
+          <span class="trust-badge ${seller.phoneVerified ? "yes" : "no"}">${seller.phoneVerified ? "✓" : "○"} Phone</span>
+          <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? "✓ Selfie verified" : "○ Selfie — coming soon"}</span>
+        </div>
+        <div class="trust-stat-grid">
+          <div class="trust-stat"><strong>${seller.deals}</strong><span>Deals (from reviews)</span></div>
+          <div class="trust-stat ${trust.responseRatePct === null ? "untracked" : ""}">
+            <strong>${trust.responseRatePct === null ? "No messages yet" : trust.responseRatePct + "%"}</strong><span>Response rate</span>
+          </div>
+          <div class="trust-stat"><strong>${accountAgeDays < 1 ? "New today" : accountAgeDays + "d"}</strong><span>Account age</span></div>
+          <div class="trust-stat untracked"><strong>Not tracked yet</strong><span>Completion / cancellations</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function renderReviews() {
+    const reviews = await Store.getReviews(sellerId);
+    const stats = Store.reviewStats(reviews);
+    const canReview = !isMe && await Store.canReview(sellerId).catch(() => false);
+    const section = document.getElementById("reviews-section");
+
+    section.innerHTML = `
+      <p class="section-title" style="margin-top:20px;">Ratings &amp; reviews</p>
+      ${stats.count > 0 ? `
+        <div class="rating-summary">
+          <div class="avg">${stats.avg}</div>
+          <div>
+            <div class="stars-row">${starsHtml(stats.avg, 16)}</div>
+            <div class="count">${stats.count} review${stats.count === 1 ? "" : "s"}</div>
+          </div>
+        </div>
+      ` : `<p style="padding:0 18px 14px;color:var(--muted);font-size:13px;">No reviews yet.</p>`}
+      ${canReview
+        ? `<div style="padding:0 18px 16px;"><button class="btn btn-outline btn-block" onclick="openReviewModal()">★ Write a review</button></div>`
+        : (!isMe ? `<p style="padding:0 18px 16px;font-size:12px;color:var(--muted);">Message ${escapeHtml(seller.name)} from one of their listings first — reviews are only open to buyers who've actually been in touch.</p>` : "")}
+      <div class="review-list">
+        ${reviews.map((r) => `
+          <div class="review-card">
+            <div class="review-head">
+              <div class="avatar" style="width:34px;height:34px;"><img src="${avatarUrl(r.reviewerAvatarSeed, 68)}" alt="${escapeHtml(r.reviewerName)}" /></div>
+              <div>
+                <p class="review-name">${escapeHtml(r.reviewerName)}</p>
+                <div>${starsHtml(r.rating, 11)}</div>
+              </div>
+              <span class="review-time">${reviewTimeAgo(r.createdAt)}</span>
+            </div>
+            ${r.listingTitle ? `<p class="review-listing">Re: ${escapeHtml(r.listingTitle)}</p>` : ""}
+            <p class="review-text">${escapeHtml(r.text)}</p>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function openReviewModal() {
+    if (!Store.isLoggedIn()) {
+      window.location.href = "login.html?redirect=" + encodeURIComponent(window.location.pathname.split("/").pop() + window.location.search);
+      return;
+    }
+    pickedStars = 0;
+    document.getElementById("review-modal-title").textContent = "Review " + seller.name;
+    renderStarPicker();
+    document.getElementById("review-text").value = "";
+    openModal("review-modal");
+  }
+
+  function renderStarPicker() {
+    const el = document.getElementById("star-picker");
+    el.innerHTML = [1,2,3,4,5].map((n) => `<button type="button" class="${n <= pickedStars ? "on" : ""}" onclick="pickStar(${n})">★</button>`).join("");
+  }
+
+  function pickStar(n) { pickedStars = n; renderStarPicker(); }
+
+  async function submitReview() {
+    if (pickedStars === 0) { toast("Please pick a star rating"); return; }
+    const text = document.getElementById("review-text").value.trim();
+    if (!text) { toast("Please add a few words about your experience"); return; }
+    try {
+      await Store.addReview(sellerId, { rating: pickedStars, text });
+      closeModal("review-modal");
+      toast("Review posted");
+      await renderReviews();
+    } catch (err) {
+      toast(err.message || "Couldn't post review");
+    }
+  }
+</script>
+</body>
+</html>

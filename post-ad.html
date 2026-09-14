@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sell — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="back-row row between">
+    <a href="index.html" class="icon-btn" aria-label="Back">←</a>
+    <span class="header-title">Post an ad</span>
+    <span style="width:40px;"></span>
+  </div>
+
+  <form class="form-wrap" id="ad-form">
+    <div class="form-row">
+      <label>Photos</label>
+      <input type="file" id="f-photos" accept="image/jpeg,image/png,image/webp" multiple hidden />
+      <div class="img-upload-row" id="img-upload-row"></div>
+      <div class="hint">Up to 5 photos, real ones from your device — JPG, PNG or WebP, 5MB max each.</div>
+      <p class="upload-progress" id="upload-progress"></p>
+    </div>
+
+    <div class="form-row">
+      <label for="f-title">Title</label>
+      <input type="text" id="f-title" placeholder="e.g. iPhone 13, 128GB" required maxlength="80" />
+    </div>
+
+    <div class="form-row">
+      <label for="f-category">Category</label>
+      <input type="text" id="f-category" placeholder="e.g. Mobiles & Tablets, Vinyl Records, Gaming Chairs..." required maxlength="40" autocomplete="off" />
+      <p class="hint" id="tag-hint">Tags aren't preset — type whatever fits. Once a tag is used on a couple of listings, it becomes a featured category on the home page.</p>
+      <div class="chip-select" id="tag-suggestions" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="two-col">
+      <div class="form-row">
+        <label for="f-price">Price (₹)</label>
+        <input type="number" id="f-price" placeholder="e.g. 15000" min="0" required />
+      </div>
+      <div class="form-row">
+        <label for="f-locality">Locality</label>
+        <select id="f-locality" required></select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Condition</label>
+      <div class="chip-select" id="cond-chips"></div>
+    </div>
+
+    <div class="form-row">
+      <label for="f-desc">Description</label>
+      <textarea id="f-desc" placeholder="Describe the item honestly — condition, reason for selling, what's included..." required maxlength="600"></textarea>
+      <div class="hint"><span id="desc-count">0</span>/600</div>
+    </div>
+
+    <div class="form-row confirm-box">
+      <input type="checkbox" id="f-honest" required style="margin-top:3px;" />
+      <label for="f-honest">I confirm this listing is accurate and I'm the rightful owner or seller of this item.</label>
+    </div>
+
+    <button type="submit" class="btn btn-fill btn-block">Publish listing</button>
+    <div style="height:20px;"></div>
+  </form>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  let selectedCond = null;
+  let selectedPhotos = []; // { file, previewUrl }
+  const MAX_PHOTOS = 5;
+  const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+  function renderPhotoRow() {
+    const el = document.getElementById("img-upload-row");
+    const slots = selectedPhotos.map((p, i) => `
+      <div class="img-drop filled">
+        <img src="${p.previewUrl}" alt="Photo ${i + 1}" />
+        <button type="button" class="img-remove-btn" onclick="removePhoto(${i})" aria-label="Remove photo">✕</button>
+      </div>
+    `);
+    if (selectedPhotos.length < MAX_PHOTOS) {
+      slots.push(`<div class="img-drop add-slot" onclick="document.getElementById('f-photos').click()">📷</div>`);
+    }
+    el.innerHTML = slots.join("");
+  }
+
+  function removePhoto(i) {
+    URL.revokeObjectURL(selectedPhotos[i].previewUrl);
+    selectedPhotos.splice(i, 1);
+    renderPhotoRow();
+  }
+
+  function handlePhotoPick(fileList) {
+    const incoming = Array.from(fileList);
+    document.getElementById("f-photos").value = ""; // allow re-picking the same file later
+    for (const file of incoming) {
+      if (selectedPhotos.length >= MAX_PHOTOS) { toast(`Up to ${MAX_PHOTOS} photos`); break; }
+      if (!ALLOWED_TYPES.includes(file.type)) { toast(`${file.name}: JPG, PNG or WebP only`); continue; }
+      if (file.size > MAX_PHOTO_BYTES) { toast(`${file.name}: over 5MB`); continue; }
+      selectedPhotos.push({ file, previewUrl: URL.createObjectURL(file) });
+    }
+    renderPhotoRow();
+  }
+
+  function buildChips(containerId, items, stateSetter) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = items.map((item) => {
+      const val = typeof item === "string" ? item : item.value;
+      const label = typeof item === "string" ? item : item.label;
+      return `<label class="opt" data-val="${escapeHtml(val)}"><input type="radio" name="${containerId}" value="${escapeHtml(val)}" />${escapeHtml(label)}</label>`;
+    }).join("");
+    el.querySelectorAll(".opt").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        el.querySelectorAll(".opt").forEach((o) => o.classList.remove("active"));
+        opt.classList.add("active");
+        stateSetter(opt.dataset.val);
+      });
+    });
+  }
+
+  function renderTagSuggestions() {
+    const top = getTagCounts().slice(0, 8);
+    const el = document.getElementById("tag-suggestions");
+    el.innerHTML = top.map((t) => `<button type="button" class="opt" onclick="pickTag('${t.tag.replace(/'/g, "\\'")}')">${tagIcon(t.tag)} ${escapeHtml(t.tag)}</button>`).join("");
+  }
+
+  function pickTag(tag) {
+    document.getElementById("f-category").value = tag;
+    updateTagHint();
+  }
+
+  function updateTagHint() {
+    const raw = document.getElementById("f-category").value;
+    const tag = normalizeTag(raw);
+    const hint = document.getElementById("tag-hint");
+    if (!tag) {
+      hint.textContent = "Tags aren't preset — type whatever fits. Once a tag is used on a couple of listings, it becomes a featured category on the home page.";
+      return;
+    }
+    const key = tag.toLowerCase();
+    const existing = getTagCounts().find((t) => t.tag.toLowerCase() === key);
+    const count = existing ? existing.count : 0;
+    const after = count + 1;
+    if (after >= TAG_GRADUATION_THRESHOLD) {
+      hint.textContent = existing
+        ? `✓ Joins ${count} other listing${count === 1 ? "" : "s"} already tagged "${existing.tag}" — this is a featured category.`
+        : `✓ This will immediately become a featured category.`;
+    } else {
+      const need = TAG_GRADUATION_THRESHOLD - after;
+      hint.textContent = `You'll be the first to use "${tag}" — ${need} more listing${need === 1 ? "" : "s"} with this tag will turn it into a featured category.`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage("sell");
+    const session = await Auth.requireAuth();
+    if (!session) return; // requireAuth already redirected to login
+
+    // Progressive verification gate: posting a listing requires a confirmed
+    // email. (The brief's table calls for "phone verified" here, but real
+    // phone OTP was explicitly deferred in Phase 0 — no account could ever
+    // satisfy that yet, which would block every listing. Email confirmation
+    // is the real, working equivalent signal, so that's what's enforced.)
+    if (!Store.getUser().emailVerified) {
+      document.querySelector(".app-shell").innerHTML = `
+        ${backRowHtml("Post an ad")}
+        <div class="empty-state">
+          <div class="big">📧</div>
+          <h3>Confirm your email first</h3>
+          <p>We sent a confirmation link when you signed up — posting opens up once it's clicked.</p>
+          <a href="account.html" class="btn btn-fill" style="margin-top:14px;">Back to account</a>
+        </div>
+      `;
+      return;
+    }
+
+    await Store.getListings(); // primes the tag-stats cache used below
+    await Store.loadLocalities();
+
+    buildChips("cond-chips", CONDITIONS, (v) => selectedCond = v);
+    renderTagSuggestions();
+    document.getElementById("f-category").addEventListener("input", updateTagHint);
+
+    const locSelect = document.getElementById("f-locality");
+    locSelect.innerHTML = `<option value="" disabled selected>Select locality</option>` +
+      LOCALITIES.map((l) => `<option value="${l}">${l}</option>`).join("");
+
+    renderPhotoRow();
+    document.getElementById("f-photos").addEventListener("change", (e) => handlePhotoPick(e.target.files));
+
+    document.getElementById("f-desc").addEventListener("input", (e) => {
+      document.getElementById("desc-count").textContent = e.target.value.length;
+    });
+
+    document.getElementById("ad-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const category = normalizeTag(document.getElementById("f-category").value);
+      const price = Number(document.getElementById("f-price").value);
+      if (!category) { toast("Please add a category tag"); return; }
+      if (!selectedCond) { toast("Please pick a condition"); return; }
+      if (selectedPhotos.length === 0) { toast("Add at least one real photo of the item"); return; }
+      if (price > SELFIE_VERIFICATION_PRICE_THRESHOLD && !Store.getUser().selfieVerified) {
+        toast(`Selfie verification is required to list items over ${formatPrice(SELFIE_VERIFICATION_PRICE_THRESHOLD)}`);
+        setTimeout(() => { window.location.href = "verify.html"; }, 1200);
+        return;
+      }
+
+      const submitBtn = e.target.querySelector("button[type=submit]");
+      const progressEl = document.getElementById("upload-progress");
+      submitBtn.disabled = true;
+      progressEl.classList.add("active");
+
+      let newListing;
+      try {
+        submitBtn.textContent = "Publishing...";
+        newListing = await Store.addListing({
+          title: document.getElementById("f-title").value.trim(),
+          category,
+          price,
+          locality: document.getElementById("f-locality").value,
+          condition: selectedCond,
+          desc: document.getElementById("f-desc").value.trim(),
+        });
+      } catch (err) {
+        toast(err.message || "Couldn't publish — try again");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Publish listing";
+        progressEl.classList.remove("active");
+        return;
+      }
+
+      const urls = [];
+      let failCount = 0;
+      for (let i = 0; i < selectedPhotos.length; i++) {
+        progressEl.textContent = `Uploading photo ${i + 1} of ${selectedPhotos.length}...`;
+        submitBtn.textContent = `Uploading ${i + 1}/${selectedPhotos.length}...`;
+        try {
+          urls.push(await Store.uploadListingPhoto(newListing.id, selectedPhotos[i].file));
+        } catch (err) {
+          failCount++;
+        }
+      }
+
+      try {
+        await Store.updateListingImages(newListing.id, urls);
+      } catch (err) {
+        toast("Listing published, but saving the photo list failed — try re-adding photos from the listing.");
+        setTimeout(() => { window.location.href = "listing.html?id=" + newListing.id; }, 900);
+        return;
+      }
+
+      if (failCount > 0) {
+        toast(`Listing published — ${failCount} photo${failCount === 1 ? "" : "s"} didn't upload, the rest did.`);
+      } else {
+        toast("Listing published!");
+      }
+      setTimeout(() => { window.location.href = "listing.html?id=" + newListing.id; }, 500);
+    });
+  });
+</script>
+</body>
+</html>

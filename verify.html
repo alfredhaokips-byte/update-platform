@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Get verified — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="back-row row between">
+    <a href="account.html" class="icon-btn" aria-label="Back">←</a>
+    <span class="header-title">Get verified</span>
+    <span style="width:40px;"></span>
+  </div>
+
+  <div class="form-wrap" style="padding-top:6px;">
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:6px;">Verification unlocks more of the marketplace as you complete it — posting requires a confirmed email, and listings over <b id="threshold-label"></b> need selfie verification too.</p>
+
+    <div class="review-card" style="margin-top:16px;">
+      <div class="verify-row">
+        <span class="ic">📧</span>
+        <div class="body">
+          <strong>Email</strong>
+          <p id="email-status">Checking...</p>
+        </div>
+        <button class="btn btn-outline btn-sm" id="resend-btn" hidden>Resend</button>
+      </div>
+
+      <div class="verify-row" style="align-items:flex-start;flex-direction:column;">
+        <div class="row" style="width:100%;">
+          <span class="ic">📱</span>
+          <div class="body">
+            <strong>Phone number</strong>
+            <p id="phone-status">Not added yet</p>
+          </div>
+        </div>
+        <div class="row" style="width:100%;gap:8px;margin-top:10px;">
+          <input type="tel" id="f-phone" placeholder="10-digit mobile number" style="flex:1;border:1.5px solid var(--border-2);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;" />
+          <button class="btn btn-fill btn-sm" id="save-phone-btn">Save</button>
+        </div>
+        <p class="hint" style="margin-top:6px;">OTP verification isn't live yet — this just saves the number to your profile for now.</p>
+      </div>
+
+      <div class="verify-row">
+        <span class="ic">🤳</span>
+        <div class="body">
+          <strong>Selfie verification</strong>
+          <p>Required to sell items over <span id="threshold-label-2"></span>. Camera-based liveness check is coming in a future update.</p>
+        </div>
+        <span class="trust-badge pending">Coming soon</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage("account");
+    const session = await Auth.requireAuth();
+    if (!session) return;
+
+    const thresholdText = formatPrice(SELFIE_VERIFICATION_PRICE_THRESHOLD);
+    document.getElementById("threshold-label").textContent = thresholdText;
+    document.getElementById("threshold-label-2").textContent = thresholdText;
+
+    const user = Store.getUser();
+    const emailStatusEl = document.getElementById("email-status");
+    if (user.emailVerified) {
+      emailStatusEl.textContent = "✓ Verified";
+      emailStatusEl.style.color = "var(--verified-fg)";
+    } else {
+      emailStatusEl.textContent = "Check your inbox for a confirmation link";
+      document.getElementById("resend-btn").hidden = false;
+    }
+
+    document.getElementById("resend-btn").addEventListener("click", async () => {
+      try {
+        await sb.auth.resend({ type: "signup", email: session.user.email });
+        toast("Confirmation email resent");
+      } catch (err) {
+        toast(err.message || "Couldn't resend — try again shortly");
+      }
+    });
+
+    if (user.phone) {
+      document.getElementById("phone-status").textContent = user.phone + " (saved, not yet OTP-verified)";
+      document.getElementById("f-phone").value = user.phone;
+    }
+
+    document.getElementById("save-phone-btn").addEventListener("click", async () => {
+      const phone = document.getElementById("f-phone").value.trim();
+      if (!/^\d{10}$/.test(phone)) { toast("Enter a 10-digit number"); return; }
+      try {
+        await Store.setPhone(phone);
+        document.getElementById("phone-status").textContent = phone + " (saved, not yet OTP-verified)";
+        toast("Phone number saved");
+      } catch (err) {
+        toast(err.message || "Couldn't save — try again");
+      }
+    });
+  });
+</script>
+</body>
+</html>

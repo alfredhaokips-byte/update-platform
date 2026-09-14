@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Help & Safety — Marketplace</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="back-row row between">
+    <a href="account.html" class="icon-btn" aria-label="Back">←</a>
+    <span class="header-title">Help &amp; Safety</span>
+    <span style="width:40px;"></span>
+  </div>
+
+  <div class="form-wrap" style="padding-top:6px;">
+    <p class="section-title" style="padding:0;margin-bottom:4px;">Staying safe</p>
+    <div style="margin-bottom:8px;">
+      <div class="safety-tip-row"><span class="ic">🤝</span><p>Meet in a public place, ideally during daytime, for any handover.</p></div>
+      <div class="safety-tip-row"><span class="ic">🔍</span><p>Inspect the item carefully before paying — don't rely on photos alone.</p></div>
+      <div class="safety-tip-row"><span class="ic">💳</span><p>Avoid advance payments, especially to sellers who aren't verified.</p></div>
+      <div class="safety-tip-row"><span class="ic">💬</span><p>Keep the conversation in Marketplace chat until you're ready to meet — it keeps a record if something goes wrong.</p></div>
+    </div>
+
+    <p class="section-title" style="padding:0;margin-top:22px;margin-bottom:2px;">Raise a concern</p>
+    <p style="font-size:12.5px;color:var(--muted);padding:0 0 16px;">Tell us what happened — reports about scams, unsafe behavior, or platform bugs go straight to our trust & safety queue.</p>
+
+    <div id="context-chip"></div>
+
+    <form id="report-form">
+      <div class="form-row">
+        <label>What's this about?</label>
+        <div class="report-type-list" id="type-list"></div>
+      </div>
+      <div class="form-row">
+        <label for="r-desc">Tell us more</label>
+        <textarea id="r-desc" placeholder="Describe what happened, including any relevant dates or names..." required maxlength="500"></textarea>
+        <div class="hint"><span id="desc-count">0</span>/500</div>
+      </div>
+      <button type="submit" class="btn btn-fill btn-block">Submit report</button>
+    </form>
+
+    <p class="section-title" style="padding:0;margin-top:26px;">Your reports</p>
+    <div id="reports-list"></div>
+    <div class="empty-state" id="reports-empty" hidden style="padding:30px 20px;">
+      <div class="big">🛡️</div>
+      <h3>No reports filed</h3>
+      <p>Anything you report will show up here with its status.</p>
+    </div>
+
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  let selectedType = null;
+  let listingsById = new Map();
+  const ctxListingId = qs("listing");
+  const ctxSellerId = qs("seller");
+  const presetType = qs("type");
+
+  function buildTypeList() {
+    const el = document.getElementById("type-list");
+    el.innerHTML = REPORT_TYPES.map((t) => `
+      <label>
+        <input type="radio" name="report-type" value="${escapeHtml(t)}" ${t === presetType ? "checked" : ""} />
+        ${escapeHtml(t)}
+      </label>
+    `).join("");
+    if (presetType && REPORT_TYPES.includes(presetType)) selectedType = presetType;
+    el.querySelectorAll("input[type=radio]").forEach((r) => {
+      r.addEventListener("change", (e) => { selectedType = e.target.value; });
+    });
+  }
+
+  function renderContextChip() {
+    const el = document.getElementById("context-chip");
+    const listing = ctxListingId ? listingsById.get(ctxListingId) : null;
+    const seller = ctxSellerId ? getSellerById(ctxSellerId) : null;
+    if (!listing && !seller) { el.innerHTML = ""; return; }
+    const label = listing ? `Reporting listing: ${listing.title}` : `Reporting user: ${seller.name}`;
+    el.innerHTML = `<div class="review-card" style="margin-bottom:14px;"><p style="font-size:12.5px;font-weight:700;">📎 ${escapeHtml(label)}</p></div>`;
+  }
+
+  async function renderReports() {
+    const reports = await Store.getReports();
+    const list = document.getElementById("reports-list");
+    const empty = document.getElementById("reports-empty");
+    if (reports.length === 0) { list.innerHTML = ""; empty.hidden = false; return; }
+    empty.hidden = true;
+    list.innerHTML = reports.map((r) => {
+      const listing = r.listingId ? listingsById.get(r.listingId) : null;
+      const seller = r.sellerId ? getSellerById(r.sellerId) : null;
+      const ref = listing ? listing.title : (seller ? seller.name : null);
+      return `
+        <div class="report-card">
+          <div class="row between">
+            <span class="type">${escapeHtml(r.type)}</span>
+            <span class="report-status">${escapeHtml(r.status)}</span>
+          </div>
+          <p class="desc">${escapeHtml(r.description)}</p>
+          <p class="meta">${ref ? "Re: " + escapeHtml(ref) + " · " : ""}${timeAgo(r.createdAt)}</p>
+        </div>
+      `;
+    }).join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage("account");
+    const session = await Auth.requireAuth();
+    if (!session) return;
+
+    const listings = await Store.getListings();
+    listingsById = new Map(listings.map((l) => [l.id, l]));
+    if (ctxSellerId) await Store.fetchProfile(ctxSellerId).catch(() => {});
+
+    buildTypeList();
+    renderContextChip();
+    await renderReports();
+
+    document.getElementById("r-desc").addEventListener("input", (e) => {
+      document.getElementById("desc-count").textContent = e.target.value.length;
+    });
+
+    document.getElementById("report-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!selectedType) { toast("Please choose what this is about"); return; }
+      const description = document.getElementById("r-desc").value.trim();
+      if (!description) { toast("Please describe what happened"); return; }
+
+      try {
+        await Store.addReport({
+          type: selectedType,
+          description,
+          listingId: ctxListingId || null,
+          sellerId: ctxSellerId || null,
+        });
+        toast("Report submitted — our team will review it shortly");
+        document.getElementById("report-form").reset();
+        const checked = document.querySelector("input[name=report-type]:checked");
+        selectedType = checked ? checked.value : null;
+        document.getElementById("desc-count").textContent = "0";
+        await renderReports();
+      } catch (err) {
+        toast(err.message || "Couldn't submit report — try again");
+      }
+    });
+  });
+</script>
+</body>
+</html>

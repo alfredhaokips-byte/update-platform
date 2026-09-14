@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marketplace — Buy & sell in your community</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ============ LANDING PAGE (signed-out visitors) ============ -->
+<div id="landing-root" hidden>
+
+  <nav class="land-wrap land-nav">
+    <a href="index.html" class="land-logo"><span class="mark">M</span>Marketplace</a>
+    <div class="land-nav-actions">
+      <a href="login.html" class="btn btn-outline btn-sm">Sign in</a>
+      <a href="signup.html" class="btn btn-fill btn-sm">Create account</a>
+    </div>
+  </nav>
+
+  <header class="land-wrap land-hero">
+    <div class="land-hero-inner">
+      <span class="land-eyebrow">🛡️ Real accounts · Real reviews · Real photos</span>
+      <h1 class="land-h1">Buy &amp; Sell <span class="accent">Without the Guesswork</span></h1>
+      <p class="land-sub">Verified sellers, reviews from real buyers, and public Q&amp;A on every listing — so you know exactly who you're dealing with before you ever meet up.</p>
+      <div class="land-cta-row">
+        <a href="browse.html" class="btn btn-fill btn-lg">Explore Marketplace</a>
+        <a href="signup.html?redirect=post-ad.html" class="btn btn-outline btn-lg">Sell Something</a>
+      </div>
+      <div class="land-hero-stats" id="hero-stats"></div>
+    </div>
+  </header>
+
+  <!-- Trust strip -->
+  <section class="land-wrap land-section" style="padding-top:0;border-top:none;">
+    <div class="land-trust-strip">
+      <div class="land-trust-item">
+        <div class="ic">✓</div>
+        <strong>Verified users</strong>
+        <p>Email-confirmed accounts, with phone and selfie verification for higher-value sales.</p>
+      </div>
+      <div class="land-trust-item">
+        <div class="ic">📊</div>
+        <strong>Seller history</strong>
+        <p>Deal count, response rate, and account age — visible on every profile.</p>
+      </div>
+      <div class="land-trust-item">
+        <div class="ic">★</div>
+        <strong>Community ratings</strong>
+        <p>Reviews only come from buyers who actually messaged that seller.</p>
+      </div>
+      <div class="land-trust-item">
+        <div class="ic">🔒</div>
+        <strong>Safer transactions</strong>
+        <p>In-app chat keeps your number private until you decide to share it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="land-wrap land-section">
+    <div class="land-section-head center">
+      <div class="land-kicker">How it works</div>
+      <h2 class="land-h2">Three steps, start to finish</h2>
+    </div>
+    <div class="land-steps">
+      <div class="land-step">
+        <div class="land-step-num">1</div>
+        <h4>Post or browse</h4>
+        <p>List an item with real photos in under a minute, or search listings tagged by the community — not a rigid preset category list.</p>
+      </div>
+      <div class="land-step">
+        <div class="land-step-num">2</div>
+        <h4>Chat safely</h4>
+        <p>Ask questions in the open Community Q&amp;A, or message the seller directly — your phone number stays private the whole time.</p>
+      </div>
+      <div class="land-step">
+        <div class="land-step-num">3</div>
+        <h4>Meet &amp; complete</h4>
+        <p>Meet in a public place, inspect the item, and leave a review once the deal's done — reviews are locked to people who actually messaged.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trending listings -->
+  <section class="land-wrap land-section">
+    <div class="row between" style="align-items:flex-end;margin-bottom:20px;">
+      <div class="land-section-head" style="margin-bottom:0;">
+        <div class="land-kicker">Right now</div>
+        <h2 class="land-h2">Trending listings</h2>
+      </div>
+      <a href="browse.html" class="btn btn-outline btn-sm">See all</a>
+    </div>
+    <div class="product-grid" id="land-trending-grid" style="padding:0;grid-template-columns:repeat(4,1fr);"></div>
+  </section>
+
+  <!-- Trusted sellers -->
+  <section class="land-wrap land-section" id="land-sellers-section">
+    <div class="land-section-head center">
+      <div class="land-kicker">Established members</div>
+      <h2 class="land-h2">Trusted sellers</h2>
+    </div>
+    <div class="land-sellers-grid" id="land-sellers-grid"></div>
+  </section>
+
+  <!-- Why this marketplace -->
+  <section class="land-wrap land-section">
+    <div class="land-section-head center">
+      <div class="land-kicker">Why this, not old-school classifieds</div>
+      <h2 class="land-h2">Trust isn't a feature here — it's the foundation</h2>
+    </div>
+    <div class="land-values">
+      <div class="land-value-card">
+        <div class="ic">📝</div>
+        <div><h4>Every review is earned, not written</h4><p>You can only review a seller after an actual message thread exists between you — no drive-by testimonials.</p></div>
+      </div>
+      <div class="land-value-card">
+        <div class="ic">💬</div>
+        <div><h4>Public answers, not private guesswork</h4><p>Community Q&amp;A means one buyer's question — "is the charger included?" — helps everyone who looks at that listing after.</p></div>
+      </div>
+      <div class="land-value-card">
+        <div class="ic">📷</div>
+        <div><h4>Real photos, required</h4><p>No stock images standing in for the actual item — every listing needs at least one real uploaded photo.</p></div>
+      </div>
+      <div class="land-value-card">
+        <div class="ic">🏷️</div>
+        <div><h4>Categories the community actually uses</h4><p>Tags aren't a fixed preset list — one earns a spot on the home page once real sellers start using it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seller CTA -->
+  <div class="land-wrap">
+    <div class="land-cta-band">
+      <h2>Got something to sell?</h2>
+      <p>Post it with real photos in under a minute — buyers see your seller history before they even message you.</p>
+      <a href="signup.html?redirect=post-ad.html" class="btn btn-fill btn-lg">Sell Something</a>
+    </div>
+  </div>
+
+  <footer class="land-wrap land-footer">
+    <div class="land-footer-grid">
+      <div>
+        <a href="index.html" class="land-logo"><span class="mark">M</span>Marketplace</a>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:10px;max-width:32ch;line-height:1.5;">A local marketplace built around verified people, not anonymous listings.</p>
+      </div>
+      <div>
+        <h5>Marketplace</h5>
+        <a href="browse.html">Browse listings</a>
+        <a href="signup.html?redirect=post-ad.html">Sell something</a>
+        <a href="signup.html">Create account</a>
+      </div>
+      <div>
+        <h5>Trust &amp; Safety</h5>
+        <a href="help.html">Safety tips</a>
+        <a href="help.html">Report a problem</a>
+        <a href="login.html">Sign in</a>
+      </div>
+      <div>
+        <h5>About</h5>
+        <a href="help.html">Help center</a>
+      </div>
+    </div>
+    <div class="land-footer-bottom">© 2026 Marketplace · Built for buyers &amp; sellers who deserve better than anonymous classifieds</div>
+  </footer>
+</div>
+
+<!-- ============ APP FEED (signed-in users) ============ -->
+<div class="app-shell" id="feed-root" hidden>
+  <div class="page-top">
+    <div class="row between loc-row" id="loc-row" onclick="openLocationPicker()">
+      <div>
+        <p class="loc-label">Location</p>
+        <p class="loc-value" id="loc-value">📍 Guwahati, Assam</p>
+      </div>
+      <a href="messages.html" class="icon-btn">🔔<span class="dot"></span></a>
+    </div>
+    <div class="row search-row">
+      <a href="browse.html" class="search-bar">🔍 What are you looking for?</a>
+      <a href="browse.html" class="icon-btn">⚙️</a>
+    </div>
+    <div class="cats" id="scope-cats">
+      <button class="pill-btn active" data-scope="nearby" onclick="setScope('nearby')">Nearby</button>
+      <button class="pill-btn" data-scope="all" onclick="setScope('all')">All India</button>
+    </div>
+    <div class="cats" id="cat-cats"></div>
+  </div>
+
+  <p class="section-title">🔥 Trending in your community</p>
+  <div class="product-grid" id="trending-grid"></div>
+
+  <div style="height:24px;"></div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<!-- Location picker -->
+<div class="modal-overlay" id="loc-modal" hidden>
+  <div class="modal" style="max-width:420px;">
+    <button class="close-x" onclick="closeModal('loc-modal')">✕</button>
+    <h3>Choose your locality</h3>
+    <p class="sub">"Nearby" shows listings from your area — pick where you actually are.</p>
+    <div class="stack-gap" id="loc-options" style="max-height:340px;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  let scope = "all";
+  let allListings = [];
+
+  /* "Nearby" = the signed-in user's saved city. Signed out, or signed in but
+     no locality picked yet, falls back to the app's default home city rather
+     than gating browsing behind a location prompt. */
+  function nearbyCity() {
+    const user = Store.getUser();
+    return (user && user.locality) ? user.city : HOME_CITY;
+  }
+
+  function setScope(s) {
+    scope = s;
+    document.querySelectorAll("#scope-cats .pill-btn").forEach((b) => b.classList.toggle("active", b.dataset.scope === s));
+    renderTrending();
+  }
+
+  function renderTrending() {
+    let listings = allListings;
+    if (scope === "nearby") listings = listings.filter((l) => l.city === nearbyCity());
+    const trending = [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
+    document.getElementById("trending-grid").innerHTML = trending.length
+      ? trending.map(listingCardHtml).join("")
+      : `<div class="empty-state" style="grid-column:1/-1;"><div class="big">📭</div><h3>No listings yet</h3><p>Try "All India" to see more.</p></div>`;
+  }
+
+  function renderLocValue() {
+    const user = Store.getUser();
+    const label = user && user.locality ? `📍 ${user.locality}, ${user.city}`
+      : user ? "📍 Set your locality"
+      : `📍 ${HOME_CITY}`;
+    document.getElementById("loc-value").textContent = label;
+  }
+
+  function openLocationPicker() {
+    if (!Store.isLoggedIn()) {
+      window.location.href = "login.html?redirect=" + encodeURIComponent("index.html");
+      return;
+    }
+    const current = Store.getUser().locality;
+    const el = document.getElementById("loc-options");
+    el.innerHTML = LOCALITIES.map((name) => `
+      <button type="button" class="btn ${name === current ? "btn-fill" : "btn-outline"} btn-block" onclick="pickLocality('${name.replace(/'/g, "\\'")}')">
+        ${name === current ? "✓ " : "📍 "}${escapeHtml(name)}
+      </button>
+    `).join("");
+    openModal("loc-modal");
+  }
+
+  async function pickLocality(name) {
+    try {
+      await Store.setLocality(name);
+      closeModal("loc-modal");
+      renderLocValue();
+      scope = "nearby";
+      document.querySelectorAll("#scope-cats .pill-btn").forEach((b) => b.classList.toggle("active", b.dataset.scope === "nearby"));
+      renderTrending();
+      toast(`Nearby now shows ${name}`);
+    } catch (err) {
+      toast(err.message || "Couldn't save that — try again");
+    }
+  }
+
+  async function renderLanding() {
+    const [listings, sellers] = await Promise.all([
+      Store.getListings(),
+      Store.getFeaturedSellers(4).catch(() => []),
+    ]);
+
+    const trending = [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 4);
+    document.getElementById("land-trending-grid").innerHTML = trending.length
+      ? trending.map(listingCardHtml).join("")
+      : `<div class="empty-state" style="grid-column:1/-1;"><div class="big">📭</div><h3>No listings yet</h3><p>Be the first to post one.</p></div>`;
+
+    const verifiedCount = sellers.filter((s) => s.verified || s.emailVerified).length;
+    const localityCount = new Set(listings.map((l) => l.locality)).size;
+    document.getElementById("hero-stats").innerHTML = `
+      <div><strong>${listings.length}</strong><span>Active listings</span></div>
+      <div><strong>${localityCount}</strong><span>Localities covered</span></div>
+      <div><strong>${HOME_CITY.split(",")[0]}</strong><span>Where it started</span></div>
+    `;
+
+    const sellersSection = document.getElementById("land-sellers-section");
+    const withDeals = sellers.filter((s) => s.deals > 0 || s.verified);
+    if (withDeals.length === 0) {
+      sellersSection.hidden = true;
+    } else {
+      document.getElementById("land-sellers-grid").innerHTML = withDeals.map((s) => `
+        <a href="profile.html?seller=${s.id}" class="land-seller-card">
+          <div class="avatar"><img src="${avatarUrl(s.avatarSeed, 112)}" alt="${escapeHtml(s.name)}" /></div>
+          <div class="name">${escapeHtml(s.name)} ${s.verified || s.emailVerified ? "✓" : ""}</div>
+          <div class="meta">${s.deals} deal${s.deals === 1 ? "" : "s"} · ${s.locality || s.city}</div>
+        </a>
+      `).join("");
+    }
+  }
+
+  async function renderFeed() {
+    allListings = await Store.getListings();
+
+    const user = Store.getUser();
+    scope = (user && user.locality) ? "nearby" : "all";
+    document.querySelectorAll("#scope-cats .pill-btn").forEach((b) => b.classList.toggle("active", b.dataset.scope === scope));
+    renderLocValue();
+
+    const catCats = document.getElementById("cat-cats");
+    const officialTags = getOfficialTags();
+    catCats.innerHTML = officialTags.length
+      ? officialTags.map((t) => `<a href="browse.html?cat=${encodeURIComponent(t.tag)}" class="cat-chip">${tagIcon(t.tag)} ${escapeHtml(t.tag)}</a>`).join("")
+        + `<a href="browse.html" class="cat-chip" style="color:var(--muted);">🏷️ More tags…</a>`
+      : `<a href="browse.html" class="cat-chip">🏷️ Browse all tags</a>`;
+
+    renderTrending();
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    requireSupabaseConfigured();
+    await Store.primeCache();
+    await Store.loadLocalities();
+
+    if (Store.isLoggedIn()) {
+      await initPage("home"); // mounts the bottom nav + unread-message dot
+      document.getElementById("feed-root").hidden = false;
+      await renderFeed();
+    } else {
+      // No bottom nav on the landing page — it's a marketing page for
+      // logged-out visitors, not part of the in-app tab flow.
+      document.getElementById("landing-root").hidden = false;
+      await renderLanding();
+    }
+  });
+</script>
+</body>
+</html>
