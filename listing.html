@@ -97,18 +97,19 @@
         <a href="browse.html?cat=${encodeURIComponent(listing.category)}" class="cat-chip" style="display:inline-flex;margin-bottom:14px;">${CATEGORY_ICONS[listing.category] || ""}${escapeHtml(listing.category)}</a>
 
         <a href="profile.html?seller=${seller.id}" class="seller-card row">
-          <div class="avatar">${characterAvatarHtml(seller.avatarType)}</div>
+          <div class="avatar">${avatarHtml(seller)}</div>
           <div style="flex:1;">
             <p class="seller-name">${escapeHtml(seller.name)}</p>
+            ${seller.statusText ? `<p class="seller-sub" style="font-style:italic;">${escapeHtml(seller.statusText)}</p>` : ""}
             <p class="seller-sub">Member since ${seller.memberSince} · ${seller.deals} deal${seller.deals === 1 ? "" : "s"}${trust.responseRatePct !== null ? ` · ${trust.responseRatePct}% response rate` : ""}</p>
             ${sellerStats.count > 0 ? `<p class="seller-sub" style="margin-top:2px;">${starsHtml(sellerStats.avg, 11)} <b style="color:var(--ink-mid);">${sellerStats.avg}</b> (${sellerStats.count} review${sellerStats.count === 1 ? "" : "s"})</p>` : ""}
             <div class="trust-badges-row" style="margin-top:8px;">
               <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? "✓" : "○"} Email</span>
               <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? "✓" : "○"} Selfie</span>
-              ${vouchStats.count > 0 ? `<span class="trust-badge yes">🤝 ${vouchStats.count} vouched</span>` : ""}
+              ${vouchStats.count > 0 ? `<span class="trust-badge yes"><span class="vouch-seal-mini">${VOUCH_ICON}</span> ${vouchStats.count} vouched</span>` : ""}
             </div>
           </div>
-          ${seller.verified ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">New seller</span>`}
+          ${isSellerVerified(seller) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}
         </a>
 
         <div class="detail-info" style="margin-bottom:16px;">
@@ -117,7 +118,7 @@
             ${listingConfidenceItem(listing.images && listing.images.length > 0 && listing.images.every(isPhotoUrl), "Real photos uploaded")}
             ${listingConfidenceItem(!!listing.condition, "Condition disclosed (" + listing.condition + ")")}
             ${listingConfidenceItem(listing.desc && listing.desc.trim().length >= 40, "Description complete")}
-            ${listingConfidenceItem(seller.emailVerified || seller.verified, "Seller verified")}
+            ${listingConfidenceItem(isSellerVerified(seller), "Seller verified (phone on file)")}
           </div>
         </div>
 

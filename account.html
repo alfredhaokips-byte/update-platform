@@ -22,13 +22,13 @@
     <a href="my-ads.html" class="menu-item"><span class="ic">📋</span>My ads<span class="chev">›</span></a>
     <a href="saved.html" class="menu-item"><span class="ic">♡</span>Saved items<span class="chev">›</span></a>
     <a href="verify.html" class="menu-item"><span class="ic">✓</span>Get verified<span class="chev">›</span></a>
-    <button class="menu-item" onclick="toast('Edit profile — demo mode')"><span class="ic">✏️</span>Edit profile<span class="chev">›</span></button>
+    <a href="edit-profile.html" class="menu-item"><span class="ic">✏️</span>Edit profile<span class="chev">›</span></a>
     <button class="menu-item" id="edit-character-btn"><span class="ic">🧑</span>Profile character<span class="chev">›</span></button>
     <div class="menu-item" style="cursor:default;">
       <span class="ic">🔔</span>
       <span style="flex:1;">
         Notifications
-        <span style="display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:1px;">New messages &amp; vouches, while this tab is open</span>
+        <span style="display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:1px;">Messages, vouches, replies &amp; announcements — while this tab is open</span>
       </span>
       <label class="switch">
         <input type="checkbox" id="notif-toggle" />
@@ -82,10 +82,11 @@
     }
 
     document.getElementById("account-head").innerHTML = `
-      <div class="avatar">${characterAvatarHtml(user.avatarType)}</div>
+      <div class="avatar">${avatarHtml(user)}</div>
       <div>
-        <h2>${escapeHtml(user.name)} ${user.verified ? `<span class="badge badge-verified">✓ Verified</span>` : ""}</h2>
+        <h2>${escapeHtml(user.name)} ${isSellerVerified(user) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}</h2>
         <div class="sub">📍 ${user.locality || "No locality set"}, ${user.city} · Member since ${user.memberSince}</div>
+        ${user.statusText ? `<div class="sub" style="margin-top:2px;font-style:italic;">${escapeHtml(user.statusText)}</div>` : ""}
       </div>
     `;
     const allListings = await Store.getListings();
@@ -142,7 +143,7 @@
         card.classList.add("selected");
         try {
           await Store.setAvatarType(type);
-          document.querySelector("#account-head .avatar").innerHTML = characterAvatarHtml(type);
+          document.querySelector("#account-head .avatar").innerHTML = avatarHtml(user);
           toast("Character updated");
         } catch (err) {
           toast(err.message || "Couldn't update — try again");

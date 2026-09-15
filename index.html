@@ -43,6 +43,8 @@
       linear-gradient(180deg, rgba(20,22,15,0.05) 0%, rgba(20,22,15,0.55) 100%),
       linear-gradient(120deg, var(--sage-deep) 0%, var(--sage) 45%, var(--marigold) 100%);
   }
+  #landing-root .hero-illustration{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  #landing-root .hero-inner > div{ position:relative; z-index:1; }
   #landing-root .hero-badge{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.16); color:#fff; font-size:13px; font-weight:600; padding:8px 16px; border-radius:100px; margin-bottom:28px; backdrop-filter:blur(6px); }
   #landing-root .hero-badge svg{ width:14px; height:14px; }
   #landing-root .hero h1{ color:#fff; font-size:clamp(34px,5vw,58px); font-weight:600; line-height:1.12; max-width:16ch; margin:0 auto 20px; }
@@ -142,6 +144,26 @@
 
   <section class="hero">
     <div class="hero-inner">
+      <!-- Original hand-built illustration (not stock photography) — a flat
+           mohalla skyline with two neighbours exchanging an item, echoing the
+           logo's own flat-geometric style. Purely decorative, behind the text,
+           low-opacity so it never competes with contrast. -->
+      <svg class="hero-illustration" viewBox="0 0 1180 520" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <g opacity="0.14" fill="#fff">
+          <path d="M0 460 L60 460 L60 400 L100 400 L100 460 L170 460 L170 370 L210 340 L250 370 L250 460 L330 460 L330 410 L370 410 L370 460 L460 460 L460 380 L500 350 L540 380 L540 460 L620 460 L620 400 L660 400 L660 460 L740 460 L740 420 L780 390 L820 420 L820 460 L900 460 L900 370 L940 340 L980 370 L980 460 L1060 460 L1060 410 L1100 410 L1100 460 L1180 460 L1180 520 L0 520 Z"/>
+        </g>
+        <g opacity="0.22">
+          <circle cx="520" cy="470" r="30" fill="#fff"/>
+          <circle cx="660" cy="470" r="30" fill="#fff"/>
+          <rect x="574" y="452" width="32" height="26" rx="4" fill="#fff" transform="rotate(-8 590 465)"/>
+        </g>
+        <g opacity="0.16" fill="#fff">
+          <circle cx="120" cy="90" r="5"/>
+          <circle cx="980" cy="70" r="4"/>
+          <circle cx="1080" cy="150" r="6"/>
+          <circle cx="70" cy="200" r="4"/>
+        </g>
+      </svg>
       <div>
         <div class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M11 20A7 7 0 0 1 4 13c0-4 4-10 7-10s7 6 7 10a7 7 0 0 1-7 7z"/></svg><span id="hero-badge-text">Neighbours already trading</span></div>
         <h1>Buy less. Trust more. <em>Belong</em> to your mohalla.</h1>
@@ -199,6 +221,15 @@
 
   <div class="cta-band">
     <div class="wrap">
+      <!-- Original illustration: a parcel with a sprig growing from it — reuse,
+           not landfill. Flat geometric style, matching the logo/icon set. -->
+      <svg width="72" height="72" viewBox="0 0 72 72" style="margin:0 auto 20px;display:block;" aria-hidden="true">
+        <path d="M14 28 L36 18 L58 28 L58 54 L36 64 L14 54 Z" fill="var(--sage-deep)"/>
+        <path d="M14 28 L36 38 L58 28" fill="none" stroke="var(--bg)" stroke-width="2"/>
+        <path d="M36 38 L36 64" stroke="var(--bg)" stroke-width="2"/>
+        <path d="M36 18 C34 12 28 8 22 9 C23 15 28 19 34 19 Z" fill="var(--sage)"/>
+        <path d="M36 18 C38 10 45 6 52 8 C50 15 44 20 37 19 Z" fill="var(--marigold)"/>
+      </svg>
       <h2>Got something to sell?</h2>
       <p>Post it in under two minutes, with real photos — buyers see your seller history before they even message you.</p>
       <a href="signup.html?redirect=post-ad.html" class="btn-pill" style="background:var(--bg);color:var(--ink);display:inline-flex;">Sell something</a>
@@ -271,8 +302,8 @@
       <a href="browse.html" class="icon-btn">⚙️</a>
     </div>
     <div class="cats" id="scope-cats">
-      <button class="pill-btn active" data-scope="nearby" onclick="setScope('nearby')">Nearby</button>
-      <button class="pill-btn" data-scope="all" onclick="setScope('all')">All India</button>
+      <button class="pill-btn active" data-scope="all" onclick="setScope('all')">All India</button>
+      <button class="pill-btn" data-scope="nearby" onclick="setScope('nearby')">Nearby</button>
     </div>
     <div class="cats" id="cat-cats"></div>
   </div>
@@ -426,9 +457,9 @@
   function showcaseCardHtml(listing) {
     const seller = getSellerById(listing.sellerId);
     const saved = Store.isSaved(listing.id);
-    const trust = seller && (seller.verified || seller.emailVerified)
+    const trust = isSellerVerified(seller)
       ? `${SHOWCASE_VERIFIED_SVG}Verified · ${escapeHtml(listing.locality)}`
-      : `New seller · ${escapeHtml(listing.locality)}`;
+      : `Unverified · ${escapeHtml(listing.locality)}`;
     return `
       <a href="listing.html?id=${listing.id}" class="show-card">
         <div class="show-thumb">
@@ -454,11 +485,11 @@
       : `<p style="grid-column:1/-1;color:var(--muted);">No listings yet — be the first to post one.</p>`;
 
     const localityCount = new Set(listings.map((l) => l.locality)).size;
-    // "Verified" here means email-confirmed — the real, working signal for
-    // this app right now (see js/data.js). Not the same as a synthesized
-    // trust score, which this project deliberately hasn't built yet.
+    // "Verified" means a phone number is on file — see isSellerVerified() in
+    // js/data.js. Not the same as a synthesized trust score, which this
+    // project deliberately hasn't built yet.
     const verifiedCount = Array.from(new Set(listings.map((l) => l.sellerId)))
-      .map(getSellerById).filter((s) => s && (s.verified || s.emailVerified)).length;
+      .map(getSellerById).filter(isSellerVerified).length;
 
     document.getElementById("hero-badge-text").textContent = listings.length > 0
       ? `${listings.length}+ neighbours already trading`
@@ -475,8 +506,7 @@
   async function renderFeed() {
     allListings = await Store.getListings();
 
-    const user = Store.getUser();
-    scope = (user && user.locality) ? "nearby" : "all";
+    scope = "all"; // All India is the default view — the user switches to Nearby explicitly
     document.querySelectorAll("#scope-cats .pill-btn").forEach((b) => b.classList.toggle("active", b.dataset.scope === scope));
     renderLocValue();
 

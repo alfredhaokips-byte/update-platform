@@ -34,9 +34,13 @@ exactly what's happening.
    ```sql
    update profiles set is_admin = true where id = (select id from auth.users where email = 'you@example.com');
    ```
-10. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+10. Same again with `supabase/profile-photos.sql` — the `profile-photos`
+    Storage bucket (same ownership pattern as `listing-photos`) plus
+    `profiles.avatar_url`/`status_text` for the profile photo + bio (Edit
+    profile, from Account).
+11. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
     key (not `service_role`).
-11. Paste them into `js/supabase-client.js`:
+12. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -257,12 +261,16 @@ read-only count next to the trust badges on `listing.html`. Backed by
   (`.product-distance` in `listingCardHtml`).
 - **In-tab notifications.** Account → Notifications toggle requests browser
   `Notification` permission and, while enabled, polls every 45s
-  (`js/common.js`'s `checkForNotifiableEvents`) for new messages, new
-  vouches, and price changes on your saved listings, firing a
-  `Notification` for each. This only fires while a tab is open — real push
-  for when the app/tab is closed needs a service worker, VAPID keys, and a
-  server-side trigger (e.g. a Supabase Edge Function on message insert, the
-  same shape as the email-notification function above); that's flagged in
+  (`js/common.js`'s `checkForNotifiableEvents`) for a deliberately curated
+  set of major events only — new messages, someone vouching for you or one
+  of your Community/Feedback posts, a reply to one of your posts, and new
+  Notice Board announcements — firing a `Notification` for each. Routine
+  activity (listing views, minor profile edits, etc.) is intentionally
+  excluded so the notifications a user gets are worth checking. This only
+  fires while a tab is open — real push for when the app/tab is closed
+  needs a service worker, VAPID keys, and a server-side trigger (e.g. a
+  Supabase Edge Function on message insert, the same shape as the
+  email-notification function above); that's flagged in
   the code as an intentionally separate, bigger follow-up, not attempted here.
 - **Newsletter signup.** Footer of the landing page — collects an email into
   `newsletter_subscribers` (`Store.subscribeNewsletter`). Collection only;
@@ -285,6 +293,61 @@ read-only count next to the trust badges on `listing.html`. Backed by
     (enforced in `community.sql`'s RLS insert policy).
   All three share one self-referencing table (`community_posts`), mirroring
   the `qa_questions` pattern from `schema.sql`.
+
+## Dark mode redo, real seller names, phone-based verification, Messages tab
+
+- **Dark mode, properly layered.** The previous dark palette was too flat
+  (surfaces barely separated from the background). Redone with a genuine
+  three-tier scale — `--bg` (page) / `--surface` (cards, search bar, nav
+  pill, chat items) / `--elevated` (bottom nav, modals, floating buttons) —
+  each a visibly distinct shade, plus higher-contrast muted text
+  (`--muted: #9c9887`, checked at ~6:1 against `--surface`, comfortably over
+  WCAG's 4.5:1 minimum).
+- **Listing cards.** Real seller first name now shows on every card
+  (`listingCardHtml` in `js/common.js`) instead of a hardcoded "New seller."
+  A CSS bug meant the category icon SVG on cards had no size constraint and
+  rendered at its default ~300×150px — that's the "broken icon" — fixed by
+  dropping the icon from cards entirely (category still shows as text).
+  Icon sizing bumped moderately elsewhere (`.icon-btn`, `.cat-chip`,
+  `.chip-select` icons).
+- **Verification.** "Verified" now means a phone number is on file
+  (`isSellerVerified()` in `js/data.js`, checked everywhere a Verified badge
+  or "New seller"/"Unverified" label shows) rather than the old unused
+  `profiles.verified` flag that nothing ever set. Once real phone OTP
+  exists, this is a one-line swap to `seller.phoneVerified`.
+- **Nearby/All India order.** All India is now the left pill and the
+  default active view everywhere this toggle appears; Nearby is explicit,
+  on the right.
+- **Community "+" compose** was already wired (verified working, signed-in,
+  in this pass); added on top: the Notice Board's "+" is now hidden
+  entirely for non-admins (not just rejected on tap), and a successful post
+  returns to the list with the new post at the top instead of jumping to
+  its detail page.
+- **Profile photos + status/bio.** Edit profile (Account → Edit profile,
+  now real instead of a demo-mode placeholder) — tap the avatar to upload a
+  real photo (`profile-photos` bucket, `profiles.avatar_url`), plus an
+  optional ~140-character status line (`profiles.status_text`) shown under
+  the name on profile/seller cards. `avatarHtml()` in `js/data.js` is now
+  the one function every avatar render goes through — real photo first,
+  falling back to the existing character avatar.
+- **Messages, as its own bottom-nav tab.** Previously only reachable via a
+  bell icon. The bottom nav is six items now (Home / Community / Messages /
+  Sell / My ads / Account) with slightly reduced icon/label sizing to fit —
+  checked at 375px width for clipping/overlap.
+- **Notifications, curated.** The poller (item 3a, above) now fires for
+  exactly four things — new message, a vouch on you or one of your
+  Community/Feedback posts, a reply to your post, a new Notice Board
+  announcement — and deliberately nothing else (no more listing-view or
+  price-change noise).
+- **Vouch icon.** Swapped from a checkmark-in-a-circle (too close to the
+  Verified badge's own checkmark) to a filled heart (`VOUCH_ICON` in
+  `js/data.js`) — same marigold seal + avatar-stack treatment everywhere,
+  only the glyph changed.
+- **Landing page illustrations.** Two original flat-SVG illustrations
+  (no stock photography) in the same geometric style as the logo: a mohalla
+  skyline + two neighbours exchanging a parcel, layered low-opacity behind
+  the hero text; a parcel-with-a-sprig graphic above the "Got something to
+  sell?" band.
 
 ## What's NOT built yet
 

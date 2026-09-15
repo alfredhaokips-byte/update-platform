@@ -36,6 +36,12 @@ const CATEGORY_ICONS = {
   Fashion: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h4l2 3 2-3h4l3 4-4 3v10H7V11L3 8z"/></svg>`,
 };
 
+/* A filled heart — deliberately distinct from the "Verified" checkmark
+   badge, which vouching used to reuse and risked being confused with.
+   Marigold color + avatar-stack pairing stay the same everywhere this
+   appears; only the glyph changed. */
+const VOUCH_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21s-7.5-4.6-10-9.3C.5 8 2 4 6 4c2 0 3.5 1.2 4.2 2.4C10.9 5.2 12.4 4 14.4 4c4 0 5.5 4 4 7.7C19.5 16.4 12 21 12 21z"/></svg>`;
+
 function formatPrice(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
 
 /* Straight-line (not driving-route) distance in km between two coordinates.
@@ -65,6 +71,16 @@ function characterAvatarHtml(avatarType) {
   const bg = type === "female" ? "var(--sage-bg)" : type === "male" ? "var(--clay-bg)" : "var(--surface-2)";
   const fill = type === "female" ? "var(--sage-deep)" : type === "male" ? "var(--clay)" : "var(--muted)";
   return `<svg viewBox="0 0 64 64" style="background:${bg};"><circle cx="32" cy="24" r="13" fill="${fill}"/><path d="M10 58c0-13 10-20 22-20s22 7 22 20" fill="${fill}"/></svg>`;
+}
+
+/* A real uploaded photo takes priority; falls back to the character avatar
+   (or its own neutral default) when unset. Use this everywhere an avatar
+   renders instead of calling characterAvatarHtml directly. */
+function avatarHtml(user) {
+  if (user && user.avatarUrl) {
+    return `<img src="${user.avatarUrl}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />`;
+  }
+  return characterAvatarHtml(user && user.avatarType);
 }
 
 function timeAgo(dateStr) {
@@ -101,10 +117,19 @@ function initials(name) {
   return (name || "").split(" ").filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
 }
 
+/* "Verified" means a phone number is on file — a real, checkable signal,
+   not the unused full-identity `profiles.verified` flag (nothing in this
+   app sets that yet; real selfie/ID verification is a future, stronger
+   tier — see README). Once phone OTP confirmation actually exists, swap
+   this to `seller.phoneVerified` instead of `!!seller.phone`. */
+function isSellerVerified(seller) {
+  return !!(seller && seller.phone);
+}
+
 function trustLine(seller) {
   if (!seller) return "";
-  if (seller.verified) return `Verified · ${seller.deals} deal${seller.deals === 1 ? "" : "s"}`;
-  return "New seller";
+  if (isSellerVerified(seller)) return `Verified · ${seller.deals} deal${seller.deals === 1 ? "" : "s"}`;
+  return "Unverified";
 }
 
 function starsHtml(rating, size) {
@@ -138,6 +163,8 @@ function mapProfile(row) {
     selfieVerified: !!row.selfie_verified,
     avatarType: row.avatar_type || "neutral",
     isAdmin: !!row.is_admin,
+    avatarUrl: row.avatar_url || null,
+    statusText: row.status_text || null,
   };
 }
 
@@ -344,6 +371,7 @@ const Store = {
       id: r.id,
       reviewerName: r.reviewer ? r.reviewer.name : "Former user",
       reviewerAvatarType: r.reviewer ? (r.reviewer.avatar_type || "neutral") : "neutral",
+      reviewerAvatarUrl: r.reviewer ? r.reviewer.avatar_url || null : null,
       rating: r.rating,
       text: r.text,
       createdAt: r.created_at,
@@ -455,6 +483,35 @@ const Store = {
     };
   },
 
+  /* Summed across all of the signed-in user's own top-level Community/
+     Feedback posts — used only to detect "something changed" for the
+     notification poller (item B5), not shown anywhere as its own stat. */
+  async getMyCommunityActivitySummary() {
+    const user = this.getUser();
+    if (!user) return { totalVotes: 0, totalReplies: 0 };
+    const { data: myPosts, error } = await sb
+      .from("community_posts").select("id, votes").eq("author_id", user.id).is("parent_id", null);
+    if (error) throw error;
+    const totalVotes = (myPosts || []).reduce((sum, p) => sum + (p.votes || 0), 0);
+    const ids = (myPosts || []).map((p) => p.id);
+    let totalReplies = 0;
+    if (ids.length) {
+      const { count, error: repErr } = await sb
+        .from("community_posts").select("id", { count: "exact", head: true }).in("parent_id", ids);
+      if (repErr) throw repErr;
+      totalReplies = count || 0;
+    }
+    return { totalVotes, totalReplies };
+  },
+
+  async getLatestNoticeId() {
+    const { data, error } = await sb
+      .from("community_posts").select("id").eq("section", "notice").is("parent_id", null)
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (error) throw error;
+    return data ? data.id : null;
+  },
+
   async toggleVouch(sellerId) {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in to vouch");
@@ -488,6 +545,37 @@ const Store = {
     const { error } = await sb.from("profiles").update({ avatar_type: avatarType }).eq("id", user.id);
     if (error) throw error;
     user.avatarType = avatarType;
+  },
+
+  /* Uploads to the profile-photos bucket under {user_id}/{filename} and
+     saves the resulting public URL to profiles.avatar_url — mirrors
+     uploadListingPhoto()'s pattern. Doesn't delete the old file (storage
+     RLS scopes deletes to the owner's own folder if that's ever added; a
+     stray old photo left behind is harmless and cheap to ignore for now). */
+  async uploadProfilePhoto(file) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in to upload a photo");
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await sb.storage.from("profile-photos").upload(path, file, {
+      cacheControl: "3600",
+      contentType: file.type,
+    });
+    if (error) throw error;
+    const { data } = sb.storage.from("profile-photos").getPublicUrl(path);
+    const { error: updateErr } = await sb.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
+    if (updateErr) throw updateErr;
+    user.avatarUrl = data.publicUrl;
+    return data.publicUrl;
+  },
+
+  async setStatusText(statusText) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in");
+    const trimmed = (statusText || "").trim().slice(0, 140);
+    const { error } = await sb.from("profiles").update({ status_text: trimmed || null }).eq("id", user.id);
+    if (error) throw error;
+    user.statusText = trimmed || null;
   },
 
   /* RLS ("users can delete their own listings" in schema.sql) already

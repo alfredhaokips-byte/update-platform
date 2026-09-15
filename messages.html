@@ -32,7 +32,7 @@
   }
 
   function renderList() {
-    mountBottomNav(null);
+    mountBottomNav("messages");
     const root = document.getElementById("page-root");
     let threads = allThreads;
     if (activeTab !== "all") threads = threads.filter((t) => t.tag === activeTab);
@@ -65,7 +65,7 @@
       if (!seller) return "";
       return `
         <button class="chat-item" onclick="openThread('${t.id}')">
-          <div class="avatar">${characterAvatarHtml(seller.avatarType)}</div>
+          <div class="avatar">${avatarHtml(seller)}</div>
           <div class="chat-info">
             <div class="chat-top">
               <p class="chat-name">${escapeHtml(seller.name)} <span class="chat-tag ${t.tag === "buying" ? "tag-buying" : "tag-selling"}">${t.tag === "buying" ? "Buying" : "Selling"}</span></p>
@@ -103,9 +103,9 @@
     root.innerHTML = `
       ${backRowHtml(null, `<a class="icon-btn" href="help.html?type=${encodeURIComponent("Abusive or unsafe behavior")}&seller=${thread.sellerId}&listing=${thread.listingId}" title="Report this conversation">⋯</a>`)}
       <div class="row" style="padding:0 18px 14px;gap:10px;">
-        <div class="avatar">${characterAvatarHtml(seller.avatarType)}</div>
+        <div class="avatar">${avatarHtml(seller)}</div>
         <div>
-          <p class="seller-name">${escapeHtml(seller.name)} ${seller.verified ? "✓" : ""}</p>
+          <p class="seller-name">${escapeHtml(seller.name)} ${isSellerVerified(seller) ? "✓" : ""}</p>
           <a href="listing.html?id=${listing ? listing.id : ""}" style="font-size:12px;color:var(--ink-soft);">${listing ? escapeHtml(listing.title) + " · " + formatPrice(listing.price) : "Listing removed"}</a>
         </div>
       </div>
@@ -121,7 +121,7 @@
       </form>
     `;
     renderChatBody(thread);
-    mountBottomNav(null);
+    mountBottomNav("messages");
 
     document.getElementById("chat-form").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -156,7 +156,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    await initPage(null);
+    await initPage("messages");
     const session = await Auth.requireAuth();
     if (!session) return;
 

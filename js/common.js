@@ -74,6 +74,7 @@ mountThemeToggle();
 const NAV_ITEMS = [
   { key: "home", icon: "⌂", label: "Home", href: "index.html" },
   { key: "community", icon: "💬", label: "Community", href: "community.html" },
+  { key: "messages", icon: "✉", label: "Messages", href: "messages.html" },
   { key: "sell", icon: "➕", label: "Sell", href: "post-ad.html" },
   { key: "myads", icon: "📋", label: "My ads", href: "my-ads.html" },
   { key: "account", icon: "👤", label: "Account", href: "account.html" },
@@ -85,6 +86,7 @@ function bottomNavHtml(activeKey) {
       ${NAV_ITEMS.map((item) => `
         <a class="nav-item ${item.key === activeKey ? "active" : ""}" href="${item.href}">
           <span class="nav-icon">${item.icon}</span>${item.label}
+          ${item.key === "messages" ? `<span class="dot" id="nav-msg-dot" hidden></span>` : ""}
         </a>
       `).join("")}
     </div>
@@ -110,8 +112,10 @@ async function initPage(activeNavKey) {
     try {
       const threads = await Store.getThreads();
       const unread = threads.reduce((sum, t) => sum + t.unread, 0);
-      const dot = document.getElementById("msg-dot");
+      const dot = document.getElementById("msg-dot"); // a page's own header bell, where present
       if (dot) dot.hidden = unread === 0;
+      const navDot = document.getElementById("nav-msg-dot"); // the bottom-nav Messages tab badge
+      if (navDot) navDot.hidden = unread === 0;
       startNotificationPoller(unread);
     } catch (e) { /* non-critical — leave the dot hidden on failure */ }
   }
@@ -124,7 +128,6 @@ async function initPage(activeNavKey) {
    message insert) — meaningfully more infrastructure, intentionally deferred
    as its own follow-up rather than attempted here. */
 const NOTIFICATIONS_PREF_KEY = "mm-notifications-enabled";
-const SAVED_PRICES_KEY = "mm-saved-prices";
 const NOTIFICATION_POLL_MS = 45000;
 let _notifPollerStarted = false;
 
@@ -152,12 +155,18 @@ function notifyIfEnabled(title, body) {
   try { new Notification(title, { body, icon: "/favicon.ico" }); } catch (e) { /* non-critical */ }
 }
 
+/* Curated to four genuinely major events (item B5) — deliberately NOT
+   listing views, profile edits, or other low-signal activity. */
 let _lastKnownUnread = null;
 let _lastKnownVouchCount = null;
+let _lastKnownPostVotes = null;
+let _lastKnownReplyCount = null;
+let _lastKnownNoticeId = null;
 
 async function checkForNotifiableEvents() {
   if (!Store.isLoggedIn()) return;
 
+  // New message received.
   try {
     const threads = await Store.getThreads();
     const unread = threads.reduce((sum, t) => sum + t.unread, 0);
@@ -167,6 +176,7 @@ async function checkForNotifiableEvents() {
     _lastKnownUnread = unread;
   } catch (e) { /* non-critical */ }
 
+  // Someone vouched for you (your seller profile).
   try {
     const stats = await Store.getVouchStats(Store.getUser().id);
     if (_lastKnownVouchCount !== null && stats.count > _lastKnownVouchCount) {
@@ -175,23 +185,28 @@ async function checkForNotifiableEvents() {
     _lastKnownVouchCount = stats.count;
   } catch (e) { /* non-critical */ }
 
+  // Someone vouched for one of your Community/Feedback posts, or replied to one.
   try {
-    const savedIds = Store.getSaved();
-    if (savedIds.length) {
-      let prevPrices = {};
-      try { prevPrices = JSON.parse(localStorage.getItem(SAVED_PRICES_KEY) || "{}"); } catch (e) {}
-      const listings = await Store.getListings();
-      const currentPrices = {};
-      listings.forEach((l) => {
-        if (!savedIds.includes(l.id)) return;
-        currentPrices[l.id] = l.price;
-        if (prevPrices[l.id] !== undefined && prevPrices[l.id] !== l.price) {
-          notifyIfEnabled("Price changed", `${l.title} is now ${formatPrice(l.price)}.`);
-        }
-      });
-      try { localStorage.setItem(SAVED_PRICES_KEY, JSON.stringify(currentPrices)); } catch (e) {}
+    const summary = await Store.getMyCommunityActivitySummary();
+    if (_lastKnownPostVotes !== null && summary.totalVotes > _lastKnownPostVotes) {
+      notifyIfEnabled("Someone vouched for your post", "One of your Community posts just got a vouch.");
     }
-  } catch (e) { /* non-critical */ }
+    _lastKnownPostVotes = summary.totalVotes;
+
+    if (_lastKnownReplyCount !== null && summary.totalReplies > _lastKnownReplyCount) {
+      notifyIfEnabled("New reply", "Someone replied to your post in Community.");
+    }
+    _lastKnownReplyCount = summary.totalReplies;
+  } catch (e) { /* non-critical — community.sql may not be run yet */ }
+
+  // A new Notice Board announcement.
+  try {
+    const latestNoticeId = await Store.getLatestNoticeId();
+    if (latestNoticeId && _lastKnownNoticeId !== null && latestNoticeId !== _lastKnownNoticeId) {
+      notifyIfEnabled("New announcement", "There's a new post on the Notice Board.");
+    }
+    if (latestNoticeId) _lastKnownNoticeId = latestNoticeId;
+  } catch (e) { /* non-critical — community.sql may not be run yet */ }
 }
 
 /* `seedUnread`, when passed, skips one redundant getThreads() call by
@@ -219,9 +234,12 @@ function backRowHtml(title, rightHtml) {
 function listingCardHtml(listing) {
   const seller = getSellerById(listing.sellerId);
   const saved = Store.isSaved(listing.id);
-  const trust = seller && seller.verified
-    ? `<span class="verified">✓</span><span class="muted">${escapeHtml(trustLine(seller))}</span>`
-    : `<span class="muted">New seller</span>`;
+  const sellerName = seller ? seller.name.split(" ")[0] : "Unknown seller";
+  const verified = isSellerVerified(seller);
+  const trust = `
+    <span class="seller-name-sm">${escapeHtml(sellerName)}</span>
+    <span class="verify-label ${verified ? "yes" : "no"}">${verified ? "Verified" : "Unverified"}</span>
+  `;
   return `
     <a href="listing.html?id=${listing.id}" class="product-card">
       <div class="product-img">
@@ -232,7 +250,7 @@ function listingCardHtml(listing) {
       <div class="product-body">
         <p class="product-title">${escapeHtml(listing.title)}</p>
         <p class="product-price">${formatPrice(listing.price)}</p>
-        <p class="product-tag">${CATEGORY_ICONS[listing.category] || ""} ${escapeHtml(listing.category)}</p>
+        <p class="product-tag">${escapeHtml(listing.category)}</p>
         ${listing._distanceKm != null ? `<p class="product-distance">${formatDistance(listing._distanceKm)}</p>` : ""}
         <div class="trust-row">${trust}</div>
       </div>

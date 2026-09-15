@@ -82,10 +82,11 @@
 
     root.innerHTML = `
       <div class="account-head">
-        <div class="avatar" style="width:62px;height:62px;font-size:20px;">${characterAvatarHtml(seller.avatarType)}</div>
+        <div class="avatar" style="width:62px;height:62px;font-size:20px;">${avatarHtml(seller)}</div>
         <div>
-          <h2>${escapeHtml(seller.name)} ${seller.verified ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">New seller</span>`}</h2>
+          <h2>${escapeHtml(seller.name)} ${isSellerVerified(seller) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}</h2>
           <div class="sub">📍 ${seller.locality || "Locality not set"}, ${seller.city} · Member since ${seller.memberSince}</div>
+          ${seller.statusText ? `<div class="sub" style="margin-top:2px;font-style:italic;">${escapeHtml(seller.statusText)}</div>` : ""}
         </div>
       </div>
       <div class="account-stats" id="profile-stats"></div>
@@ -97,7 +98,7 @@
     document.getElementById("profile-stats").innerHTML = `
       <div><strong>${seller.deals}</strong><span>DEALS DONE</span></div>
       <div><strong>${listings.length}</strong><span>ACTIVE ADS</span></div>
-      <div><strong>${seller.verified ? "✓" : "—"}</strong><span>VERIFIED</span></div>
+      <div><strong>${isSellerVerified(seller) ? "✓" : "—"}</strong><span>VERIFIED</span></div>
     `;
     document.getElementById("listings-heading").textContent = isMe ? "Your listings" : seller.name + "'s listings";
     const grid = document.getElementById("seller-grid");
@@ -147,7 +148,7 @@
     const box = document.getElementById("vouch-box");
     if (!box) return;
     const stats = await Store.getVouchStats(sellerId).catch(() => ({ count: 0, vouched: false, sample: [] }));
-    const avatars = stats.sample.map((v) => `<span class="vouch-avatar-item">${characterAvatarHtml(v.avatarType)}</span>`).join("");
+    const avatars = stats.sample.map((v) => `<span class="vouch-avatar-item">${avatarHtml(v)}</span>`).join("");
     box.innerHTML = `
       <div class="vouch-box">
         <div class="vouch-avatars">${avatars}</div>
@@ -155,7 +156,7 @@
           <div class="t1">${stats.count === 0 ? "No vouches yet" : `${stats.count} neighbour${stats.count === 1 ? "" : "s"} vouched`}</div>
           <div class="t2">for smooth, honest deals</div>
         </div>
-        ${!isMe ? `<button class="vouch-toggle-btn ${stats.vouched ? "on" : ""}" id="vouch-toggle-btn">${stats.vouched ? "✓ Vouched" : "Vouch"}</button>` : ""}
+        ${!isMe ? `<button class="vouch-toggle-btn ${stats.vouched ? "on" : ""}" id="vouch-toggle-btn">${stats.vouched ? `<span class="vouch-seal-mini">${VOUCH_ICON}</span> Vouched` : "Vouch"}</button>` : ""}
       </div>
     `;
     if (!isMe) {
@@ -202,7 +203,7 @@
         ${reviews.map((r) => `
           <div class="review-card">
             <div class="review-head">
-              <div class="avatar" style="width:34px;height:34px;">${characterAvatarHtml(r.reviewerAvatarType)}</div>
+              <div class="avatar" style="width:34px;height:34px;">${avatarHtml({ avatarType: r.reviewerAvatarType, avatarUrl: r.reviewerAvatarUrl })}</div>
               <div>
                 <p class="review-name">${escapeHtml(r.reviewerName)}</p>
                 <div>${starsHtml(r.rating, 11)}</div>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Edit profile — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="back-row row between">
+    <a href="account.html" class="icon-btn" aria-label="Back">←</a>
+    <span class="header-title">Edit profile</span>
+    <span style="width:40px;"></span>
+  </div>
+
+  <div class="form-wrap" style="padding-top:10px;text-align:center;">
+    <input type="file" id="f-photo" accept="image/jpeg,image/png,image/webp" hidden />
+    <button type="button" id="avatar-btn" style="width:96px;height:96px;border-radius:50%;overflow:hidden;border:none;padding:0;margin:0 auto 8px;cursor:pointer;background:var(--surface-2);position:relative;">
+      <div id="avatar-preview" style="width:100%;height:100%;"></div>
+      <div style="position:absolute;bottom:0;right:0;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--ink-contrast);display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid var(--bg);">✎</div>
+    </button>
+    <p class="hint" style="margin-bottom:22px;">Tap your photo to change it — JPG, PNG or WebP, 5MB max.</p>
+
+    <form id="profile-form" style="text-align:left;">
+      <div class="form-row">
+        <label for="f-status">Status / bio</label>
+        <textarea id="f-status" maxlength="140" placeholder="A line about you — optional" style="min-height:70px;"></textarea>
+        <div class="hint"><span id="status-count">0</span>/140</div>
+      </div>
+      <button type="submit" class="btn btn-fill btn-block" id="save-btn">Save</button>
+    </form>
+  </div>
+</div>
+
+<div id="bottom-nav-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initPage("account");
+    const session = await Auth.requireAuth();
+    if (!session) return;
+
+    const user = Store.getUser();
+    document.getElementById("avatar-preview").innerHTML = avatarHtml(user);
+    document.getElementById("f-status").value = user.statusText || "";
+    document.getElementById("status-count").textContent = (user.statusText || "").length;
+
+    document.getElementById("avatar-btn").addEventListener("click", () => document.getElementById("f-photo").click());
+
+    document.getElementById("f-photo").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      e.target.value = "";
+      if (!file) return;
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) { toast("JPG, PNG or WebP only"); return; }
+      if (file.size > 5 * 1024 * 1024) { toast("Photo must be under 5MB"); return; }
+      const previewUrl = URL.createObjectURL(file);
+      document.getElementById("avatar-preview").innerHTML = `<img src="${previewUrl}" alt="" style="width:100%;height:100%;object-fit:cover;" />`;
+      try {
+        await Store.uploadProfilePhoto(file);
+        toast("Photo updated");
+      } catch (err) {
+        toast(err.message || "Couldn't upload — try again");
+        document.getElementById("avatar-preview").innerHTML = avatarHtml(user);
+      }
+    });
+
+    document.getElementById("f-status").addEventListener("input", (e) => {
+      document.getElementById("status-count").textContent = e.target.value.length;
+    });
+
+    document.getElementById("profile-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("save-btn");
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+      try {
+        await Store.setStatusText(document.getElementById("f-status").value);
+        toast("Profile updated");
+        window.location.href = "account.html";
+      } catch (err) {
+        toast(err.message || "Couldn't save — try again");
+        btn.disabled = false;
+        btn.textContent = "Save";
+      }
+    });
+  });
+</script>
+</body>
+</html>

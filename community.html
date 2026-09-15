@@ -64,6 +64,8 @@
       const unread = threads.reduce((sum, t) => sum + t.unread, 0);
       const dot = document.getElementById("msg-dot");
       if (dot) dot.hidden = unread === 0;
+      const navDot = document.getElementById("nav-msg-dot");
+      if (navDot) navDot.hidden = unread === 0;
     } catch (e) { /* non-critical */ }
   }
 
@@ -90,6 +92,7 @@
       <div style="height:80px;"></div>
     `;
     updateMsgDot();
+    updateComposeFabVisibility();
 
     const listEl = document.getElementById("thread-list");
     let posts;
@@ -109,12 +112,22 @@
 
   function setSection(key) { activeSection = key; renderList(); }
 
+  /* The Notice Board is admin-only to post to — regular users shouldn't
+     even see a "+" that would just reject them. */
+  function updateComposeFabVisibility() {
+    const fab = document.getElementById("comm-compose-fab");
+    if (!fab) return;
+    const user = Store.getUser();
+    const blocked = activeSection === "notice" && !(user && user.isAdmin);
+    fab.hidden = blocked;
+  }
+
   function threadCardHtml(p) {
     const author = getSellerById(p.authorId);
     return `
       <button class="thread-card" onclick="openPost('${p.id}')">
         <div class="thread-top">
-          <div class="mini-avatar">${author ? characterAvatarHtml(author.avatarType) : ""}</div>
+          <div class="mini-avatar">${author ? avatarHtml(author) : ""}</div>
           <span class="thread-user">${escapeHtml(author ? author.name : "Someone")}</span>
           <span class="thread-time">${timeShort(p.createdAt)}</span>
         </div>
@@ -134,7 +147,7 @@
     return `
       <button class="thread-card" onclick="openPost('${p.id}')">
         <div class="thread-top">
-          <div class="mini-avatar">${author ? characterAvatarHtml(author.avatarType) : ""}</div>
+          <div class="mini-avatar">${author ? avatarHtml(author) : ""}</div>
           <span class="thread-user">${escapeHtml(author ? author.name : "Someone")}</span>
           <span class="thread-time">${timeShort(p.createdAt)}</span>
           <span class="status-chip-sm ${status}">${STATUS_LABELS[status]}</span>
@@ -142,7 +155,7 @@
         <div class="thread-title">${escapeHtml(p.title || "")}</div>
         <div class="thread-body">${escapeHtml(p.body)}</div>
         <div class="thread-foot">
-          <span><span class="vouch-seal-mini">✓</span>${p.votes} vouched</span>
+          <span><span class="vouch-seal-mini">${VOUCH_ICON}</span>${p.votes} vouched</span>
           <span>💬 ${p.replyCount} repl${p.replyCount === 1 ? "y" : "ies"}</span>
         </div>
       </button>
@@ -168,12 +181,14 @@
     const author = getSellerById(post.authorId);
     const user = Store.getUser();
     const isAdmin = !!(user && user.isAdmin);
+    activeSection = post.section; // keeps the FAB and tab highlight consistent on a deep link
+    updateComposeFabVisibility();
 
     root.innerHTML = `
       ${backRowHtml(null)}
       <div style="padding:0 18px;">
         <div class="thread-top">
-          <div class="mini-avatar" style="width:28px;height:28px;">${author ? characterAvatarHtml(author.avatarType) : ""}</div>
+          <div class="mini-avatar" style="width:28px;height:28px;">${author ? avatarHtml(author) : ""}</div>
           <span class="thread-user">${escapeHtml(author ? author.name : "Someone")}</span>
           <span class="thread-time">${timeShort(post.createdAt)}</span>
         </div>
@@ -243,7 +258,7 @@
       return `
         <div class="reply-card">
           <div class="thread-top" style="margin-bottom:4px;">
-            <div class="mini-avatar" style="width:20px;height:20px;">${author ? characterAvatarHtml(author.avatarType) : ""}</div>
+            <div class="mini-avatar" style="width:20px;height:20px;">${author ? avatarHtml(author) : ""}</div>
             <span class="thread-user" style="font-size:11.5px;">${escapeHtml(author ? author.name : "Someone")}</span>
             <span class="thread-time">${timeShort(r.createdAt)}</span>
           </div>
@@ -279,12 +294,18 @@
     const body = document.getElementById("post-body").value.trim();
     if (!title) { toast("Add a title"); return; }
     if (!body) { toast("Add some details"); return; }
+    const submitBtn = document.querySelector("#post-modal button.btn-fill");
+    submitBtn.disabled = true;
     try {
-      const id = await Store.postCommunityPost({ section: activeSection, title, body });
+      await Store.postCommunityPost({ section: activeSection, title, body });
       closeModal("post-modal");
       toast("Posted");
-      openPost(id);
-    } catch (err) { toast(err.message || "Couldn't post"); }
+      await renderList(); // back to the list, new post at the top, empty state cleared
+    } catch (err) {
+      toast(err.message || "Couldn't post — try again");
+    } finally {
+      submitBtn.disabled = false;
+    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -292,6 +313,7 @@
 
     // Floating compose button, appended once (not rebuilt on list/detail re-renders).
     const fab = document.createElement("button");
+    fab.id = "comm-compose-fab";
     fab.className = "comm-compose";
     fab.innerHTML = "+";
     fab.setAttribute("aria-label", "New post");
