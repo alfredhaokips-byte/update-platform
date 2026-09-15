@@ -444,9 +444,10 @@ const Store = {
     });
   },
 
-  /* Batched, count-only vouch totals for a set of sellers — one query, no
-     voucher profile data. Used for listing/browse cards, where fetching
-     full voucher details per card would mean one query per card. */
+  /* Batched, count-only vouch totals for a set of sellers — every vouch a
+     seller has received, general AND across all of their listings combined.
+     Used by the notification poller's "someone vouched for you" check,
+     where the split doesn't matter — only whether the total went up. */
   async getVouchCounts(sellerIds) {
     const ids = Array.from(new Set(sellerIds)).filter(Boolean);
     if (ids.length === 0) return new Map();
@@ -457,15 +458,21 @@ const Store = {
     return counts;
   },
 
-  /* Full vouch detail for one seller — count, whether the signed-in user has
-     already vouched, and a few real vouchers to show. Used on a seller's own
-     profile/detail view, where only one seller is in play at a time. */
-  async getVouchStats(sellerId) {
-    const { data, error } = await sb
+  /* Full vouch detail, scoped by `listingId`: omitted (or null) means the
+     general "vouch for this seller" endorsement (profile.html); a real
+     listing id scopes it to a vouch for that specific listing (listing.html)
+     — these are two separate, independently-toggleable endorsements, not
+     the same vouch reflected in two places. Returns count, whether the
+     signed-in user has already vouched *in this scope*, and a few real
+     vouchers to show. */
+  async getVouchStats(sellerId, listingId = null) {
+    let q = sb
       .from("vouches")
       .select("voucher_id, voucher:profiles!vouches_voucher_id_fkey(*)")
       .eq("seller_id", sellerId)
       .order("created_at", { ascending: false });
+    q = listingId ? q.eq("listing_id", listingId) : q.is("listing_id", null);
+    const { data, error } = await q;
     if (error) throw error;
     const vouchers = [];
     data.forEach((row) => {
@@ -512,19 +519,25 @@ const Store = {
     return data ? data.id : null;
   },
 
-  async toggleVouch(sellerId) {
+  /* `listingId` null toggles the general seller vouch; a real id toggles
+     the vouch for that one listing only — see getVouchStats() above for why
+     these are separate rows, not the same vouch. */
+  async toggleVouch(sellerId, listingId = null) {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in to vouch");
     if (user.id === sellerId) throw new Error("You can't vouch for yourself");
-    const { data: existing, error: selErr } = await sb
-      .from("vouches").select("voucher_id").eq("voucher_id", user.id).eq("seller_id", sellerId).maybeSingle();
+    let existingQ = sb.from("vouches").select("voucher_id").eq("voucher_id", user.id).eq("seller_id", sellerId);
+    existingQ = listingId ? existingQ.eq("listing_id", listingId) : existingQ.is("listing_id", null);
+    const { data: existing, error: selErr } = await existingQ.maybeSingle();
     if (selErr) throw selErr;
     if (existing) {
-      const { error } = await sb.from("vouches").delete().eq("voucher_id", user.id).eq("seller_id", sellerId);
+      let delQ = sb.from("vouches").delete().eq("voucher_id", user.id).eq("seller_id", sellerId);
+      delQ = listingId ? delQ.eq("listing_id", listingId) : delQ.is("listing_id", null);
+      const { error } = await delQ;
       if (error) throw error;
       return false;
     } else {
-      const { error } = await sb.from("vouches").insert({ voucher_id: user.id, seller_id: sellerId });
+      const { error } = await sb.from("vouches").insert({ voucher_id: user.id, seller_id: sellerId, listing_id: listingId });
       if (error) throw error;
       return true;
     }

@@ -49,9 +49,13 @@ exactly what's happening.
     `profiles.phone`/`phone_verified`, added by `trust-verification.sql` for
     a phone OTP tier that was tried and then dropped (see "Phone OTP
     verification, removed" below).
-14. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+14. Same again with `supabase/vouches-per-listing.sql` — adds a nullable
+    `vouches.listing_id` so a vouch can be scoped to one specific listing,
+    not just the seller as a whole (see "Vouching, now correctly scoped"
+    below).
+15. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
     key (not `service_role`).
-15. Paste them into `js/supabase-client.js`:
+16. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -233,7 +237,9 @@ anyone signed in (other than the seller) can vouch for a seller once;
 vouching again removes it. Shown on the seller's profile (`profile.html`,
 with a real avatar stack of who's vouched and a toggle button) and as a
 read-only count next to the trust badges on `listing.html`. Backed by
-`supabase/vouches.sql`.
+`supabase/vouches.sql`. **Since split into a separate per-listing vouch too
+— see "Vouching, now correctly scoped" below; `listing.html` no longer
+shows this same seller-level vouch.**
 
 ## Visual redesign, delete listings, pan-India expansion
 
@@ -469,6 +475,53 @@ than being honest about not having a real tier yet.
   now always read 0 — replaced with "Deals done" (a real, already-tracked
   number from the reviews trigger in `trust-verification.sql`) rather than
   ship a hollow stat on the public marketing page.
+
+## Nav reorder, fixed image cropping, vouching now correctly scoped
+
+- **Bottom nav reorder.** Sell moved to the center slot, Messages moved to
+  just left of Account: Home, Community, Sell, Messages, Account
+  (`NAV_ITEMS` in `js/common.js`).
+- **Cropped photos, fixed.** Two real issues, found by checking what was
+  actually cropping and why rather than guessing:
+  - **Listing detail photos** (`.detail-img img` in `css/style.css`) used
+    `object-fit: cover` in a fixed 4:3 box, silently cropping any photo shot
+    in a different aspect ratio. Switched to `object-fit: contain` — the
+    full photo is now always visible, letterboxed against the card
+    background when its ratio doesn't match, never cropped, since this is
+    the one place the photo itself is the whole point.
+  - **Grid thumbnails** (Home feed, My Ads — all `.product-img`, shared via
+    `listingCardHtml()`) correctly keep `object-fit: cover` for a clean,
+    consistent grid — cropping there is the right call, sellers just
+    couldn't see it coming. The upload-time preview (`.img-drop` in
+    post-ad.html's photo picker) was a fixed 78×78 **square**, a different
+    shape than the real 1/0.85 grid thumbnail, so it never actually showed
+    what would get cropped. Now shares the same aspect ratio, so what a
+    seller sees while uploading is what buyers will see.
+  - **Profile picture upload** (`edit-profile.html`) was audited too and
+    found already correct — its live preview uses the same circular,
+    `cover`-cropped box as every place the photo is later shown, so no fix
+    was needed there.
+- **Vouching, now correctly scoped.** A reported "vouching for one item
+  marks all of a seller's items as vouched" turned out not to be a
+  state-tracking bug — `vouches` was (by original design, see "Vouching"
+  above) a seller-level endorsement with no `listing_id` at all, so every
+  listing from that seller correctly showed the same vouch because it
+  genuinely was the same vouch. Reworked into two independently-toggleable
+  endorsements sharing one table (`vouches.listing_id`, nullable —
+  `supabase/vouches-per-listing.sql`):
+  - `listing.html` now vouches for (and shows a count/state for) that one
+    specific listing (`Store.toggleVouch(sellerId, listingId)`,
+    `Store.getVouchStats(sellerId, listingId)`) — copy changed to "vouched
+    for this item" so it reads correctly now that it's scoped.
+  - `profile.html` is unchanged — still the general "I vouch for this
+    seller" endorsement, `listingId` omitted.
+  - Enforced by two partial unique indexes, not the old single primary key
+    (one vouch per voucher per listing, separately one general vouch per
+    voucher per seller) — a direct API call can't create duplicates in
+    either scope.
+  - The "someone vouched for you" notification now sums both scopes
+    (`Store.getVouchCounts`, already existed but was unused) rather than
+    only catching general vouches.
 
 ## What's NOT built yet
 

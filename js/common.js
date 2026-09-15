@@ -88,8 +88,8 @@ const NAV_ICONS = {
 const NAV_ITEMS = [
   { key: "home", icon: NAV_ICONS.home, label: "Home", href: "index.html" },
   { key: "community", icon: NAV_ICONS.community, label: "Community", href: "community.html" },
-  { key: "messages", icon: NAV_ICONS.messages, label: "Messages", href: "messages.html" },
   { key: "sell", icon: NAV_ICONS.sell, label: "Sell", href: "post-ad.html" },
+  { key: "messages", icon: NAV_ICONS.messages, label: "Messages", href: "messages.html" },
   { key: "account", icon: NAV_ICONS.account, label: "Account", href: "account.html" },
 ];
 
@@ -189,13 +189,14 @@ async function checkForNotifiableEvents() {
     _lastKnownUnread = unread;
   } catch (e) { /* non-critical */ }
 
-  // Someone vouched for you (your seller profile).
+  // Someone vouched for you — generally, or on one of your listings.
   try {
-    const stats = await Store.getVouchStats(Store.getUser().id);
-    if (_lastKnownVouchCount !== null && stats.count > _lastKnownVouchCount) {
+    const counts = await Store.getVouchCounts([Store.getUser().id]);
+    const total = counts.get(Store.getUser().id) || 0;
+    if (_lastKnownVouchCount !== null && total > _lastKnownVouchCount) {
       notifyIfEnabled("Someone vouched for you", "Your trust on Marketplace just grew a little.");
     }
-    _lastKnownVouchCount = stats.count;
+    _lastKnownVouchCount = total;
   } catch (e) { /* non-critical */ }
 
   // Someone vouched for one of your Community/Feedback posts, or replied to one.

@@ -75,7 +75,7 @@
     const reviews = await Store.getReviews(listing.sellerId);
     const sellerStats = Store.reviewStats(reviews);
     const trust = await Store.getSellerTrustStats(listing.sellerId).catch(() => ({ responseRatePct: null }));
-    const vouchStats = await Store.getVouchStats(listing.sellerId).catch(() => ({ count: 0 }));
+    const vouchStats = await Store.getVouchStats(listing.sellerId, listing.id).catch(() => ({ count: 0 }));
     document.title = listing.title + " — Marketplace";
 
     const galleryUrls = listingGalleryUrls(listing);
@@ -112,7 +112,7 @@
         </a>
 
         <div class="row between" style="padding:0 0 16px;gap:10px;">
-          <span style="font-size:12px;color:var(--muted);">${vouchStats.count === 0 ? "No vouches yet" : `${vouchStats.count} neighbour${vouchStats.count === 1 ? "" : "s"} vouched`}</span>
+          <span style="font-size:12px;color:var(--muted);">${vouchStats.count === 0 ? "No vouches yet for this item" : `${vouchStats.count} neighbour${vouchStats.count === 1 ? "" : "s"} vouched for this item`}</span>
           ${!isMine ? `<button class="vouch-toggle-btn ${vouchStats.vouched ? "on" : ""}" id="listing-vouch-btn"><span class="vouch-icon">${VOUCH_ICON}</span>${vouchStats.vouched ? "Vouched" : "Vouch"}</button>` : ""}
         </div>
 
@@ -182,12 +182,12 @@
         await requireLoginOr(async () => {
           vouchBtn.disabled = true;
           try {
-            const nowVouched = await Store.toggleVouch(listing.sellerId);
+            const nowVouched = await Store.toggleVouch(listing.sellerId, listing.id);
             vouchBtn.classList.toggle("on", nowVouched);
             vouchBtn.innerHTML = `<span class="vouch-icon">${VOUCH_ICON}</span>${nowVouched ? "Vouched" : "Vouch"}`;
             const countEl = vouchBtn.previousElementSibling;
-            const stats = await Store.getVouchStats(listing.sellerId);
-            countEl.textContent = stats.count === 0 ? "No vouches yet" : `${stats.count} neighbour${stats.count === 1 ? "" : "s"} vouched`;
+            const stats = await Store.getVouchStats(listing.sellerId, listing.id);
+            countEl.textContent = stats.count === 0 ? "No vouches yet for this item" : `${stats.count} neighbour${stats.count === 1 ? "" : "s"} vouched for this item`;
             toast(nowVouched ? "Thanks for vouching" : "Vouch removed");
           } catch (err) {
             toast(err.message || "Couldn't update — try again");
