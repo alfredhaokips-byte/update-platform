@@ -106,11 +106,15 @@
             <div class="trust-badges-row" style="margin-top:8px;">
               <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? "✓" : "○"} Email</span>
               <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? "✓" : "○"} Selfie</span>
-              ${vouchStats.count > 0 ? `<span class="trust-badge yes"><span class="vouch-seal-mini">${VOUCH_ICON}</span> ${vouchStats.count} vouched</span>` : ""}
             </div>
           </div>
           ${isSellerVerified(seller) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}
         </a>
+
+        <div class="row between" style="padding:0 0 16px;gap:10px;">
+          <span style="font-size:12px;color:var(--muted);">${vouchStats.count === 0 ? "No vouches yet" : `${vouchStats.count} neighbour${vouchStats.count === 1 ? "" : "s"} vouched`}</span>
+          ${!isMine ? `<button class="vouch-toggle-btn ${vouchStats.vouched ? "on" : ""}" id="listing-vouch-btn"><span class="vouch-icon">${VOUCH_ICON}</span>${vouchStats.vouched ? "Vouched" : "Vouch"}</button>` : ""}
+        </div>
 
         <div class="detail-info" style="margin-bottom:16px;">
           <h3 style="font-size:13px;margin-bottom:2px;">Listing confidence</h3>
@@ -171,6 +175,28 @@
         await renderQA();
       });
     });
+
+    const vouchBtn = document.getElementById("listing-vouch-btn");
+    if (vouchBtn) {
+      vouchBtn.addEventListener("click", async () => {
+        await requireLoginOr(async () => {
+          vouchBtn.disabled = true;
+          try {
+            const nowVouched = await Store.toggleVouch(listing.sellerId);
+            vouchBtn.classList.toggle("on", nowVouched);
+            vouchBtn.innerHTML = `<span class="vouch-icon">${VOUCH_ICON}</span>${nowVouched ? "Vouched" : "Vouch"}`;
+            const countEl = vouchBtn.previousElementSibling;
+            const stats = await Store.getVouchStats(listing.sellerId);
+            countEl.textContent = stats.count === 0 ? "No vouches yet" : `${stats.count} neighbour${stats.count === 1 ? "" : "s"} vouched`;
+            toast(nowVouched ? "Thanks for vouching" : "Vouch removed");
+          } catch (err) {
+            toast(err.message || "Couldn't update — try again");
+          } finally {
+            vouchBtn.disabled = false;
+          }
+        });
+      });
+    }
   }
 
   async function renderQA() {

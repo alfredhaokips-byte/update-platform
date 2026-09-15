@@ -349,6 +349,35 @@ read-only count next to the trust badges on `listing.html`. Backed by
   the hero text; a parcel-with-a-sprig graphic above the "Got something to
   sell?" band.
 
+## Nav cleanup, vouch lit/unlit state, a real dark-mode text bug
+
+- **Bottom nav, five items.** "My ads" removed (redundant with the identical
+  entry on Account); Home/Community/Messages/Sell/Account now share one
+  consistent SVG icon set (`NAV_ICONS` in `js/common.js` — 24×24, 1.8
+  stroke) instead of mismatched Unicode glyphs, and sizing went back up now
+  that five items don't need six-item cramping.
+- **Account page audit.** Checked at 375×667 and 320×568 (real mobile
+  heights, not desktop) — all nine menu items are present, reachable by
+  scroll, and never covered by the fixed bottom nav. No bug found here;
+  noted rather than a fix invented to match the report.
+- **Vouch buttons now have a real lit/unlit state** — marigold outline +
+  marigold heart when not vouched, solid marigold fill + white heart when
+  vouched (`.vouch-toggle-btn` / `.on` in `css/style.css`) — on seller
+  profiles, and now also on listing detail pages, which previously only
+  showed a read-only vouch *count* with no way to vouch at all
+  (`Store.toggleVouch` wired to a real button in `listing.html`). Feedback
+  posts in Community get the same treatment instead of generic ▲/▼ arrows;
+  `getCommunityPosts()`/`getCommunityPost()` now return `myVote` so the UI
+  actually knows whether the signed-in user has already vouched.
+- **Dark-mode name contrast — real root cause found.** Names weren't
+  reading as literally invisible; every button-based card (`.thread-card`,
+  `.chat-item`, `.menu-item`, ...) was silently using the *browser's own
+  default button text color* instead of inheriting the page's, because
+  nothing had ever set `color` on the global `button` rule. Fixed with one
+  line (`button { color: inherit; }`) — which also happens to fix every
+  other button-nested text across the app, not just names, since it was
+  never actually about `.thread-user`/`.chat-name` specifically.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:

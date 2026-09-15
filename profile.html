@@ -156,7 +156,7 @@
           <div class="t1">${stats.count === 0 ? "No vouches yet" : `${stats.count} neighbour${stats.count === 1 ? "" : "s"} vouched`}</div>
           <div class="t2">for smooth, honest deals</div>
         </div>
-        ${!isMe ? `<button class="vouch-toggle-btn ${stats.vouched ? "on" : ""}" id="vouch-toggle-btn">${stats.vouched ? `<span class="vouch-seal-mini">${VOUCH_ICON}</span> Vouched` : "Vouch"}</button>` : ""}
+        ${!isMe ? `<button class="vouch-toggle-btn ${stats.vouched ? "on" : ""}" id="vouch-toggle-btn"><span class="vouch-icon">${VOUCH_ICON}</span>${stats.vouched ? "Vouched" : "Vouch"}</button>` : ""}
       </div>
     `;
     if (!isMe) {

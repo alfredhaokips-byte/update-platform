@@ -194,11 +194,17 @@
         </div>
         <h2 style="font-size:19px;margin:8px 0;">${escapeHtml(post.title || "")}</h2>
         <p style="font-size:14px;color:var(--ink-mid);line-height:1.55;margin-bottom:16px;">${escapeHtml(post.body)}</p>
-        ${post.section !== "notice" ? `
+        ${post.section === "general" ? `
           <div class="vote-col-h" style="margin-bottom:16px;">
             <button onclick="vote('${post.id}',1)" aria-label="Upvote">▲</button>
-            <span class="n">${post.votes}${post.section === "feedback" ? " vouched" : ""}</span>
+            <span class="n">${post.votes}</span>
             <button onclick="vote('${post.id}',-1)" aria-label="Downvote">▼</button>
+          </div>
+        ` : ""}
+        ${post.section === "feedback" ? `
+          <div class="row between" style="margin-bottom:16px;gap:10px;">
+            <span style="font-size:12px;color:var(--muted);">${post.votes === 0 ? "No vouches yet" : `${post.votes} vouched`}</span>
+            <button class="vouch-toggle-btn ${post.myVote === 1 ? "on" : ""}" onclick="vote('${post.id}',1)"><span class="vouch-icon">${VOUCH_ICON}</span>${post.myVote === 1 ? "Vouched" : "Vouch"}</button>
           </div>
         ` : ""}
         ${post.section === "feedback" ? `

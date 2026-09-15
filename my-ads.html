@@ -37,7 +37,7 @@
 <script src="js/common.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
-    await initPage("myads");
+    await initPage(null); // no longer a bottom-nav tab — reachable from Account
     const session = await Auth.requireAuth();
     if (!session) return;
 

@@ -77,7 +77,12 @@ body {
 }
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
-button { font-family: inherit; cursor: pointer; }
+/* Browsers give <button> its own default text color (often literally
+   black) instead of inheriting from the page — that's the real cause of
+   "other users' names look grey/wrong in dark mode": every button-based
+   card (.thread-card, .chat-item, .menu-item, ...) was silently falling
+   back to that default for everything nested inside, dark mode or not. */
+button { font-family: inherit; cursor: pointer; color: inherit; }
 ul { margin: 0; padding: 0; list-style: none; }
 h1, h2, h3 { margin: 0; line-height: 1.15; font-family: 'Fraunces', Georgia, serif; font-weight: 600; }
 h4 { margin: 0; line-height: 1.2; }
@@ -202,13 +207,14 @@ input, select, textarea { font-family: inherit; }
 }
 @media (min-width: 900px) { .bottom-nav { max-width: 620px; } }
 .nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  font-size: 8.5px; color: var(--muted-2); font-weight: 700; flex: 1; min-width: 0;
-  padding: 4px 1px; position: relative; background: none; border: none;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--muted-2); font-weight: 700; flex: 1; min-width: 0;
+  padding: 4px 2px; position: relative; background: none; border: none;
 }
 .nav-item.active { color: var(--ink); }
-.nav-icon { font-size: 16px; }
-.nav-item .dot { top: -1px; right: 18%; }
+.nav-icon { width: 21px; height: 21px; display: flex; align-items: center; justify-content: center; }
+.nav-icon svg { width: 100%; height: 100%; }
+.nav-item .dot { top: -1px; right: 26%; }
 
 /* ---------- Listing detail ---------- */
 .detail-wrap { padding: 0 18px; }
@@ -480,11 +486,16 @@ input, select, textarea { font-family: inherit; }
 .vouch-box-text { flex: 1; min-width: 0; }
 .vouch-box-text .t1 { font-size: 13px; font-weight: 700; }
 .vouch-box-text .t2 { font-size: 11px; color: var(--muted); }
+/* Unvouched = marigold outline, marigold heart. Vouched = solid marigold
+   fill, white heart — a real lit/unlit state, not just a label change. */
 .vouch-toggle-btn {
-  flex-shrink: 0; border-radius: 999px; border: 1.5px solid var(--ink); background: var(--surface);
-  color: var(--ink); font-size: 12px; font-weight: 700; padding: 8px 14px;
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; border: 1.5px solid var(--marigold); background: transparent;
+  color: var(--marigold); font-size: 12px; font-weight: 700; padding: 8px 14px;
 }
-.vouch-toggle-btn.on { background: var(--ink); color: var(--ink-contrast); }
+.vouch-toggle-btn .vouch-icon { width: 13px; height: 13px; flex-shrink: 0; }
+.vouch-toggle-btn .vouch-icon svg { width: 100%; height: 100%; display: block; }
+.vouch-toggle-btn.on { background: var(--marigold); color: #fff; }
 .vouch-toggle-btn:disabled { opacity: .5; }
 .confidence-item .mark { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
 .confidence-item.yes .mark { background: var(--verified-bg); color: var(--verified-fg); }

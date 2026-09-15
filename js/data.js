@@ -638,11 +638,20 @@ const Store = {
       const { data: replies } = await sb.from("community_posts").select("parent_id").in("parent_id", ids);
       (replies || []).forEach((r) => { replyCounts[r.parent_id] = (replyCounts[r.parent_id] || 0) + 1; });
     }
+    // One batched query for "did I vote on any of these" rather than one per
+    // card — same reasoning as getVouchCounts() for sellers.
+    const user = this.getUser();
+    let myVotes = {};
+    if (user && ids.length) {
+      const { data: votes } = await sb.from("community_votes").select("post_id, value").eq("user_id", user.id).in("post_id", ids);
+      (votes || []).forEach((v) => { myVotes[v.post_id] = v.value; });
+    }
     return data.map((p) => {
       if (p.author) this._cache.profileById.set(p.author.id, mapProfile(p.author));
       return {
         id: p.id, authorId: p.author_id, section: p.section, title: p.title, body: p.body,
         status: p.status, votes: p.votes, createdAt: p.created_at, replyCount: replyCounts[p.id] || 0,
+        myVote: myVotes[p.id] || 0,
       };
     });
   },
@@ -661,9 +670,15 @@ const Store = {
     const replies = data.filter((r) => r.parent_id === id).map((r) => ({
       id: r.id, authorId: r.author_id, body: r.body, createdAt: r.created_at,
     }));
+    const user = this.getUser();
+    let myVote = 0;
+    if (user) {
+      const { data: vote } = await sb.from("community_votes").select("value").eq("post_id", id).eq("user_id", user.id).maybeSingle();
+      myVote = vote ? vote.value : 0;
+    }
     return {
       id: root.id, authorId: root.author_id, section: root.section, title: root.title, body: root.body,
-      status: root.status, votes: root.votes, createdAt: root.created_at, replies,
+      status: root.status, votes: root.votes, createdAt: root.created_at, replies, myVote,
     };
   },
 
