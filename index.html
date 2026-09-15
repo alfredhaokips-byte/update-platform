@@ -485,11 +485,11 @@
       : `<p style="grid-column:1/-1;color:var(--muted);">No listings yet — be the first to post one.</p>`;
 
     const localityCount = new Set(listings.map((l) => l.locality)).size;
-    // "Verified" means a phone number is on file — see isSellerVerified() in
-    // js/data.js. Not the same as a synthesized trust score, which this
-    // project deliberately hasn't built yet.
-    const verifiedCount = Array.from(new Set(listings.map((l) => l.sellerId)))
-      .map(getSellerById).filter(isSellerVerified).length;
+    // No real verification tier exists yet (see isSellerVerified() in
+    // js/data.js), so a "Verified sellers" stat here would always read 0 —
+    // "Deals done" is a real, already-tracked number instead of a hollow one.
+    const dealsCount = Array.from(new Set(listings.map((l) => l.sellerId)))
+      .map(getSellerById).reduce((sum, s) => sum + (s ? s.deals : 0), 0);
 
     document.getElementById("hero-badge-text").textContent = listings.length > 0
       ? `${listings.length}+ neighbours already trading`
@@ -499,7 +499,7 @@
     document.getElementById("hero-stats").innerHTML = `
       <div class="stat"><div class="num">${listings.length}</div><div class="label">Active listings</div></div>
       <div class="stat"><div class="num">${localityCount}</div><div class="label">Localities covered</div></div>
-      <div class="stat"><div class="num">${verifiedCount}</div><div class="label">Verified sellers</div></div>
+      <div class="stat"><div class="num">${dealsCount}</div><div class="label">Deals done</div></div>
     `;
   }
 

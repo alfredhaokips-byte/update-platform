@@ -117,13 +117,14 @@ function initials(name) {
   return (name || "").split(" ").filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
 }
 
-/* "Verified" means a phone number is on file — a real, checkable signal,
-   not the unused full-identity `profiles.verified` flag (nothing in this
-   app sets that yet; real selfie/ID verification is a future, stronger
-   tier — see README). Once phone OTP confirmation actually exists, swap
-   this to `seller.phoneVerified` instead of `!!seller.phone`. */
+/* No real verification tier exists yet — phone OTP was tried and dropped
+   (no SMS provider), and the unused full-identity `profiles.verified` flag
+   was never set by anything either. Every seller is honestly "Unverified"
+   until a real tier (ID/selfie-based, per the original trust design) is
+   actually built — see README. Kept as a function, not inlined `false`
+   everywhere, so wiring up that real tier later is a one-line change. */
 function isSellerVerified(seller) {
-  return !!(seller && seller.phone);
+  return false;
 }
 
 function trustLine(seller) {
@@ -158,8 +159,6 @@ function mapProfile(row) {
     lat: row.lat,
     lng: row.lng,
     emailVerified: !!row.email_verified,
-    phone: row.phone,
-    phoneVerified: !!row.phone_verified,
     selfieVerified: !!row.selfie_verified,
     avatarType: row.avatar_type || "neutral",
     isAdmin: !!row.is_admin,
@@ -529,14 +528,6 @@ const Store = {
       if (error) throw error;
       return true;
     }
-  },
-
-  async setPhone(phone) {
-    const user = this.getUser();
-    if (!user) throw new Error("Must be signed in");
-    const { error } = await sb.from("profiles").update({ phone }).eq("id", user.id);
-    if (error) throw error;
-    user.phone = phone;
   },
 
   /* Optional, cosmetic only — never required to use the app. */

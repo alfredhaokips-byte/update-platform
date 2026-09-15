@@ -122,7 +122,7 @@
             ${listingConfidenceItem(listing.images && listing.images.length > 0 && listing.images.every(isPhotoUrl), "Real photos uploaded")}
             ${listingConfidenceItem(!!listing.condition, "Condition disclosed (" + listing.condition + ")")}
             ${listingConfidenceItem(listing.desc && listing.desc.trim().length >= 40, "Description complete")}
-            ${listingConfidenceItem(isSellerVerified(seller), "Seller verified (phone on file)")}
+            ${listingConfidenceItem(isSellerVerified(seller), "Seller verified")}
           </div>
         </div>
 

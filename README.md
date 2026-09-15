@@ -45,9 +45,13 @@ exactly what's happening.
 12. Same again with `supabase/community-edit.sql` — adds the
     `edit_community_post` RPC backing the 20-minute post-edit window (see
     "Community post edit/delete" below).
-13. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+13. Same again with `supabase/remove-phone-verification.sql` — drops
+    `profiles.phone`/`phone_verified`, added by `trust-verification.sql` for
+    a phone OTP tier that was tried and then dropped (see "Phone OTP
+    verification, removed" below).
+14. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
     key (not `service_role`).
-14. Paste them into `js/supabase-client.js`:
+15. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -156,9 +160,10 @@ existing feed. Six things were built here:
    wired up) — gating on it would make posting permanently impossible for
    everyone. Email confirmation is the real, working equivalent, so that's
    what's enforced instead. `verify.html` is the verification hub — email
-   status is real, phone number can be saved (not yet OTP-verified, clearly
-   labeled), selfie is a "coming soon" placeholder (real liveness detection
-   is its own dedicated phase, not built here).
+   status is real, selfie is a "coming soon" placeholder (real liveness
+   detection is its own dedicated phase, not built here). Phone OTP was
+   tried later and then fully removed — see "Phone OTP verification,
+   removed" below.
 4. **Trust signals on listings** — the seller card on `listing.html` now
    shows response rate and verification badges, plus a "Listing confidence"
    checklist (real photos / condition disclosed / description complete /
@@ -325,7 +330,9 @@ read-only count next to the trust badges on `listing.html`. Backed by
   (`isSellerVerified()` in `js/data.js`, checked everywhere a Verified badge
   or "New seller"/"Unverified" label shows) rather than the old unused
   `profiles.verified` flag that nothing ever set. Once real phone OTP
-  exists, this is a one-line swap to `seller.phoneVerified`.
+  exists, this is a one-line swap to `seller.phoneVerified`. **(Superseded —
+  phone OTP was dropped entirely; see "Phone OTP verification, removed"
+  below. Every seller now honestly shows "Unverified.")**
 - **Nearby/All India order.** All India is now the left pill and the
   default active view everywhere this toggle appears; Nearby is explicit,
   on the right.
@@ -434,6 +441,35 @@ read-only count next to the trust badges on `listing.html`. Backed by
   `community.sql` — no new SQL needed for that half.
 - **Free maps.** Google Places/Maps is gone — see §2 above.
 
+## Phone OTP verification, removed
+
+Phone-based verification (`profiles.phone` on file → "Verified" badge) is
+gone, not left half-built — no SMS provider was ever set up, and faking
+verification by lowering the bar to "has a phone number saved" was worse
+than being honest about not having a real tier yet.
+
+- **`isSellerVerified()` in `js/data.js` now always returns `false`.** Kept
+  as a function (not inlined) so every "Verified"/"Unverified" display
+  already routes through one place — listing cards, listing detail, seller
+  profile, Trust Profile, Account, the landing page's showcase cards — and
+  wiring up a real tier later is a one-line change there, not a re-audit of
+  every call site.
+- **`verify.html`'s phone number field is gone.** The page never had a real
+  OTP-code screen (it honestly said "OTP verification isn't live yet"), so
+  there was no broken flow to route around — just the number-saving input
+  and its "Save" button, removed. Email status/resend and the Selfie
+  "coming soon" placeholder are untouched and still work, so **"Get
+  verified" stays in Account's menu** rather than being hidden — hiding it
+  would have also hidden the still-working email resend, which isn't part
+  of what's being removed here.
+- **`profiles.phone`/`phone_verified` are dropped**, not just unused —
+  checked first, and neither column was referenced anywhere outside this
+  feature (no messaging/contact-info use). `supabase/remove-phone-verification.sql`.
+- The landing page's hero stats had a "Verified sellers" count that would
+  now always read 0 — replaced with "Deals done" (a real, already-tracked
+  number from the reviews trigger in `trust-verification.sql`) rather than
+  ship a hollow stat on the public marketing page.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
@@ -447,8 +483,10 @@ Per the phased briefs, everything below is intentionally deferred:
   above foundation is confirmed working)
 
 Also out of scope for now (flagged for awareness):
-- Phone OTP auth/verification (Phase 0 ships email/password only; phone
-  numbers can be saved on `verify.html` but nothing verifies them yet)
+- Phone OTP (as sign-in, not verification) — tried once as a verification
+  tier and removed, see "Phone OTP verification, removed" above; a real
+  verification tier is still on the table for later, ID/selfie-based per
+  the original trust design, not phone
 - Image compression/resizing before upload
 - Realtime chat — messages send/receive correctly but don't push live; you see
   a reply on next page load/refresh, not instantly (the in-tab notification
