@@ -31,10 +31,10 @@
         <label for="f-password">Password</label>
         <input type="text" id="f-password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" style="-webkit-text-security:disc;text-security:disc;" />
       </div>
-      <div class="form-row">
+      <div class="form-row" style="position:relative;">
         <label for="f-locality">Locality (optional — you can set this later)</label>
         <input type="text" id="f-locality" placeholder="Start typing an area or city..." autocomplete="off" />
-        <p class="hint" id="locality-hint" hidden>Google Maps isn't set up yet — type your locality and city manually (see README), or leave this blank and set it later.</p>
+        <div class="map-preview" id="map-preview" hidden></div>
       </div>
       <p id="signup-error" style="color:var(--danger);font-size:13px;margin-bottom:14px;" hidden></p>
       <button type="submit" class="btn btn-fill btn-block" id="signup-btn">Create account</button>
@@ -42,6 +42,24 @@
     <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:18px;">
       Already have an account? <a href="login.html" style="color:var(--ink);font-weight:700;">Sign in</a>
     </p>
+  </div>
+
+  <!-- Email OTP confirmation step. Needs the Supabase dashboard switched to
+       OTP-style email confirmation (a 6-digit code) instead of the default
+       magic-link — see README for the manual dashboard step. -->
+  <div class="form-wrap" style="padding-top:20px;" id="otp-step" hidden>
+    <h3 style="margin-bottom:6px;">Check your email</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">We sent a 6-digit code to <b id="otp-email-echo"></b> — enter it below to confirm your account.</p>
+    <form id="otp-form">
+      <div class="form-row">
+        <label for="f-otp">Code</label>
+        <input type="text" id="f-otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="123456" required
+          style="letter-spacing:0.3em;font-size:20px;text-align:center;font-weight:700;" />
+      </div>
+      <p id="otp-error" style="color:var(--danger);font-size:13px;margin-bottom:14px;" hidden></p>
+      <button type="submit" class="btn btn-fill btn-block" id="otp-btn">Confirm</button>
+    </form>
+    <button type="button" id="resend-otp-btn" class="btn btn-outline btn-block" style="margin-top:10px;">Resend code</button>
   </div>
 
   <!-- Optional, always-skippable character step, shown after account creation. -->
@@ -60,20 +78,20 @@
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
-  let selectedPlace = null; // { locality, city, state, lat, lng } from Places Autocomplete
+  let selectedPlace = null; // { locality, city, state, lat, lng } from location search
+  let pendingEmail = null;
+  let pendingName = null;
 
   document.addEventListener("DOMContentLoaded", async () => {
     requireSupabaseConfigured();
 
     const localityInput = document.getElementById("f-locality");
-    if (IS_MAPS_CONFIGURED) {
-      mountPlacesAutocomplete(localityInput, (place) => { selectedPlace = place; }).catch(() => {
-        document.getElementById("locality-hint").hidden = false;
-      });
-      localityInput.addEventListener("input", () => { selectedPlace = null; });
-    } else {
-      document.getElementById("locality-hint").hidden = false;
-    }
+    const mapPreview = document.getElementById("map-preview");
+    mountPlacesAutocomplete(localityInput, (place) => {
+      selectedPlace = place;
+      mountLeafletMap(mapPreview, place.lat, place.lng, { zoom: 13 });
+    });
+    localityInput.addEventListener("input", () => { selectedPlace = null; mapPreview.hidden = true; });
 
     document.getElementById("signup-form").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -82,13 +100,7 @@
       errEl.hidden = true;
 
       const typedLocality = localityInput.value.trim();
-      // Free text without a Places pick is only usable when Maps isn't
-      // configured (no way to resolve it into a real city otherwise) — the
-      // field is optional either way, so leaving it blank just skips it.
-      const place = selectedPlace || (typedLocality && !IS_MAPS_CONFIGURED
-        ? { locality: typedLocality, city: typedLocality, state: null, lat: null, lng: null }
-        : null);
-      if (typedLocality && IS_MAPS_CONFIGURED && !place) {
+      if (typedLocality && !selectedPlace) {
         errEl.textContent = "Please pick a locality from the suggestions, or clear the field to skip it.";
         errEl.hidden = false;
         return;
@@ -97,19 +109,68 @@
       btn.disabled = true;
       btn.textContent = "Creating account...";
       try {
+        const email = document.getElementById("f-email").value.trim();
+        const name = document.getElementById("f-name").value.trim();
         await Auth.signUp({
-          name: document.getElementById("f-name").value.trim(),
-          email: document.getElementById("f-email").value.trim(),
+          name,
+          email,
           password: document.getElementById("f-password").value,
-          place,
+          place: selectedPlace,
         });
-        await Store.primeCache(); // needed for Store.setAvatarType() on the next step
-        showCharStep();
+        pendingEmail = email;
+        pendingName = name;
+        showOtpStep(email);
       } catch (err) {
         errEl.textContent = err.message || "Couldn't create your account — try again.";
         errEl.hidden = false;
         btn.disabled = false;
         btn.textContent = "Create account";
+      }
+    });
+
+    function showOtpStep(email) {
+      document.getElementById("signup-step").hidden = true;
+      document.getElementById("otp-step").hidden = false;
+      document.getElementById("otp-email-echo").textContent = email;
+      document.getElementById("f-otp").focus();
+    }
+
+    document.getElementById("otp-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById("otp-error");
+      const btn = document.getElementById("otp-btn");
+      errEl.hidden = true;
+      btn.disabled = true;
+      btn.textContent = "Confirming...";
+      try {
+        await Auth.verifyOtp({ email: pendingEmail, token: document.getElementById("f-otp").value.trim() });
+        await Store.primeCache(); // needed for Store.setAvatarType() on the next step
+
+        // Best-effort — a failed welcome email should never block signup.
+        try {
+          await sb.functions.invoke("send-welcome-email", { body: { email: pendingEmail, name: pendingName } });
+        } catch (mailErr) { /* non-critical */ }
+
+        document.getElementById("otp-step").hidden = true;
+        showCharStep();
+      } catch (err) {
+        errEl.textContent = err.message || "That code didn't work — check it and try again.";
+        errEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = "Confirm";
+      }
+    });
+
+    document.getElementById("resend-otp-btn").addEventListener("click", async () => {
+      const resendBtn = document.getElementById("resend-otp-btn");
+      resendBtn.disabled = true;
+      try {
+        await Auth.resendOtp({ email: pendingEmail });
+        toast("New code sent");
+      } catch (err) {
+        toast(err.message || "Couldn't resend — try again shortly");
+      } finally {
+        resendBtn.disabled = false;
       }
     });
 
@@ -124,7 +185,6 @@
     }
 
     function showCharStep() {
-      document.getElementById("signup-step").hidden = true;
       document.getElementById("char-step").hidden = false;
       const el = document.getElementById("char-grid");
       el.innerHTML = CHARACTER_OPTIONS.map((opt) => `

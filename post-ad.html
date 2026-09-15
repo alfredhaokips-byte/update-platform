@@ -41,10 +41,10 @@
         <label for="f-price">Price (₹)</label>
         <input type="number" id="f-price" placeholder="e.g. 15000" min="0" required />
       </div>
-      <div class="form-row">
+      <div class="form-row" style="position:relative;">
         <label for="f-locality">Locality</label>
         <input type="text" id="f-locality" placeholder="Start typing an area or city..." autocomplete="off" required />
-        <p class="hint" id="locality-hint" hidden>Google Maps isn't set up yet — type your locality and city manually (see README).</p>
+        <div class="map-preview" id="map-preview" hidden></div>
       </div>
     </div>
 
@@ -162,22 +162,21 @@
     buildChips("cat-chips", CATEGORIES.map((c) => ({ value: c, label: c, icon: CATEGORY_ICONS[c] })), (v) => selectedCategory = v);
 
     const localityInput = document.getElementById("f-locality");
+    const mapPreview = document.getElementById("map-preview");
     const user = Store.getUser();
     if (user.locality) {
       localityInput.value = `${user.locality}, ${user.city}`;
       selectedPlace = { locality: user.locality, city: user.city, state: user.state, lat: user.lat, lng: user.lng };
+      mountLeafletMap(mapPreview, user.lat, user.lng, { zoom: 13 });
     }
-    if (IS_MAPS_CONFIGURED) {
-      mountPlacesAutocomplete(localityInput, (place) => { selectedPlace = place; }).catch(() => {
-        document.getElementById("locality-hint").hidden = false;
-      });
-      // Typing over a previously-selected place invalidates it — only a
-      // fresh pick from the dropdown (or the pre-filled profile value above)
-      // counts as a real, geocoded place.
-      localityInput.addEventListener("input", () => { selectedPlace = null; });
-    } else {
-      document.getElementById("locality-hint").hidden = false;
-    }
+    mountPlacesAutocomplete(localityInput, (place) => {
+      selectedPlace = place;
+      mountLeafletMap(mapPreview, place.lat, place.lng, { zoom: 13 });
+    });
+    // Typing over a previously-selected place invalidates it — only a fresh
+    // pick from the dropdown (or the pre-filled profile value above) counts
+    // as a real, geocoded place.
+    localityInput.addEventListener("input", () => { selectedPlace = null; mapPreview.hidden = true; });
 
     renderPhotoRow();
     document.getElementById("f-photos").addEventListener("change", (e) => handlePhotoPick(e.target.files));
@@ -192,10 +191,8 @@
       const price = Number(document.getElementById("f-price").value);
       const typedLocality = document.getElementById("f-locality").value.trim();
       if (!typedLocality) { toast("Please add a locality"); return; }
-      if (IS_MAPS_CONFIGURED && !selectedPlace) { toast("Please pick a locality from the suggestions"); return; }
-      // Without Maps configured there's no way to resolve free text into a
-      // real city — fall back to using what was typed for both.
-      const place = selectedPlace || { locality: typedLocality, city: typedLocality, state: null, lat: null, lng: null };
+      if (!selectedPlace) { toast("Please pick a locality from the suggestions"); return; }
+      const place = selectedPlace;
       if (!category) { toast("Please pick a category"); return; }
       if (!selectedCond) { toast("Please pick a condition"); return; }
       if (selectedPhotos.length === 0) { toast("Add at least one real photo of the item"); return; }

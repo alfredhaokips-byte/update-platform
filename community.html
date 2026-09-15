@@ -29,6 +29,10 @@
       <label for="post-body">Details</label>
       <textarea id="post-body" maxlength="1000" style="min-height:100px;" placeholder="Add context — the more specific, the more useful this is."></textarea>
     </div>
+    <div class="form-row confirm-box" id="newsletter-send-row" hidden>
+      <input type="checkbox" id="newsletter-send-check" style="margin-top:3px;" />
+      <label for="newsletter-send-check">Also email this to newsletter subscribers (opted-in users only)</label>
+    </div>
     <button class="btn btn-fill btn-block" onclick="submitPost()">Post</button>
   </div>
 </div>
@@ -45,8 +49,11 @@
     { key: "notice", label: "Notice Board" },
   ];
   const STATUS_LABELS = { open: "Open", acknowledged: "Acknowledged", fixed: "Fixed", wont_fix: "Won't fix" };
+  const EDIT_WINDOW_MS = 20 * 60 * 1000;
   let activeSection = "general";
   let activePostId = null;
+  let currentPost = null; // the post object currently open in the detail view
+  let editingPostId = null; // set while the compose modal is being used to edit, not create
 
   function timeShort(dateStr) {
     const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
@@ -175,6 +182,7 @@
   async function openPost(id) {
     activePostId = id;
     const post = await Store.getCommunityPost(id);
+    currentPost = post;
     const root = document.getElementById("page-root");
     if (!post) { root.innerHTML = backRowHtml("Post") + `<div class="empty-state">Not found</div>`; return; }
 
@@ -194,6 +202,14 @@
         </div>
         <h2 style="font-size:19px;margin:8px 0;">${escapeHtml(post.title || "")}</h2>
         <p style="font-size:14px;color:var(--ink-mid);line-height:1.55;margin-bottom:16px;">${escapeHtml(post.body)}</p>
+        ${user && post.authorId === user.id ? `
+          <div class="row" style="gap:14px;margin-bottom:16px;">
+            ${Date.now() - new Date(post.createdAt).getTime() < EDIT_WINDOW_MS
+              ? `<button class="btn btn-outline btn-sm" onclick="openEditModal()">Edit</button>`
+              : ""}
+            <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="deletePost()">Delete</button>
+          </div>
+        ` : ""}
         ${post.section === "general" ? `
           <div class="vote-col-h" style="margin-bottom:16px;">
             <button onclick="vote('${post.id}',1)" aria-label="Upvote">▲</button>
@@ -288,11 +304,38 @@
       toast("Only the team can post to the Notice Board");
       return;
     }
+    editingPostId = null;
     document.getElementById("post-title").value = "";
     document.getElementById("post-body").value = "";
     document.getElementById("post-modal-title").textContent =
       activeSection === "feedback" ? "New feedback" : activeSection === "notice" ? "New announcement" : "New discussion";
+    const newsletterRow = document.getElementById("newsletter-send-row");
+    newsletterRow.hidden = activeSection !== "notice";
+    document.getElementById("newsletter-send-check").checked = false;
     openModal("post-modal");
+  }
+
+  /* Reuses the same modal, pre-filled — the 20-minute window itself is
+     re-checked server-side by the edit_community_post RPC, this button just
+     doesn't render past it. */
+  function openEditModal() {
+    if (!currentPost) return;
+    editingPostId = currentPost.id;
+    document.getElementById("post-title").value = currentPost.title || "";
+    document.getElementById("post-body").value = currentPost.body;
+    document.getElementById("post-modal-title").textContent = "Edit post";
+    document.getElementById("newsletter-send-row").hidden = true;
+    openModal("post-modal");
+  }
+
+  async function deletePost() {
+    if (!currentPost) return;
+    if (!confirm("Delete this post? This can't be undone.")) return;
+    try {
+      await Store.deleteCommunityPost(currentPost.id);
+      toast("Post deleted");
+      setSection(activeSection);
+    } catch (err) { toast(err.message || "Couldn't delete"); }
   }
 
   async function submitPost() {
@@ -300,13 +343,28 @@
     const body = document.getElementById("post-body").value.trim();
     if (!title) { toast("Add a title"); return; }
     if (!body) { toast("Add some details"); return; }
+    const wantsNewsletter = !document.getElementById("newsletter-send-row").hidden
+      && document.getElementById("newsletter-send-check").checked;
     const submitBtn = document.querySelector("#post-modal button.btn-fill");
     submitBtn.disabled = true;
     try {
-      await Store.postCommunityPost({ section: activeSection, title, body });
-      closeModal("post-modal");
-      toast("Posted");
-      await renderList(); // back to the list, new post at the top, empty state cleared
+      if (editingPostId) {
+        await Store.editCommunityPost(editingPostId, { title, body });
+        closeModal("post-modal");
+        toast("Post updated");
+        openPost(editingPostId);
+      } else {
+        await Store.postCommunityPost({ section: activeSection, title, body });
+        closeModal("post-modal");
+        toast("Posted");
+        if (wantsNewsletter) {
+          try {
+            await Store.sendNewsletter({ subject: title, html: `<p style="font-family:-apple-system,sans-serif;font-size:14px;color:#17171a;">${escapeHtml(body)}</p>` });
+            toast("Newsletter sent to subscribers");
+          } catch (mailErr) { toast(mailErr.message || "Post went up, but the newsletter send failed"); }
+        }
+        await renderList(); // back to the list, new post at the top, empty state cleared
+      }
     } catch (err) {
       toast(err.message || "Couldn't post — try again");
     } finally {

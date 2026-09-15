@@ -322,9 +322,9 @@
     <button class="close-x" onclick="closeModal('loc-modal')">✕</button>
     <h3>Choose your locality</h3>
     <p class="sub">"Nearby" shows listings from your area — pick where you actually are.</p>
-    <div class="form-row">
+    <div class="form-row" style="position:relative;">
       <input type="text" id="loc-input" placeholder="Start typing an area or city..." autocomplete="off" />
-      <p class="hint" id="loc-input-hint" hidden>Google Maps isn't set up yet — type your locality and city manually (see README), then save.</p>
+      <div class="map-preview" id="loc-map-preview" hidden></div>
     </div>
     <button class="btn btn-fill btn-block" id="save-loc-btn">Save</button>
   </div>
@@ -416,19 +416,19 @@
     }
     const user = Store.getUser();
     const input = document.getElementById("loc-input");
+    const mapPreview = document.getElementById("loc-map-preview");
     input.value = user.locality ? `${user.locality}, ${user.city}` : "";
     pickedPlace = user.locality ? { locality: user.locality, city: user.city, state: user.state, lat: user.lat, lng: user.lng } : null;
+    if (pickedPlace) mountLeafletMap(mapPreview, pickedPlace.lat, pickedPlace.lng, { zoom: 13 });
+    else mapPreview.hidden = true;
 
     if (!locPickerMounted) {
       locPickerMounted = true;
-      if (IS_MAPS_CONFIGURED) {
-        mountPlacesAutocomplete(input, (place) => { pickedPlace = place; }).catch(() => {
-          document.getElementById("loc-input-hint").hidden = false;
-        });
-        input.addEventListener("input", () => { pickedPlace = null; });
-      } else {
-        document.getElementById("loc-input-hint").hidden = false;
-      }
+      mountPlacesAutocomplete(input, (place) => {
+        pickedPlace = place;
+        mountLeafletMap(mapPreview, place.lat, place.lng, { zoom: 13 });
+      });
+      input.addEventListener("input", () => { pickedPlace = null; mapPreview.hidden = true; });
     }
     openModal("loc-modal");
   }
@@ -436,7 +436,7 @@
   document.getElementById("save-loc-btn").addEventListener("click", async () => {
     const typed = document.getElementById("loc-input").value.trim();
     if (!typed) { toast("Enter a locality first"); return; }
-    const place = pickedPlace || (!IS_MAPS_CONFIGURED ? { locality: typed, city: typed, state: null, lat: null, lng: null } : null);
+    const place = pickedPlace;
     if (!place) { toast("Please pick a locality from the suggestions"); return; }
     try {
       await Store.setLocality(place);

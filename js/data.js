@@ -165,6 +165,7 @@ function mapProfile(row) {
     isAdmin: !!row.is_admin,
     avatarUrl: row.avatar_url || null,
     statusText: row.status_text || null,
+    newsletterOptIn: row.newsletter_opt_in !== false,
   };
 }
 
@@ -239,7 +240,7 @@ const Store = {
     return this._geo;
   },
 
-  /* Saves the signed-in user's locality from a Google Places result (see
+  /* Saves the signed-in user's locality from a geocoded place (see
      js/maps-client.js) and updates the cached profile so "Nearby" reflects
      it immediately. `place` is { locality, city, state, lat, lng }. */
   async setLocality(place) {
@@ -300,9 +301,9 @@ const Store = {
     return mapListing(data);
   },
 
-  /* `place` is { locality, city, state, lat, lng } from Google Places
-     Autocomplete on the Sell form — falls back to the seller's own profile
-     location if the form's place field wasn't (or couldn't be) filled in. */
+  /* `place` is { locality, city, state, lat, lng } from the location search
+     on the Sell form — falls back to the seller's own profile location if
+     the form's place field wasn't (or couldn't be) filled in. */
   async addListing({ title, category, price, place, condition, desc }) {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in to post a listing");
@@ -578,6 +579,14 @@ const Store = {
     user.statusText = trimmed || null;
   },
 
+  async setNewsletterOptIn(optIn) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in");
+    const { error } = await sb.from("profiles").update({ newsletter_opt_in: !!optIn }).eq("id", user.id);
+    if (error) throw error;
+    user.newsletterOptIn = !!optIn;
+  },
+
   /* RLS ("users can delete their own listings" in schema.sql) already
      restricts this to the listing's own seller_id — this call just has to
      be made as that user. */
@@ -714,6 +723,29 @@ const Store = {
   async setFeedbackStatus(postId, status) {
     const { error } = await sb.rpc("set_feedback_status", { p_id: postId, new_status: status });
     if (error) throw error;
+  },
+
+  /* 20-minute edit window enforced server-side by the RPC (see
+     supabase/community-edit.sql) — the UI hiding the Edit button after 20
+     minutes is a convenience, not the actual guard. */
+  async editCommunityPost(postId, { title, body }) {
+    const { error } = await sb.rpc("edit_community_post", { p_id: postId, new_title: title || null, new_body: body });
+    if (error) throw error;
+  },
+
+  async deleteCommunityPost(postId) {
+    const { error } = await sb.from("community_posts").delete().eq("id", postId);
+    if (error) throw error;
+  },
+
+  /* Admin-only, event-triggered send (no schedule) — reuses the Resend setup
+     already backing notify-new-message. The Edge Function itself re-checks
+     is_admin and filters to newsletter_opt_in = true; this call can't be
+     used to bypass either. */
+  async sendNewsletter({ subject, html }) {
+    const { data, error } = await sb.functions.invoke("send-newsletter", { body: { subject, html } });
+    if (error) throw error;
+    return data;
   },
 
   async getThreads() {

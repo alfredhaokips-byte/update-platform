@@ -23,7 +23,7 @@ exactly what's happening.
    cosmetic `profiles.avatar_type` column for the character avatar picker.
 7. Same again with `supabase/pan-india.sql` — adds `state`/`lat`/`lng` to
    `profiles` and `listings`, and drops the old Delhi-NCR-only default on
-   `city` now that location comes from Google Places (see §4 below).
+   `city` now that location comes from free-text geocoding (see §2 below).
 8. Same again with `supabase/newsletter.sql` — the `newsletter_subscribers`
    table (publicly writable, not readable back — collection only, see
    "Newsletter signup" below).
@@ -38,9 +38,16 @@ exactly what's happening.
     Storage bucket (same ownership pattern as `listing-photos`) plus
     `profiles.avatar_url`/`status_text` for the profile photo + bio (Edit
     profile, from Account).
-11. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+11. Same again with `supabase/newsletter-optin.sql` — adds
+    `profiles.newsletter_opt_in` (defaults `true`), the column the "Email me
+    about major updates" toggle on Account writes to and the newsletter send
+    filters on. See "Newsletter — now actually sends" below.
+12. Same again with `supabase/community-edit.sql` — adds the
+    `edit_community_post` RPC backing the 20-minute post-edit window (see
+    "Community post edit/delete" below).
+13. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
     key (not `service_role`).
-12. Paste them into `js/supabase-client.js`:
+14. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -50,34 +57,35 @@ That's it — no other config. The `anon` key is meant to be public; access
 control is enforced by the Row Level Security policies in `schema.sql` and
 `storage-policies.sql`, not by hiding that key.
 
-## 2. Set up Google Maps (Places Autocomplete)
+## 2. Maps — free, no setup, no key
 
-Locality fields (signup, post-ad, the home page's location picker) use
-Google Places Autocomplete, restricted to India — this is what makes "Nearby"
-work correctly for any city, not just Delhi NCR.
+Locality fields (signup, post-ad, the home page's location picker) used to
+need a paid Google Maps API key. They now run on two free services instead,
+wired up in `js/maps-client.js`:
 
-1. [console.cloud.google.com](https://console.cloud.google.com) → create a
-   project (or use an existing one).
-2. **Billing** → attach a billing account. This is required for the Places
-   API to respond at all — usage for a project this size stays within
-   Google's free monthly Places credit, but Google won't serve any calls
-   without a billing account on file, free tier or not.
-3. **APIs & Services → Library** → search **Places API** → **Enable**.
-4. **APIs & Services → Credentials** → **Create credentials → API key**.
-5. Click the new key → **Application restrictions → HTTP referrers** → add
-   your domain(s) (e.g. `https://your-app.vercel.app/*`) and
-   `http://localhost:*` while developing. This referrer restriction — not
-   secrecy — is what makes it safe to ship this key client-side, the same
-   way Supabase's `anon` key relies on RLS rather than being hidden.
-6. Paste the key into `js/maps-client.js`:
-   ```js
-   const GOOGLE_MAPS_API_KEY = "AIza...";
-   ```
+- **[Nominatim](https://nominatim.openstreetmap.org)** (OpenStreetMap's own
+  geocoder) for the locality search/autocomplete dropdown.
+- **[Leaflet.js](https://leafletjs.com)** + OpenStreetMap tiles for the small
+  map preview under a picked locality.
 
-**Not set up yet?** The app still works — every locality field falls back to
-a plain text input (no autocomplete suggestions, and whatever's typed is used
-as both the locality and the city verbatim) with an inline note explaining
-why. Nothing is blocked on this being configured.
+Nothing to sign up for, no key to paste anywhere — `IS_MAPS_CONFIGURED` is
+just always `true` now. Two honest limitations worth knowing, both commented
+at the top of `js/maps-client.js`:
+
+- **Nominatim's usage policy caps free use at 1 request/second** and asks for
+  a `User-Agent` identifying the app — browsers can't set custom
+  `User-Agent` headers (a Fetch spec restriction), so the `Referer` header is
+  the real identifying signal here instead. This is fine for development and
+  a small app, but **won't scale to real production traffic** without
+  self-hosting Nominatim or proxying through a paid geocoding service — that
+  swap is isolated to `searchNominatim()` in `js/maps-client.js` if/when it's
+  needed.
+- Search is restricted to India (`countrycodes=in`) as Google Places was
+  before it, so "Nearby" keeps working the same way.
+
+No fallback branch exists anymore for "not configured" — all three call
+sites (signup, post-ad, home location picker) require a picked, geocoded
+place before they'll submit, same as before.
 
 ## 3. Run it locally
 
@@ -85,10 +93,13 @@ Any static file server works, e.g.:
 ```
 python3 -m http.server 8934
 ```
-then open `http://localhost:8934`. Sign up for an account (email/password —
-Supabase sends a confirmation email by default; you can turn that off under
-**Authentication → Providers → Email → Confirm email** while testing) and
-start posting listings.
+then open `http://localhost:8934`. Sign up for an account (email/password) —
+signup now ends on a "check your email" screen asking for a 6-digit code
+instead of the old click-a-link confirmation. **That needs one manual
+dashboard step before it'll work — see "Email OTP signup" below** — without
+it, Supabase still emails a working confirmation *link*, but the code you
+type into the app won't match anything and you'll see "Token has expired or
+is invalid."
 
 ## 4. Deploy (Vercel)
 
@@ -239,12 +250,12 @@ read-only count next to the trust badges on `listing.html`. Backed by
   confirm → gone immediately (optimistic UI update, no reload). RLS in
   `schema.sql` already restricted deletes to the listing's own `seller_id`;
   this was purely the missing frontend action (`Store.deleteListing`).
-- **Pan-India.** `profiles.city`/`listings.city` now hold a real city from
-  Google Places instead of a hardcoded default, with `state`/`lat`/`lng`
-  alongside for possible future distance sorting. "Nearby" already meant
-  "the signed-in user's own city" before this — that logic didn't change,
-  only where the city comes from. See §2 above for the Google Maps setup
-  this needs, and `supabase/pan-india.sql` for the schema change.
+- **Pan-India.** `profiles.city`/`listings.city` now hold a real geocoded
+  city instead of a hardcoded default, with `state`/`lat`/`lng` alongside for
+  possible future distance sorting. "Nearby" already meant "the signed-in
+  user's own city" before this — that logic didn't change, only where the
+  city comes from. See §2 above for the (now free, no setup) geocoding this
+  needs, and `supabase/pan-india.sql` for the schema change.
 
 ## Dark-mode nav fix, GPS Nearby, notifications, newsletter, Community forum
 
@@ -378,6 +389,51 @@ read-only count next to the trust badges on `listing.html`. Backed by
   other button-nested text across the app, not just names, since it was
   never actually about `.thread-user`/`.chat-name` specifically.
 
+## Email OTP signup, welcome + newsletter emails, community edit/delete, free maps
+
+- **Email OTP signup.** Signup now ends on a "Check your email" screen
+  asking for a 6-digit code (`Auth.verifyOtp`/`Auth.resendOtp` in
+  `js/auth.js`) instead of Supabase's default click-a-link confirmation.
+  **Needs one manual dashboard step**: Supabase Dashboard →
+  **Authentication → Email Templates → Confirm signup** — the default
+  template links `{{ .ConfirmationURL }}`; change it to show `{{ .Token }}`
+  instead (Supabase's own docs for "Email OTP" have the exact template
+  snippet). Until that's switched, Supabase still emails a real confirmation
+  link, but the 6-digit box in the app has nothing valid to check against.
+- **Welcome email.** Right after a code is confirmed, the client calls the
+  `send-welcome-email` Edge Function (best-effort — a failed send never
+  blocks signup). It looks up the *caller's own* email/name server-side from
+  their JWT rather than trusting what the client sends, so it can't be used
+  to spam an arbitrary address. Deploy it the same way as the existing
+  message-notification function (§ "Email notifications on new messages"
+  above covers the one-time Resend/CLI setup if not done already):
+  ```
+  supabase functions deploy send-welcome-email
+  ```
+- **Newsletter — now actually sends.** Event-triggered only, never
+  scheduled: composing a new **Notice Board** post (admin-only, same as
+  before) now shows an extra checkbox, "Also email this to newsletter
+  subscribers" — checking it fires the `send-newsletter` Edge Function with
+  that post's title/body right after the post itself goes up. The function
+  re-checks `is_admin` server-side (never trusts the caller) and only emails
+  `profiles` where `newsletter_opt_in = true`. Deploy it too:
+  ```
+  supabase functions deploy send-newsletter
+  ```
+- **Newsletter opt-out.** Account → "Email me about major updates" toggle
+  (`profiles.newsletter_opt_in`, default `true` — signing up implies opting
+  in until said otherwise). `Store.setNewsletterOptIn()` in `js/data.js`.
+- **Community post edit/delete.** On your own General/Feedback/Notice post:
+  **Delete** (confirm, then gone — no time limit) any time, **Edit**
+  (title+body) only within 20 minutes of posting — the button itself
+  disappears after that window, but the real guard is server-side: the
+  `edit_community_post` RPC (`supabase/community-edit.sql`) re-checks
+  `author_id = auth.uid()` and the 20-minute window itself before writing
+  anything, so a direct API call can't outrun the UI. Deleting reuses the
+  existing "users can delete their own posts" RLS policy from
+  `community.sql` — no new SQL needed for that half.
+- **Free maps.** Google Places/Maps is gone — see §2 above.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
@@ -400,10 +456,10 @@ Also out of scope for now (flagged for awareness):
 - True push notifications (app/tab closed) — needs a service worker, VAPID
   keys, and a server-side trigger; intentionally deferred, see "In-tab
   notifications" above
-- Actually sending newsletter emails — collection only for now, see
-  "Newsletter signup" above
 - Editing your own listings after posting (deleting them is built — see
-  "Delete listings" above)
+  "Delete listings" above; editing your own *Community/Feedback posts* is
+  now built, see "Community post edit/delete" above — listings just haven't
+  gotten the same treatment yet)
 - Order/transaction lifecycle (accept/complete/cancel) — nothing tracks this,
   so "completion rate" and "cancellations" on the Trust Profile are honestly
   labeled "Not tracked yet" instead of showing fabricated numbers

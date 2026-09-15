@@ -9,8 +9,8 @@ const Auth = {
     return data.session;
   },
 
-  /* `place` is { locality, city, state, lat, lng } from Google Places
-     Autocomplete (see js/maps-client.js) — or null if the user skipped
+  /* `place` is { locality, city, state, lat, lng } from the Nominatim-backed
+     location search (see js/maps-client.js) — or null if the user skipped
      location entirely, which is allowed; they can set it later from the
      home page's location picker. */
   async signUp({ email, password, name, place }) {
@@ -31,6 +31,23 @@ const Auth = {
       }).eq("id", data.user.id);
     }
     return data;
+  },
+
+  /* Confirms the 6-digit code Supabase emails on signup (once the dashboard
+     is switched to OTP-style confirmation instead of a magic link — see
+     README). `type: "signup"` is what tells Supabase this code is for
+     confirming a brand-new account, not a password-reset or sign-in code. */
+  async verifyOtp({ email, token }) {
+    requireSupabaseConfigured();
+    const { data, error } = await sb.auth.verifyOtp({ email, token, type: "signup" });
+    if (error) throw error;
+    return data;
+  },
+
+  async resendOtp({ email }) {
+    requireSupabaseConfigured();
+    const { error } = await sb.auth.resend({ type: "signup", email });
+    if (error) throw error;
   },
 
   async signIn({ email, password }) {

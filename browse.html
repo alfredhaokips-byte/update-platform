@@ -101,8 +101,8 @@
     await initPage("home");
     allListings = await Store.getListings();
 
-    // Localities are now free-form (Google Places, not a fixed dropdown) —
-    // so the filter offers whatever localities real listings actually have.
+    // Localities are now free-form (geocoded, not a fixed dropdown) — so
+    // the filter offers whatever localities real listings actually have.
     const localities = Array.from(new Set(allListings.map(l => l.locality).filter(Boolean))).sort();
 
     fillSelect("f-cat", CATEGORIES.map(c => ({ value: c, label: c })), qs("cat"));

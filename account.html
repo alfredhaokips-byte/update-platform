@@ -35,6 +35,17 @@
         <span class="switch-track"></span>
       </label>
     </div>
+    <div class="menu-item" style="cursor:default;">
+      <span class="ic">📰</span>
+      <span style="flex:1;">
+        Email me about major updates
+        <span style="display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:1px;">Occasional emails when there's something worth knowing — never routine activity</span>
+      </span>
+      <label class="switch">
+        <input type="checkbox" id="newsletter-toggle" />
+        <span class="switch-track"></span>
+      </label>
+    </div>
     <a href="help.html" class="menu-item"><span class="ic">🛡️</span>Safety &amp; help<span class="chev">›</span></a>
     <button class="menu-item" onclick="toast('r/DelhiMarketplace-style community guidelines — demo mode')"><span class="ic">📜</span>Community guidelines<span class="chev">›</span></button>
     <button class="menu-item" id="logout-btn" style="color:var(--danger);"><span class="ic">↪</span>Log out</button>
@@ -117,6 +128,18 @@
       } else {
         await setNotificationsEnabled(false);
         toast("Notifications off");
+      }
+    });
+
+    const newsletterToggle = document.getElementById("newsletter-toggle");
+    newsletterToggle.checked = user.newsletterOptIn;
+    newsletterToggle.addEventListener("change", async () => {
+      try {
+        await Store.setNewsletterOptIn(newsletterToggle.checked);
+        toast(newsletterToggle.checked ? "You're in for major updates" : "Opted out of update emails");
+      } catch (err) {
+        newsletterToggle.checked = !newsletterToggle.checked;
+        toast(err.message || "Couldn't update");
       }
     });
   });
