@@ -95,6 +95,10 @@
   #landing-root .cta-band h2{ color:var(--bg); font-size:clamp(28px,4.2vw,44px); max-width:16ch; margin:0 auto 16px; }
   #landing-root .cta-band p{ color:var(--muted-2); font-size:16px; max-width:44ch; margin:0 auto 32px; }
 
+  #landing-root .contact-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  #landing-root .contact-pill{ background:var(--surface); border:1px solid var(--border-2); color:var(--ink); }
+  #landing-root .contact-pill svg{ width:18px; height:18px; flex-shrink:0; }
+
   #landing-root footer{ background:var(--bg-alt); padding:56px 0 32px; }
   #landing-root .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:32px; margin-bottom:44px; }
   #landing-root .footer-grid .brand{ margin-bottom:12px; }
@@ -236,6 +240,25 @@
     </div>
   </div>
 
+  <section id="contact">
+    <div class="wrap">
+      <div class="pillars-head">
+        <div class="eyebrow">Get in touch</div>
+        <h2>Questions? Reach out.</h2>
+      </div>
+      <div class="contact-row">
+        <a href="https://www.instagram.com/mohallamarketplace/" target="_blank" rel="noopener noreferrer" class="btn-pill contact-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>
+          @mohallamarketplace
+        </a>
+        <a href="mailto:mohallamarketplace@gmail.com" class="btn-pill contact-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          mohallamarketplace@gmail.com
+        </a>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <div class="wrap">
       <div class="footer-grid">
@@ -276,6 +299,8 @@
           <ul>
             <li><a href="help.html">Help centre</a></li>
             <li><a href="login.html">Sign in</a></li>
+            <li><a href="https://www.instagram.com/mohallamarketplace/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+            <li><a href="mailto:mohallamarketplace@gmail.com">Email us</a></li>
           </ul>
         </div>
       </div>

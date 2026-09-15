@@ -523,6 +523,20 @@ than being honest about not having a real tier yet.
     (`Store.getVouchCounts`, already existed but was unused) rather than
     only catching general vouches.
 
+## Contact section on the landing page
+
+Real, working contact details, not buried in `help.html`:
+
+- A dedicated **"Get in touch"** section on the landing page (`index.html`,
+  between the "Got something to sell?" band and the footer) with two pill
+  links, same style as the rest of the page: Instagram
+  (`instagram.com/mohallamarketplace`, opens in a new tab with
+  `rel="noopener noreferrer"`) and email (`mohallamarketplace@gmail.com`, a
+  real `mailto:` link).
+- The same two links added to the footer's existing **Support** column, so
+  they're reachable from a scroll-past as well as the dedicated section.
+- No new backend, no new page — both are plain links.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
