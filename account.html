@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Account — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -21,6 +23,7 @@
     <a href="saved.html" class="menu-item"><span class="ic">♡</span>Saved items<span class="chev">›</span></a>
     <a href="verify.html" class="menu-item"><span class="ic">✓</span>Get verified<span class="chev">›</span></a>
     <button class="menu-item" onclick="toast('Edit profile — demo mode')"><span class="ic">✏️</span>Edit profile<span class="chev">›</span></button>
+    <button class="menu-item" id="edit-character-btn"><span class="ic">🧑</span>Profile character<span class="chev">›</span></button>
     <button class="menu-item" onclick="toast('Notification settings — demo mode')"><span class="ic">🔔</span>Notifications<span class="chev">›</span></button>
     <a href="help.html" class="menu-item"><span class="ic">🛡️</span>Safety &amp; help<span class="chev">›</span></a>
     <button class="menu-item" onclick="toast('r/DelhiMarketplace-style community guidelines — demo mode')"><span class="ic">📜</span>Community guidelines<span class="chev">›</span></button>
@@ -30,6 +33,16 @@
 </div>
 
 <div id="bottom-nav-root"></div>
+
+<!-- Character avatar picker -->
+<div class="modal-overlay" id="char-modal" hidden>
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('char-modal')">✕</button>
+    <h3>Who's saying hello?</h3>
+    <p class="sub">Pick how you'd like to show up. This is purely cosmetic — your listings and trust record are the same either way, and you can change it any time.</p>
+    <div class="char-grid" id="char-grid"></div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
@@ -59,7 +72,7 @@
     }
 
     document.getElementById("account-head").innerHTML = `
-      <div class="avatar"><img src="${avatarUrl(user.avatarSeed, 124)}" alt="You" /></div>
+      <div class="avatar">${characterAvatarHtml(user.avatarType)}</div>
       <div>
         <h2>${escapeHtml(user.name)} ${user.verified ? `<span class="badge badge-verified">✓ Verified</span>` : ""}</h2>
         <div class="sub">📍 ${user.locality || "No locality set"}, ${user.city} · Member since ${user.memberSince}</div>
@@ -77,7 +90,43 @@
       await Auth.signOut();
       window.location.href = "index.html";
     });
+
+    document.getElementById("edit-character-btn").addEventListener("click", () => {
+      renderCharGrid(user.avatarType);
+      openModal("char-modal");
+    });
   });
+
+  const CHARACTER_OPTIONS = [
+    { type: "female", label: "Female" },
+    { type: "male", label: "Male" },
+    { type: "neutral", label: "Prefer not to say" },
+  ];
+
+  function renderCharGrid(currentType) {
+    const el = document.getElementById("char-grid");
+    el.innerHTML = CHARACTER_OPTIONS.map((opt) => `
+      <div class="char-card ${opt.type === currentType ? "selected" : ""}" data-type="${opt.type}">
+        <div class="char-avatar">${characterAvatarHtml(opt.type)}</div>
+        <div class="label">${opt.label}</div>
+        <div class="sub">${opt.type === "neutral" ? "Neutral character" : "Assigns your character"}</div>
+      </div>
+    `).join("");
+    el.querySelectorAll(".char-card").forEach((card) => {
+      card.addEventListener("click", async () => {
+        const type = card.dataset.type;
+        el.querySelectorAll(".char-card").forEach((c) => c.classList.remove("selected"));
+        card.classList.add("selected");
+        try {
+          await Store.setAvatarType(type);
+          document.querySelector("#account-head .avatar").innerHTML = characterAvatarHtml(type);
+          toast("Character updated");
+        } catch (err) {
+          toast(err.message || "Couldn't update — try again");
+        }
+      });
+    });
+  }
 </script>
 </body>
 </html>

@@ -35,6 +35,41 @@ function toast(msg) {
 function openModal(id) { const m = document.getElementById(id); if (m) m.hidden = false; }
 function closeModal(id) { const m = document.getElementById(id); if (m) m.hidden = true; }
 
+/* ---------- Dark mode ---------- */
+const THEME_STORAGE_KEY = "mm-theme";
+const THEME_SUN_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
+const THEME_MOON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>`;
+
+function getTheme() {
+  try { return localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light"; }
+  catch (e) { return "light"; }
+}
+
+function setTheme(theme) {
+  document.body.setAttribute("data-theme", theme);
+  try { localStorage.setItem(THEME_STORAGE_KEY, theme); } catch (e) { /* private browsing, etc. — non-critical */ }
+  const fab = document.getElementById("theme-toggle-fab");
+  if (fab) {
+    fab.querySelector(".opt-light").classList.toggle("active", theme === "light");
+    fab.querySelector(".opt-dark").classList.toggle("active", theme === "dark");
+  }
+}
+
+function mountThemeToggle() {
+  setTheme(getTheme());
+  if (document.getElementById("theme-toggle-fab")) return;
+  const fab = document.createElement("div");
+  fab.id = "theme-toggle-fab";
+  fab.className = "theme-toggle-fab";
+  fab.setAttribute("role", "button");
+  fab.setAttribute("aria-label", "Toggle dark mode");
+  fab.innerHTML = `<span class="opt-light">${THEME_SUN_SVG}</span><span class="opt-dark">${THEME_MOON_SVG}</span>`;
+  fab.addEventListener("click", () => setTheme(document.body.getAttribute("data-theme") === "dark" ? "light" : "dark"));
+  document.body.appendChild(fab);
+  setTheme(getTheme());
+}
+mountThemeToggle();
+
 /* ---------- Bottom tab bar ---------- */
 const NAV_ITEMS = [
   { key: "home", icon: "⌂", label: "Home", href: "index.html" },
@@ -110,7 +145,7 @@ function listingCardHtml(listing) {
       <div class="product-body">
         <p class="product-title">${escapeHtml(listing.title)}</p>
         <p class="product-price">${formatPrice(listing.price)}</p>
-        <p class="product-tag">${tagIcon(listing.category)} ${escapeHtml(listing.category)}</p>
+        <p class="product-tag">${CATEGORY_ICONS[listing.category] || ""} ${escapeHtml(listing.category)}</p>
         <div class="trust-row">${trust}</div>
       </div>
     </a>

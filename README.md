@@ -16,9 +16,17 @@ exactly what's happening.
 4. Same again with `supabase/trust-verification.sql` — adds verification
    columns to `profiles`, the transaction-gated review policy, the
    deals-count trigger, and the `seller_response_stats` view.
-5. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+5. Same again with `supabase/vouches.sql` — the lightweight "I vouch for this
+   seller" endorsement table (separate from reviews, which require a real
+   message thread first).
+6. Same again with `supabase/design-system.sql` — adds the optional,
+   cosmetic `profiles.avatar_type` column for the character avatar picker.
+7. Same again with `supabase/pan-india.sql` — adds `state`/`lat`/`lng` to
+   `profiles` and `listings`, and drops the old Delhi-NCR-only default on
+   `city` now that location comes from Google Places (see §4 below).
+8. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
    key (not `service_role`).
-6. Paste them into `js/supabase-client.js`:
+9. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -28,7 +36,36 @@ That's it — no other config. The `anon` key is meant to be public; access
 control is enforced by the Row Level Security policies in `schema.sql` and
 `storage-policies.sql`, not by hiding that key.
 
-## 2. Run it locally
+## 2. Set up Google Maps (Places Autocomplete)
+
+Locality fields (signup, post-ad, the home page's location picker) use
+Google Places Autocomplete, restricted to India — this is what makes "Nearby"
+work correctly for any city, not just Delhi NCR.
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → create a
+   project (or use an existing one).
+2. **Billing** → attach a billing account. This is required for the Places
+   API to respond at all — usage for a project this size stays within
+   Google's free monthly Places credit, but Google won't serve any calls
+   without a billing account on file, free tier or not.
+3. **APIs & Services → Library** → search **Places API** → **Enable**.
+4. **APIs & Services → Credentials** → **Create credentials → API key**.
+5. Click the new key → **Application restrictions → HTTP referrers** → add
+   your domain(s) (e.g. `https://your-app.vercel.app/*`) and
+   `http://localhost:*` while developing. This referrer restriction — not
+   secrecy — is what makes it safe to ship this key client-side, the same
+   way Supabase's `anon` key relies on RLS rather than being hidden.
+6. Paste the key into `js/maps-client.js`:
+   ```js
+   const GOOGLE_MAPS_API_KEY = "AIza...";
+   ```
+
+**Not set up yet?** The app still works — every locality field falls back to
+a plain text input (no autocomplete suggestions, and whatever's typed is used
+as both the locality and the city verbatim) with an inline note explaining
+why. Nothing is blocked on this being configured.
+
+## 3. Run it locally
 
 Any static file server works, e.g.:
 ```
@@ -39,7 +76,7 @@ Supabase sends a confirmation email by default; you can turn that off under
 **Authentication → Providers → Email → Confirm email** while testing) and
 start posting listings.
 
-## 3. Deploy (Vercel)
+## 4. Deploy (Vercel)
 
 1. Push this folder to a GitHub repo.
 2. [vercel.com](https://vercel.com) → **New Project** → import the repo.
@@ -159,6 +196,42 @@ with your own account, but real users won't receive anything until a domain
 is verified (Resend → Domains → Add Domain → a few DNS records). Not
 blocking for building/testing this now, just for it working on strangers.
 
+## Vouching
+
+A lightweight "I vouch for this seller" endorsement, separate from reviews —
+anyone signed in (other than the seller) can vouch for a seller once;
+vouching again removes it. Shown on the seller's profile (`profile.html`,
+with a real avatar stack of who's vouched and a toggle button) and as a
+read-only count next to the trust badges on `listing.html`. Backed by
+`supabase/vouches.sql`.
+
+## Visual redesign, delete listings, pan-India expansion
+
+- **Design system.** New light/dark palette (warm ivory / near-black, sage,
+  clay, marigold), toggled via a floating switch on every page and persisted
+  in `localStorage` (`data-theme` on `<body>`; all colors are CSS custom
+  properties in `css/style.css`, so this is the only place theme colors
+  live). Fraunces for headlines, Inter for everything else. Categories are
+  now a fixed set of six (Electronics, Stationary, Books, Utilities,
+  Accessories, Fashion) with line icons, replacing the old free-text/
+  graduating-tag system — the category picker on Sell and the filter chips
+  on Browse both use `CATEGORIES`/`CATEGORY_ICONS` in `js/data.js`. The
+  landing page's "Trust, built into every step" section is now the
+  Sustainability/Trust/Community pillars section. An optional, cosmetic
+  character avatar (female/male/neutral, `profiles.avatar_type`) replaces
+  the old identicon-style avatars everywhere — pick one at signup (always
+  skippable) or change it later from Account.
+- **Delete listings.** My ads → the trash icon on a listing's photo →
+  confirm → gone immediately (optimistic UI update, no reload). RLS in
+  `schema.sql` already restricted deletes to the listing's own `seller_id`;
+  this was purely the missing frontend action (`Store.deleteListing`).
+- **Pan-India.** `profiles.city`/`listings.city` now hold a real city from
+  Google Places instead of a hardcoded default, with `state`/`lat`/`lng`
+  alongside for possible future distance sorting. "Nearby" already meant
+  "the signed-in user's own city" before this — that logic didn't change,
+  only where the city comes from. See §2 above for the Google Maps setup
+  this needs, and `supabase/pan-india.sql` for the schema change.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
@@ -178,7 +251,8 @@ Also out of scope for now (flagged for awareness):
 - True GPS distance-based "X km away" sorting — Nearby is locality/city-based
 - Realtime chat — messages send/receive correctly but don't push live; you see
   a reply on next page load/refresh, not instantly
-- Editing/deleting your own listings after posting
+- Editing your own listings after posting (deleting them is built — see
+  "Delete listings" above)
 - Order/transaction lifecycle (accept/complete/cancel) — nothing tracks this,
   so "completion rate" and "cancellations" on the Trust Profile are honestly
   labeled "Not tracked yet" instead of showing fabricated numbers

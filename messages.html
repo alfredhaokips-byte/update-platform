@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Community — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -63,7 +65,7 @@
       if (!seller) return "";
       return `
         <button class="chat-item" onclick="openThread('${t.id}')">
-          <div class="avatar"><img src="${avatarUrl(seller.avatarSeed, 84)}" alt="${escapeHtml(seller.name)}" /></div>
+          <div class="avatar">${characterAvatarHtml(seller.avatarType)}</div>
           <div class="chat-info">
             <div class="chat-top">
               <p class="chat-name">${escapeHtml(seller.name)} <span class="chat-tag ${t.tag === "buying" ? "tag-buying" : "tag-selling"}">${t.tag === "buying" ? "Buying" : "Selling"}</span></p>
@@ -101,7 +103,7 @@
     root.innerHTML = `
       ${backRowHtml(null, `<a class="icon-btn" href="help.html?type=${encodeURIComponent("Abusive or unsafe behavior")}&seller=${thread.sellerId}&listing=${thread.listingId}" title="Report this conversation">⋯</a>`)}
       <div class="row" style="padding:0 18px 14px;gap:10px;">
-        <div class="avatar"><img src="${avatarUrl(seller.avatarSeed, 72)}" alt="${escapeHtml(seller.name)}" /></div>
+        <div class="avatar">${characterAvatarHtml(seller.avatarType)}</div>
         <div>
           <p class="seller-name">${escapeHtml(seller.name)} ${seller.verified ? "✓" : ""}</p>
           <a href="listing.html?id=${listing ? listing.id : ""}" style="font-size:12px;color:var(--ink-soft);">${listing ? escapeHtml(listing.title) + " · " + formatPrice(listing.price) : "Listing removed"}</a>

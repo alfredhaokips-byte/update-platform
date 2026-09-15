@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sell — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -30,10 +32,8 @@
     </div>
 
     <div class="form-row">
-      <label for="f-category">Category</label>
-      <input type="text" id="f-category" placeholder="e.g. Mobiles & Tablets, Vinyl Records, Gaming Chairs..." required maxlength="40" autocomplete="off" />
-      <p class="hint" id="tag-hint">Tags aren't preset — type whatever fits. Once a tag is used on a couple of listings, it becomes a featured category on the home page.</p>
-      <div class="chip-select" id="tag-suggestions" style="margin-top:10px;"></div>
+      <label>Category</label>
+      <div class="chip-select" id="cat-chips"></div>
     </div>
 
     <div class="two-col">
@@ -43,7 +43,8 @@
       </div>
       <div class="form-row">
         <label for="f-locality">Locality</label>
-        <select id="f-locality" required></select>
+        <input type="text" id="f-locality" placeholder="Start typing an area or city..." autocomplete="off" required />
+        <p class="hint" id="locality-hint" hidden>Google Maps isn't set up yet — type your locality and city manually (see README).</p>
       </div>
     </div>
 
@@ -72,11 +73,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
+<script src="js/maps-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
   let selectedCond = null;
+  let selectedCategory = null;
+  let selectedPlace = null; // { locality, city, state, lat, lng } from Places Autocomplete
   let selectedPhotos = []; // { file, previewUrl }
   const MAX_PHOTOS = 5;
   const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
@@ -119,7 +123,8 @@
     el.innerHTML = items.map((item) => {
       const val = typeof item === "string" ? item : item.value;
       const label = typeof item === "string" ? item : item.label;
-      return `<label class="opt" data-val="${escapeHtml(val)}"><input type="radio" name="${containerId}" value="${escapeHtml(val)}" />${escapeHtml(label)}</label>`;
+      const icon = typeof item === "string" ? "" : (item.icon || "");
+      return `<label class="opt" data-val="${escapeHtml(val)}"><input type="radio" name="${containerId}" value="${escapeHtml(val)}" />${icon}${escapeHtml(label)}</label>`;
     }).join("");
     el.querySelectorAll(".opt").forEach((opt) => {
       opt.addEventListener("click", () => {
@@ -128,39 +133,6 @@
         stateSetter(opt.dataset.val);
       });
     });
-  }
-
-  function renderTagSuggestions() {
-    const top = getTagCounts().slice(0, 8);
-    const el = document.getElementById("tag-suggestions");
-    el.innerHTML = top.map((t) => `<button type="button" class="opt" onclick="pickTag('${t.tag.replace(/'/g, "\\'")}')">${tagIcon(t.tag)} ${escapeHtml(t.tag)}</button>`).join("");
-  }
-
-  function pickTag(tag) {
-    document.getElementById("f-category").value = tag;
-    updateTagHint();
-  }
-
-  function updateTagHint() {
-    const raw = document.getElementById("f-category").value;
-    const tag = normalizeTag(raw);
-    const hint = document.getElementById("tag-hint");
-    if (!tag) {
-      hint.textContent = "Tags aren't preset — type whatever fits. Once a tag is used on a couple of listings, it becomes a featured category on the home page.";
-      return;
-    }
-    const key = tag.toLowerCase();
-    const existing = getTagCounts().find((t) => t.tag.toLowerCase() === key);
-    const count = existing ? existing.count : 0;
-    const after = count + 1;
-    if (after >= TAG_GRADUATION_THRESHOLD) {
-      hint.textContent = existing
-        ? `✓ Joins ${count} other listing${count === 1 ? "" : "s"} already tagged "${existing.tag}" — this is a featured category.`
-        : `✓ This will immediately become a featured category.`;
-    } else {
-      const need = TAG_GRADUATION_THRESHOLD - after;
-      hint.textContent = `You'll be the first to use "${tag}" — ${need} more listing${need === 1 ? "" : "s"} with this tag will turn it into a featured category.`;
-    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -186,16 +158,26 @@
       return;
     }
 
-    await Store.getListings(); // primes the tag-stats cache used below
-    await Store.loadLocalities();
-
     buildChips("cond-chips", CONDITIONS, (v) => selectedCond = v);
-    renderTagSuggestions();
-    document.getElementById("f-category").addEventListener("input", updateTagHint);
+    buildChips("cat-chips", CATEGORIES.map((c) => ({ value: c, label: c, icon: CATEGORY_ICONS[c] })), (v) => selectedCategory = v);
 
-    const locSelect = document.getElementById("f-locality");
-    locSelect.innerHTML = `<option value="" disabled selected>Select locality</option>` +
-      LOCALITIES.map((l) => `<option value="${l}">${l}</option>`).join("");
+    const localityInput = document.getElementById("f-locality");
+    const user = Store.getUser();
+    if (user.locality) {
+      localityInput.value = `${user.locality}, ${user.city}`;
+      selectedPlace = { locality: user.locality, city: user.city, state: user.state, lat: user.lat, lng: user.lng };
+    }
+    if (IS_MAPS_CONFIGURED) {
+      mountPlacesAutocomplete(localityInput, (place) => { selectedPlace = place; }).catch(() => {
+        document.getElementById("locality-hint").hidden = false;
+      });
+      // Typing over a previously-selected place invalidates it — only a
+      // fresh pick from the dropdown (or the pre-filled profile value above)
+      // counts as a real, geocoded place.
+      localityInput.addEventListener("input", () => { selectedPlace = null; });
+    } else {
+      document.getElementById("locality-hint").hidden = false;
+    }
 
     renderPhotoRow();
     document.getElementById("f-photos").addEventListener("change", (e) => handlePhotoPick(e.target.files));
@@ -206,9 +188,15 @@
 
     document.getElementById("ad-form").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const category = normalizeTag(document.getElementById("f-category").value);
+      const category = selectedCategory;
       const price = Number(document.getElementById("f-price").value);
-      if (!category) { toast("Please add a category tag"); return; }
+      const typedLocality = document.getElementById("f-locality").value.trim();
+      if (!typedLocality) { toast("Please add a locality"); return; }
+      if (IS_MAPS_CONFIGURED && !selectedPlace) { toast("Please pick a locality from the suggestions"); return; }
+      // Without Maps configured there's no way to resolve free text into a
+      // real city — fall back to using what was typed for both.
+      const place = selectedPlace || { locality: typedLocality, city: typedLocality, state: null, lat: null, lng: null };
+      if (!category) { toast("Please pick a category"); return; }
       if (!selectedCond) { toast("Please pick a condition"); return; }
       if (selectedPhotos.length === 0) { toast("Add at least one real photo of the item"); return; }
       if (price > SELFIE_VERIFICATION_PRICE_THRESHOLD && !Store.getUser().selfieVerified) {
@@ -229,7 +217,7 @@
           title: document.getElementById("f-title").value.trim(),
           category,
           price,
-          locality: document.getElementById("f-locality").value,
+          place,
           condition: selectedCond,
           desc: document.getElementById("f-desc").value.trim(),
         });

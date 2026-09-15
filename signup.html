@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Create account — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -15,7 +17,7 @@
     <span style="width:40px;"></span>
   </div>
 
-  <div class="form-wrap" style="padding-top:20px;">
+  <div class="form-wrap" style="padding-top:20px;" id="signup-step">
     <form id="signup-form">
       <div class="form-row">
         <label for="f-name">Name</label>
@@ -30,8 +32,9 @@
         <input type="text" id="f-password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" style="-webkit-text-security:disc;text-security:disc;" />
       </div>
       <div class="form-row">
-        <label for="f-locality">Locality</label>
-        <select id="f-locality" required></select>
+        <label for="f-locality">Locality (optional — you can set this later)</label>
+        <input type="text" id="f-locality" placeholder="Start typing an area or city..." autocomplete="off" />
+        <p class="hint" id="locality-hint" hidden>Google Maps isn't set up yet — type your locality and city manually (see README), or leave this blank and set it later.</p>
       </div>
       <p id="signup-error" style="color:var(--danger);font-size:13px;margin-bottom:14px;" hidden></p>
       <button type="submit" class="btn btn-fill btn-block" id="signup-btn">Create account</button>
@@ -40,26 +43,57 @@
       Already have an account? <a href="login.html" style="color:var(--ink);font-weight:700;">Sign in</a>
     </p>
   </div>
+
+  <!-- Optional, always-skippable character step, shown after account creation. -->
+  <div class="form-wrap" style="padding-top:20px;" id="char-step" hidden>
+    <h3 style="margin-bottom:6px;">One last thing — who's saying hello?</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Pick how you'd like to show up. This sets your profile character only — nothing else, and you can change it any time from Account.</p>
+    <div class="char-grid" id="char-grid"></div>
+    <button type="button" class="btn btn-outline btn-block" id="skip-char-btn" style="margin-top:18px;">Skip for now</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
+<script src="js/maps-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
+  let selectedPlace = null; // { locality, city, state, lat, lng } from Places Autocomplete
+
   document.addEventListener("DOMContentLoaded", async () => {
     requireSupabaseConfigured();
-    const localities = await Store.loadLocalities();
-    const locSelect = document.getElementById("f-locality");
-    locSelect.innerHTML = `<option value="" disabled selected>Select locality</option>` +
-      localities.map((l) => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join("");
+
+    const localityInput = document.getElementById("f-locality");
+    if (IS_MAPS_CONFIGURED) {
+      mountPlacesAutocomplete(localityInput, (place) => { selectedPlace = place; }).catch(() => {
+        document.getElementById("locality-hint").hidden = false;
+      });
+      localityInput.addEventListener("input", () => { selectedPlace = null; });
+    } else {
+      document.getElementById("locality-hint").hidden = false;
+    }
 
     document.getElementById("signup-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const errEl = document.getElementById("signup-error");
       const btn = document.getElementById("signup-btn");
       errEl.hidden = true;
+
+      const typedLocality = localityInput.value.trim();
+      // Free text without a Places pick is only usable when Maps isn't
+      // configured (no way to resolve it into a real city otherwise) — the
+      // field is optional either way, so leaving it blank just skips it.
+      const place = selectedPlace || (typedLocality && !IS_MAPS_CONFIGURED
+        ? { locality: typedLocality, city: typedLocality, state: null, lat: null, lng: null }
+        : null);
+      if (typedLocality && IS_MAPS_CONFIGURED && !place) {
+        errEl.textContent = "Please pick a locality from the suggestions, or clear the field to skip it.";
+        errEl.hidden = false;
+        return;
+      }
+
       btn.disabled = true;
       btn.textContent = "Creating account...";
       try {
@@ -67,10 +101,10 @@
           name: document.getElementById("f-name").value.trim(),
           email: document.getElementById("f-email").value.trim(),
           password: document.getElementById("f-password").value,
-          locality: document.getElementById("f-locality").value,
+          place,
         });
-        const redirect = qs("redirect") || "index.html";
-        window.location.href = redirect;
+        await Store.primeCache(); // needed for Store.setAvatarType() on the next step
+        showCharStep();
       } catch (err) {
         errEl.textContent = err.message || "Couldn't create your account — try again.";
         errEl.hidden = false;
@@ -78,6 +112,38 @@
         btn.textContent = "Create account";
       }
     });
+
+    const CHARACTER_OPTIONS = [
+      { type: "female", label: "Female" },
+      { type: "male", label: "Male" },
+      { type: "neutral", label: "Prefer not to say" },
+    ];
+
+    function goToRedirect() {
+      window.location.href = qs("redirect") || "index.html";
+    }
+
+    function showCharStep() {
+      document.getElementById("signup-step").hidden = true;
+      document.getElementById("char-step").hidden = false;
+      const el = document.getElementById("char-grid");
+      el.innerHTML = CHARACTER_OPTIONS.map((opt) => `
+        <div class="char-card" data-type="${opt.type}">
+          <div class="char-avatar">${characterAvatarHtml(opt.type)}</div>
+          <div class="label">${opt.label}</div>
+          <div class="sub">${opt.type === "neutral" ? "Neutral character" : "Assigns your character"}</div>
+        </div>
+      `).join("");
+      el.querySelectorAll(".char-card").forEach((card) => {
+        card.addEventListener("click", async () => {
+          try {
+            await Store.setAvatarType(card.dataset.type);
+          } catch (err) { /* cosmetic only — never block signup on this */ }
+          goToRedirect();
+        });
+      });
+      document.getElementById("skip-char-btn").addEventListener("click", goToRedirect);
+    }
   });
 </script>
 </body>

@@ -4,120 +4,118 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Marketplace — Buy & sell in your community</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 
-<!-- Landing-page-only design system: a deliberately different, more editorial
-     treatment than the rest of the app (which stays on system fonts / the
-     cream palette). Scoped entirely to #landing-root. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Landing-page-only layout: a taller, more editorial hero/showcase treatment
+     than the rest of the app, but sharing the same design tokens (warm ivory,
+     sage, clay) and fonts as everywhere else. Scoped entirely to #landing-root
+     so its extra layout rules don't leak into other pages. -->
 <style>
-  #landing-root{
-    --black:#0A0A0C; --near-black:#131317; --white:#FAFAF8;
-    --marigold:#E4972F; --teal:#3FA98A; --grey:#8C8C94; --line:rgba(255,255,255,0.14);
-    font-family:'Inter',-apple-system,sans-serif; color:var(--black); background:var(--white);
-    -webkit-font-smoothing:antialiased;
-  }
+  /* Uses the shared design tokens from css/style.css (var(--bg), var(--sage),
+     var(--clay), var(--marigold), etc.) directly — so this section gets dark
+     mode for free. Only layout, not color, is scoped here. */
+  #landing-root{ -webkit-font-smoothing:antialiased; }
   #landing-root a{ color:inherit; text-decoration:none; }
-  #landing-root h1,#landing-root h2,#landing-root h3{ font-weight:700; letter-spacing:-0.02em; line-height:1.05; text-wrap:balance; }
-  #landing-root .wrap{ max-width:1240px; margin:0 auto; padding:0 40px; }
+  #landing-root .wrap{ max-width:1220px; margin:0 auto; padding:0 40px; }
 
-  #landing-root header{ position:relative; padding:26px 0; background:var(--black); }
-  #landing-root .nav-inner{ display:flex; align-items:center; justify-content:space-between; max-width:1240px; margin:0 auto; padding:0 40px; }
-  #landing-root .logo{ font-weight:800; font-size:18px; letter-spacing:-0.01em; color:var(--white); display:flex; align-items:center; gap:8px; }
-  #landing-root .nav-links{ display:flex; gap:36px; font-size:14.5px; font-weight:500; color:rgba(255,255,255,0.82); }
-  #landing-root .nav-right{ display:flex; align-items:center; gap:20px; }
-  #landing-root .nav-right .signin{ font-size:14.5px; font-weight:500; color:var(--white); }
-  #landing-root .btn{ display:inline-flex; align-items:center; justify-content:center; padding:12px 24px; font-size:14.5px; font-weight:600; border-radius:4px; border:none; cursor:pointer; }
-  #landing-root .btn-lg{ padding:14px 28px; font-size:15px; }
-  #landing-root .btn-white{ background:var(--white); color:var(--black); }
-  #landing-root .btn-white:hover{ opacity:.92; }
-  #landing-root .btn-outline-light{ background:transparent; color:var(--white); border:1.5px solid rgba(255,255,255,0.5); }
-  #landing-root .btn-outline-light:hover{ border-color:#fff; }
-
-  #landing-root .hero{
-    position:relative; padding:90px 0 0; overflow:hidden;
-    background:
-      radial-gradient(ellipse 900px 600px at 20% 10%, rgba(228,151,47,0.20), transparent 60%),
-      radial-gradient(ellipse 800px 600px at 85% 70%, rgba(63,169,138,0.22), transparent 60%),
-      linear-gradient(160deg, #0A0A0C 0%, #121218 55%, #16161C 100%);
+  #landing-root header{ position:sticky; top:16px; z-index:40; padding:0 24px; }
+  #landing-root .nav-pill{
+    max-width:1180px; margin:0 auto;
+    background:var(--surface); border:1px solid var(--border-2);
+    border-radius:100px; padding:12px 20px;
+    display:flex; align-items:center; gap:28px;
+    box-shadow:var(--shadow);
   }
-  #landing-root .hero-network{ position:absolute; inset:0; opacity:0.9; pointer-events:none; }
-  #landing-root .hero-content{ position:relative; z-index:2; max-width:1240px; margin:0 auto; padding:70px 40px 100px; text-align:center; }
-  #landing-root .hero-eyebrow{ color:rgba(255,255,255,0.6); font-size:14px; font-weight:500; margin-bottom:26px; display:inline-flex; align-items:center; gap:8px; }
-  #landing-root .live-dot{ width:7px; height:7px; border-radius:50%; background:var(--teal); box-shadow:0 0 0 4px rgba(63,169,138,0.25); }
-  #landing-root .hero h1{ color:var(--white); font-size:clamp(38px, 5.6vw, 72px); max-width:16ch; margin:0 auto 24px; }
-  #landing-root .hero p.lede{ color:rgba(255,255,255,0.68); font-size:18px; max-width:46ch; margin:0 auto 36px; line-height:1.5; }
-  #landing-root .hero-actions{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:14px; }
-  #landing-root .hero-sub{ color:rgba(255,255,255,0.42); font-size:13.5px; }
+  #landing-root .brand{ display:flex; align-items:center; gap:9px; font-size:16px; font-weight:800; }
+  #landing-root .brand svg{ width:22px; height:22px; }
+  #landing-root .nav-links{ display:flex; gap:24px; font-size:14px; font-weight:600; color:var(--muted); margin-right:auto; }
+  #landing-root .btn-pill{ display:inline-flex; align-items:center; gap:8px; padding:11px 20px; border-radius:100px; font-size:13.5px; font-weight:700; border:none; }
+  #landing-root .btn-sage{ background:var(--sage); color:#fff; }
+  #landing-root .btn-sage svg{ width:14px; height:14px; }
 
-  #landing-root .stats-band{ background:var(--near-black); padding:56px 0 68px; text-align:center; }
-  #landing-root .stats-lead{ color:rgba(255,255,255,0.55); font-size:15px; margin-bottom:36px; }
+  #landing-root .hero{ padding:60px 24px 0; }
+  #landing-root .hero-inner{
+    max-width:1180px; margin:0 auto; border-radius:32px; overflow:hidden;
+    position:relative; min-height:520px; display:flex; align-items:center; justify-content:center; text-align:center;
+    background:
+      linear-gradient(180deg, rgba(20,22,15,0.05) 0%, rgba(20,22,15,0.55) 100%),
+      linear-gradient(120deg, var(--sage-deep) 0%, var(--sage) 45%, var(--marigold) 100%);
+  }
+  #landing-root .hero-badge{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.16); color:#fff; font-size:13px; font-weight:600; padding:8px 16px; border-radius:100px; margin-bottom:28px; backdrop-filter:blur(6px); }
+  #landing-root .hero-badge svg{ width:14px; height:14px; }
+  #landing-root .hero h1{ color:#fff; font-size:clamp(34px,5vw,58px); font-weight:600; line-height:1.12; max-width:16ch; margin:0 auto 20px; }
+  #landing-root .hero h1 em{ font-style:italic; font-weight:500; }
+  #landing-root .hero p{ color:rgba(255,255,255,0.85); font-size:16.5px; max-width:44ch; margin:0 auto 32px; }
+  #landing-root .hero-actions{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; padding:0 20px; }
+  #landing-root .hero-actions .btn-pill.light{ background:#fff; color:var(--sage-deep); }
+  #landing-root .hero-actions .btn-pill.ghost{ background:rgba(255,255,255,0.14); color:#fff; border:1px solid rgba(255,255,255,0.35); }
+
+  #landing-root .stats-band{ background:var(--bg-alt); padding:56px 0 68px; text-align:center; }
+  #landing-root .stats-lead{ color:var(--muted); font-size:15px; margin-bottom:36px; }
   #landing-root .stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); max-width:860px; margin:0 auto; }
   #landing-root .stat{ padding:0 20px; }
-  #landing-root .stat .num{ color:var(--white); font-size:clamp(28px,4vw,44px); font-weight:800; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
-  #landing-root .stat .label{ color:rgba(255,255,255,0.5); font-size:13.5px; margin-top:8px; }
+  #landing-root .stat .num{ color:var(--ink); font-size:clamp(28px,4vw,44px); font-weight:800; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+  #landing-root .stat .label{ color:var(--muted); font-size:13.5px; margin-top:8px; }
 
-  #landing-root .grow{ padding:100px 0 90px; text-align:center; }
-  #landing-root .grow h2{ font-size:clamp(28px,4vw,42px); margin-bottom:16px; }
-  #landing-root .grow > .wrap > p{ color:#68686F; font-size:16.5px; max-width:44ch; margin:0 auto 44px; }
-  #landing-root .tabs{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:48px; }
-  #landing-root .tab{ padding:10px 20px; font-size:14px; font-weight:600; border-radius:100px; border:1.5px solid #E4E3DE; background:#fff; color:#5C5C63; cursor:pointer; font-family:inherit; }
-  #landing-root .tab.active{ background:var(--black); color:var(--white); border-color:var(--black); }
+  #landing-root section{ padding:80px 0; }
+  #landing-root .pillars-head{ text-align:center; max-width:600px; margin:0 auto 44px; }
+  #landing-root .pillars-head .eyebrow{ font-size:12.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage-deep); margin-bottom:12px; }
+  #landing-root .pillars-head h2{ font-size:clamp(26px,3.4vw,36px); font-weight:500; }
+  #landing-root .pillar-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  #landing-root .pillar-card{ background:var(--surface); border:1px solid var(--border-2); border-radius:20px; padding:32px 28px; }
+  #landing-root .pillar-icon{ width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
+  #landing-root .pillar-icon svg{ width:22px; height:22px; }
+  #landing-root .pillar-card h3{ font-weight:600; font-size:19px; margin-bottom:8px; }
+  #landing-root .pillar-card p{ font-size:14px; color:var(--muted); line-height:1.6; }
 
-  #landing-root .feature-grid{ display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:20px; text-align:left; }
-  #landing-root .feature-card{ background:#F3F1EA; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
-  #landing-root .feature-card.dark{ background:var(--black); color:var(--white); }
-  #landing-root .feature-visual{ height:180px; display:flex; align-items:center; justify-content:center; position:relative; background:linear-gradient(135deg,#EDEAE0,#DFDBCC); }
-  #landing-root .feature-card.dark .feature-visual{ background:linear-gradient(135deg,#1A1A20,#242430); }
-  #landing-root .feature-visual svg{ width:52px; height:52px; }
-  #landing-root .feature-text{ padding:24px 24px 28px; }
-  #landing-root .feature-text h3{ font-size:18px; margin-bottom:8px; letter-spacing:-0.01em; }
-  #landing-root .feature-text p{ font-size:13.5px; color:#68686F; line-height:1.5; }
-  #landing-root .feature-card.dark .feature-text p{ color:rgba(255,255,255,0.62); }
-  #landing-root .feature-badge{ position:absolute; top:14px; left:14px; background:rgba(255,255,255,0.92); color:var(--black); font-size:11px; font-weight:700; padding:5px 11px; border-radius:100px; display:flex; align-items:center; gap:5px; white-space:nowrap; }
-  #landing-root .feature-badge svg{ width:11px; height:11px; }
+  #landing-root .cat-head{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:30px; }
+  #landing-root .cat-head h2{ font-weight:500; font-size:clamp(26px,3.2vw,34px); }
+  #landing-root .toggle-pair{ display:flex; background:var(--bg-alt); border-radius:100px; padding:4px; }
+  #landing-root .toggle-pair a{ padding:8px 18px; border-radius:100px; font-size:13px; font-weight:600; color:var(--muted); }
 
   #landing-root .showcase{ padding:0 0 100px; }
   #landing-root .showcase-inner{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
-  #landing-root .show-card{ background:#F3F1EA; border-radius:8px; overflow:hidden; }
-  #landing-root .show-thumb{ aspect-ratio:4/3; background:#E4E1D6; position:relative; overflow:hidden; }
+  #landing-root .show-card{ background:var(--surface); border:1px solid var(--border-2); border-radius:18px; overflow:hidden; }
+  #landing-root .show-thumb{ aspect-ratio:4/3; background:linear-gradient(135deg, var(--sage-bg), var(--bg-alt)); position:relative; overflow:hidden; }
   #landing-root .show-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
   #landing-root .show-cond{ position:absolute; bottom:8px; left:8px; background:rgba(10,10,12,0.72); color:#fff; font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; }
-  #landing-root .show-save{ position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.92); border:none; font-size:14px; display:flex; align-items:center; justify-content:center; color:#5C5C63; }
-  #landing-root .show-save.active{ color:#E0533F; }
+  #landing-root .show-save{ position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.92); border:none; font-size:14px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); }
+  #landing-root .show-save.active{ color:var(--clay); }
   #landing-root .show-body{ padding:15px 16px; }
   #landing-root .show-body .name{ font-weight:600; font-size:13.5px; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   #landing-root .show-body .price{ font-weight:800; font-size:17px; margin-bottom:8px; }
-  #landing-root .show-seller{ display:flex; align-items:center; gap:5px; font-size:11.5px; color:#68686F; }
-  #landing-root .show-seller svg{ width:12px; height:12px; color:var(--teal); flex-shrink:0; }
+  #landing-root .show-seller{ display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--muted); }
+  #landing-root .show-seller svg{ width:12px; height:12px; color:var(--sage-deep); flex-shrink:0; }
 
-  #landing-root .cta-band{ background:var(--black); padding:90px 0; text-align:center; }
-  #landing-root .cta-band h2{ color:var(--white); font-size:clamp(28px,4.2vw,44px); max-width:16ch; margin:0 auto 16px; }
-  #landing-root .cta-band p{ color:rgba(255,255,255,0.55); font-size:16px; max-width:44ch; margin:0 auto 32px; }
+  #landing-root .cta-band{ background:var(--ink); padding:90px 0; text-align:center; }
+  #landing-root .cta-band h2{ color:var(--bg); font-size:clamp(28px,4.2vw,44px); max-width:16ch; margin:0 auto 16px; }
+  #landing-root .cta-band p{ color:var(--muted-2); font-size:16px; max-width:44ch; margin:0 auto 32px; }
 
-  #landing-root footer{ background:var(--near-black); padding:56px 0 32px; }
+  #landing-root footer{ background:var(--bg-alt); padding:56px 0 32px; }
   #landing-root .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:32px; margin-bottom:44px; }
-  #landing-root .footer-grid .logo{ margin-bottom:14px; }
-  #landing-root .footer-grid p{ color:rgba(255,255,255,0.45); font-size:13.5px; max-width:30ch; line-height:1.5; }
-  #landing-root .footer-grid h4{ color:rgba(255,255,255,0.4); font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; }
-  #landing-root .footer-grid ul{ list-style:none; display:flex; flex-direction:column; gap:10px; margin:0; padding:0; }
-  #landing-root .footer-grid a{ color:rgba(255,255,255,0.72); font-size:14px; }
-  #landing-root .footer-grid a:hover{ color:#fff; }
-  #landing-root .footer-bottom{ display:flex; justify-content:space-between; padding-top:24px; border-top:1px solid var(--line); color:rgba(255,255,255,0.35); font-size:12.5px; flex-wrap:wrap; gap:8px; }
+  #landing-root .footer-grid .brand{ margin-bottom:12px; }
+  #landing-root .footer-grid p{ color:var(--muted); font-size:14px; max-width:30ch; line-height:1.5; }
+  #landing-root .footer-grid h4{ color:var(--muted); font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:14px; }
+  #landing-root .footer-grid ul{ list-style:none; display:flex; flex-direction:column; gap:9px; margin:0; padding:0; }
+  #landing-root .footer-grid a{ font-size:14px; color:var(--ink); }
+  #landing-root .footer-bottom{ display:flex; justify-content:space-between; padding-top:22px; border-top:1px solid var(--border-2); color:var(--muted); font-size:12.5px; flex-wrap:wrap; gap:8px; }
 
-  @media (max-width: 900px){
-    #landing-root .wrap, #landing-root .nav-inner{ padding-left:24px; padding-right:24px; }
+  @media (max-width: 1000px){
+    #landing-root .pillar-grid, #landing-root .showcase-inner{ grid-template-columns:1fr 1fr; }
     #landing-root .nav-links{ display:none; }
-    #landing-root .stats-grid{ grid-template-columns:1fr; gap:26px; }
-    #landing-root .feature-grid{ grid-template-columns:1fr; }
-    #landing-root .showcase-inner{ grid-template-columns:1fr 1fr; }
     #landing-root .footer-grid{ grid-template-columns:1fr 1fr; }
   }
+  @media (max-width: 900px){
+    #landing-root .wrap, #landing-root .nav-inner{ padding-left:24px; padding-right:24px; }
+    #landing-root .stats-grid{ grid-template-columns:1fr; gap:26px; }
+  }
   @media (max-width: 480px){
-    #landing-root .wrap, #landing-root .nav-inner{ padding-left:16px; padding-right:16px; }
-    #landing-root .hero-content{ padding-left:16px; padding-right:16px; }
-    #landing-root .hero-actions .btn{ width:100%; }
+    #landing-root .wrap{ padding-left:16px; padding-right:16px; }
+    #landing-root header{ padding:0 12px; }
+    #landing-root .nav-pill{ padding:10px 14px; gap:12px; }
+    #landing-root .hero-actions .btn-pill{ width:100%; }
   }
 </style>
 </head>
@@ -127,44 +125,34 @@
 <div id="landing-root" hidden>
 
   <header>
-    <nav class="nav-inner">
-      <a href="index.html" class="logo">Marketplace</a>
+    <div class="nav-pill">
+      <a href="index.html" class="brand">
+        <svg viewBox="0 0 120 120"><polyline points="8,105 8,25 42,60 76,25 76,105" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter"/><polyline points="44,105 44,25 78,60 112,25 112,105" fill="none" stroke="var(--marigold)" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter" opacity="0.92"/></svg>
+        Mohalla Market
+      </a>
       <nav class="nav-links">
         <a href="browse.html">Browse</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="help.html">Trust &amp; safety</a>
+        <a href="#pillars">Sustainability</a>
+        <a href="help.html">Trust &amp; Safety</a>
       </nav>
-      <div class="nav-right">
-        <a href="login.html" class="signin">Log in</a>
-        <a href="signup.html?redirect=post-ad.html" class="btn btn-white">Sell something</a>
-      </div>
-    </nav>
-
-    <div class="hero">
-      <svg class="hero-network" viewBox="0 0 1240 780" preserveAspectRatio="xMidYMid slice">
-        <g opacity="0.5" stroke="rgba(255,255,255,0.16)" stroke-width="1">
-          <line x1="180" y1="140" x2="420" y2="260"/><line x1="420" y1="260" x2="700" y2="180"/>
-          <line x1="420" y1="260" x2="380" y2="480"/><line x1="700" y1="180" x2="950" y2="300"/>
-          <line x1="950" y1="300" x2="1080" y2="180"/><line x1="380" y1="480" x2="620" y2="580"/>
-          <line x1="620" y1="580" x2="880" y2="520"/><line x1="880" y1="520" x2="950" y2="300"/>
-          <line x1="150" y1="480" x2="380" y2="480"/>
-        </g>
-        <g fill="rgba(228,151,47,0.85)"><circle cx="180" cy="140" r="4"/><circle cx="700" cy="180" r="3.5"/><circle cx="1080" cy="180" r="4"/></g>
-        <g fill="rgba(63,169,138,0.85)"><circle cx="420" cy="260" r="5"/><circle cx="950" cy="300" r="4"/><circle cx="620" cy="580" r="4.5"/></g>
-        <g fill="rgba(255,255,255,0.55)"><circle cx="380" cy="480" r="3.5"/><circle cx="880" cy="520" r="3.5"/><circle cx="150" cy="480" r="3"/></g>
-      </svg>
-      <div class="hero-content">
-        <div class="hero-eyebrow"><span class="live-dot"></span><span id="hero-eyebrow-text">Live in Delhi NCR</span></div>
-        <h1>A marketplace built on who you can trust.</h1>
-        <p class="lede">Every seller has a visible history. Every deal leaves a record. Buying and selling second-hand shouldn't feel like a gamble with a stranger.</p>
-        <div class="hero-actions">
-          <a href="browse.html" class="btn btn-white btn-lg">Explore the marketplace</a>
-          <a href="signup.html?redirect=post-ad.html" class="btn btn-outline-light btn-lg">Sell something</a>
-        </div>
-        <div class="hero-sub">Free to join. No listing fees.</div>
-      </div>
+      <a href="login.html" style="font-size:14px;font-weight:600;">Log in</a>
+      <a href="signup.html?redirect=post-ad.html" class="btn-pill btn-sage">Sell something<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
   </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M11 20A7 7 0 0 1 4 13c0-4 4-10 7-10s7 6 7 10a7 7 0 0 1-7 7z"/></svg><span id="hero-badge-text">Neighbours already trading</span></div>
+        <h1>Buy less. Trust more. <em>Belong</em> to your mohalla.</h1>
+        <p>Give things a second life with people you can actually vouch for — every deal keeps something out of a landfill and puts a face behind the price tag.</p>
+        <div class="hero-actions">
+          <a href="browse.html" class="btn-pill light">Explore the marketplace</a>
+          <a href="signup.html?redirect=post-ad.html" class="btn-pill ghost">Sell something</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <div class="stats-band">
     <div class="wrap">
@@ -173,21 +161,37 @@
     </div>
   </div>
 
-  <section class="grow" id="how-it-works">
+  <section id="pillars">
     <div class="wrap">
-      <h2>Trust, built into every step</h2>
-      <p>Not a badge bolted onto a classifieds site — trust signals show up wherever a decision actually gets made.</p>
-
-      <div class="tabs" id="trust-tabs"></div>
-      <div class="feature-grid" id="trust-cards"></div>
+      <div class="pillars-head">
+        <div class="eyebrow">What we stand for</div>
+        <h2>Not just another place to buy things</h2>
+      </div>
+      <div class="pillar-grid">
+        <div class="pillar-card">
+          <div class="pillar-icon" style="background:var(--sage-bg);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--sage-deep)" stroke-width="1.8"><path d="M11 20A7 7 0 0 1 4 13c0-4 4-10 7-10s7 6 7 10a7 7 0 0 1-7 7z"/><path d="M11 20v-6"/></svg></div>
+          <h3>Sustainability</h3>
+          <p>Every second-hand deal is one less thing manufactured, shipped, and thrown away. Reuse, don't replace.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon" style="background:var(--clay-bg);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--clay)" stroke-width="1.8"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h3>Trust</h3>
+          <p>Verified identities, visible histories, and reviews that only exist after a real transaction happened.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon" style="background:var(--sage-bg);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--sage-deep)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <h3>Community</h3>
+          <p>Public Q&amp;A, local tips, and neighbours who vouch for each other — not a faceless national feed.</p>
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="showcase">
     <div class="wrap">
-      <div class="row between" style="margin-bottom:32px;align-items:flex-end;">
-        <h2 style="font-size:26px;">Trending this week</h2>
-        <a href="browse.html" class="tab" style="text-decoration:none;">See all</a>
+      <div class="cat-head">
+        <h2>Trending this week</h2>
+        <a href="browse.html" class="btn-pill" style="border:1px solid var(--border-2);">See all</a>
       </div>
       <div class="showcase-inner" id="showcase-grid"></div>
     </div>
@@ -197,7 +201,7 @@
     <div class="wrap">
       <h2>Got something to sell?</h2>
       <p>Post it in under two minutes, with real photos — buyers see your seller history before they even message you.</p>
-      <a href="signup.html?redirect=post-ad.html" class="btn btn-white btn-lg">Sell something</a>
+      <a href="signup.html?redirect=post-ad.html" class="btn-pill" style="background:var(--bg);color:var(--ink);display:inline-flex;">Sell something</a>
     </div>
   </div>
 
@@ -205,8 +209,11 @@
     <div class="wrap">
       <div class="footer-grid">
         <div>
-          <a href="index.html" class="logo" style="color:#fff;">Marketplace</a>
-          <p>A trust-first marketplace, built so buying and selling second-hand doesn't feel like a gamble.</p>
+          <a href="index.html" class="brand">
+            <svg viewBox="0 0 120 120" width="20" height="20"><polyline points="8,105 8,25 42,60 76,25 76,105" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter"/><polyline points="44,105 44,25 78,60 112,25 112,105" fill="none" stroke="var(--marigold)" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter" opacity="0.92"/></svg>
+            Mohalla Market
+          </a>
+          <p>A sustainable, trust-first marketplace — built around a neighbourhood, not an algorithm.</p>
         </div>
         <div>
           <h4>Marketplace</h4>
@@ -217,11 +224,11 @@
           </ul>
         </div>
         <div>
-          <h4>Trust &amp; safety</h4>
+          <h4>Our values</h4>
           <ul>
-            <li><a href="verify.html">How verification works</a></li>
-            <li><a href="help.html">Report a problem</a></li>
-            <li><a href="help.html">Safety tips</a></li>
+            <li><a href="index.html#pillars">Sustainability</a></li>
+            <li><a href="help.html">Trust &amp; safety</a></li>
+            <li><a href="index.html#pillars">Community</a></li>
           </ul>
         </div>
         <div>
@@ -233,7 +240,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span id="footer-copyright">© 2026 Marketplace</span>
+        <span id="footer-copyright">© 2026 Mohalla Market</span>
         <span>Built for the neighbourhood, not the algorithm.</span>
       </div>
     </div>
@@ -275,12 +282,17 @@
     <button class="close-x" onclick="closeModal('loc-modal')">✕</button>
     <h3>Choose your locality</h3>
     <p class="sub">"Nearby" shows listings from your area — pick where you actually are.</p>
-    <div class="stack-gap" id="loc-options" style="max-height:340px;overflow-y:auto;"></div>
+    <div class="form-row">
+      <input type="text" id="loc-input" placeholder="Start typing an area or city..." autocomplete="off" />
+      <p class="hint" id="loc-input-hint" hidden>Google Maps isn't set up yet — type your locality and city manually (see README), then save.</p>
+    </div>
+    <button class="btn btn-fill btn-block" id="save-loc-btn">Save</button>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
+<script src="js/maps-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
@@ -319,99 +331,59 @@
     document.getElementById("loc-value").textContent = label;
   }
 
+  let pickedPlace = null; // { locality, city, state, lat, lng } from Places Autocomplete
+  let locPickerMounted = false;
+
   function openLocationPicker() {
     if (!Store.isLoggedIn()) {
       window.location.href = "login.html?redirect=" + encodeURIComponent("index.html");
       return;
     }
-    const current = Store.getUser().locality;
-    const el = document.getElementById("loc-options");
-    el.innerHTML = LOCALITIES.map((name) => `
-      <button type="button" class="btn ${name === current ? "btn-fill" : "btn-outline"} btn-block" onclick="pickLocality('${name.replace(/'/g, "\\'")}')">
-        ${name === current ? "✓ " : "📍 "}${escapeHtml(name)}
-      </button>
-    `).join("");
+    const user = Store.getUser();
+    const input = document.getElementById("loc-input");
+    input.value = user.locality ? `${user.locality}, ${user.city}` : "";
+    pickedPlace = user.locality ? { locality: user.locality, city: user.city, state: user.state, lat: user.lat, lng: user.lng } : null;
+
+    if (!locPickerMounted) {
+      locPickerMounted = true;
+      if (IS_MAPS_CONFIGURED) {
+        mountPlacesAutocomplete(input, (place) => { pickedPlace = place; }).catch(() => {
+          document.getElementById("loc-input-hint").hidden = false;
+        });
+        input.addEventListener("input", () => { pickedPlace = null; });
+      } else {
+        document.getElementById("loc-input-hint").hidden = false;
+      }
+    }
     openModal("loc-modal");
   }
 
-  async function pickLocality(name) {
+  document.getElementById("save-loc-btn").addEventListener("click", async () => {
+    const typed = document.getElementById("loc-input").value.trim();
+    if (!typed) { toast("Enter a locality first"); return; }
+    const place = pickedPlace || (!IS_MAPS_CONFIGURED ? { locality: typed, city: typed, state: null, lat: null, lng: null } : null);
+    if (!place) { toast("Please pick a locality from the suggestions"); return; }
     try {
-      await Store.setLocality(name);
+      await Store.setLocality(place);
       closeModal("loc-modal");
       renderLocValue();
       scope = "nearby";
       document.querySelectorAll("#scope-cats .pill-btn").forEach((b) => b.classList.toggle("active", b.dataset.scope === "nearby"));
       renderTrending();
-      toast(`Nearby now shows ${name}`);
+      toast(`Nearby now shows ${place.city}`);
     } catch (err) {
       toast(err.message || "Couldn't save that — try again");
     }
-  }
+  });
 
-  /* ---------- Landing page: trust tabs (real features, not decorative) ---------- */
-  const ICONS = {
-    shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/><path d="M9 12l2 2 4-4"/></svg>`,
-    badge: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="5"/><path d="M9 12.5 7 21l5-3 5 3-2-8.5"/></svg>`,
-    star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.2L12 16.9 6.4 20l1.4-6.2-4.8-4.3 6.4-.6z"/></svg>`,
-    lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`,
-    chat: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 5h16v11H8l-4 4z"/></svg>`,
-    check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 12h8M8 8h8M8 16h5"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`,
-    checkCircle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>`,
-    flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></svg>`,
-    trend: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 16l6-6 4 4 6-8"/><path d="M14 6h6v6"/></svg>`,
-  };
-  const CHECK_SVG = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10l4 4 8-8"/></svg>`;
-
-  const TRUST_TABS = [
-    {
-      label: "Before you message",
-      cards: [
-        { dark: true, badge: "Trust Profile", icon: "shield", title: "See a seller's full record", text: "Deal count, response rate, and account age are visible on every profile before you ever send a message." },
-        { icon: "badge", title: "Verification badges", text: "Email confirmation today, with phone and selfie verification required for higher-value listings." },
-        { icon: "star", title: "Real ratings only", text: "Every star rating comes from a review, and every review comes from someone who actually messaged that seller." },
-      ],
-    },
-    {
-      label: "While you chat",
-      cards: [
-        { dark: true, badge: "Private by default", icon: "lock", title: "Your number stays hidden", text: "Message sellers directly in-app — your phone number is never shared until you choose to share it yourself." },
-        { icon: "chat", title: "Public Q&A on every listing", text: "Questions and answers stay visible, so the next buyer benefits from what the last one already asked." },
-        { icon: "check", title: "Listing confidence checklist", text: "Real photos, disclosed condition, a complete description — see what's actually confirmed before you ask." },
-      ],
-    },
-    {
-      label: "After the deal",
-      cards: [
-        { dark: true, badge: "Locked to real deals", icon: "checkCircle", title: "Reviews only after a real deal", text: "No review can be posted without an actual message thread between the two of you first — no drive-by testimonials." },
-        { icon: "flag", title: "Report a problem", text: "Flag a listing, a seller, or a conversation — every report queues for review, nothing is automatic." },
-        { icon: "trend", title: "Your record grows with you", text: "Every completed deal adds to your own trust profile, visible the next time someone considers buying from you." },
-      ],
-    },
-  ];
-
-  function renderTrustTabs(activeIndex) {
-    document.getElementById("trust-tabs").innerHTML = TRUST_TABS.map((t, i) =>
-      `<button type="button" class="tab ${i === activeIndex ? "active" : ""}" onclick="renderTrustTabs(${i})">${t.label}</button>`
-    ).join("");
-    document.getElementById("trust-cards").innerHTML = TRUST_TABS[activeIndex].cards.map((c) => `
-      <div class="feature-card ${c.dark ? "dark" : ""}">
-        <div class="feature-visual">
-          ${c.badge ? `<div class="feature-badge">${CHECK_SVG}${escapeHtml(c.badge)}</div>` : ""}
-          <div style="color:${c.dark ? "rgba(255,255,255,0.75)" : "#5C5C63"};">${ICONS[c.icon]}</div>
-        </div>
-        <div class="feature-text">
-          <h3>${escapeHtml(c.title)}</h3>
-          <p>${escapeHtml(c.text)}</p>
-        </div>
-      </div>
-    `).join("");
-  }
+  /* ---------- Landing page: showcase cards (real data) ---------- */
+  const SHOWCASE_VERIFIED_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="5"/><path d="M9 12.5 7 21l5-3 5 3-2-8.5"/></svg>`;
 
   function showcaseCardHtml(listing) {
     const seller = getSellerById(listing.sellerId);
     const saved = Store.isSaved(listing.id);
     const trust = seller && (seller.verified || seller.emailVerified)
-      ? `${ICONS.badge.replace("<svg ", '<svg style="width:12px;height:12px;color:#3FA98A;flex-shrink:0;" ')}Verified · ${escapeHtml(listing.locality)}`
+      ? `${SHOWCASE_VERIFIED_SVG}Verified · ${escapeHtml(listing.locality)}`
       : `New seller · ${escapeHtml(listing.locality)}`;
     return `
       <a href="listing.html?id=${listing.id}" class="show-card">
@@ -432,12 +404,10 @@
   async function renderLanding() {
     const listings = await Store.getListings();
 
-    renderTrustTabs(0);
-
     const trending = [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 4);
     document.getElementById("showcase-grid").innerHTML = trending.length
       ? trending.map(showcaseCardHtml).join("")
-      : `<p style="grid-column:1/-1;color:#68686F;">No listings yet — be the first to post one.</p>`;
+      : `<p style="grid-column:1/-1;color:var(--muted);">No listings yet — be the first to post one.</p>`;
 
     const localityCount = new Set(listings.map((l) => l.locality)).size;
     // "Verified" here means email-confirmed — the real, working signal for
@@ -446,9 +416,11 @@
     const verifiedCount = Array.from(new Set(listings.map((l) => l.sellerId)))
       .map(getSellerById).filter((s) => s && (s.verified || s.emailVerified)).length;
 
-    document.getElementById("hero-eyebrow-text").textContent = "Live in " + HOME_CITY;
+    document.getElementById("hero-badge-text").textContent = listings.length > 0
+      ? `${listings.length}+ neighbours already trading`
+      : "Be the first to trade in your mohalla";
     document.getElementById("stats-lead").textContent = `Growing in ${HOME_CITY.split(",")[0]} and beyond`;
-    document.getElementById("footer-copyright").textContent = `© 2026 Marketplace · ${HOME_CITY}`;
+    document.getElementById("footer-copyright").textContent = `© 2026 Mohalla Market · ${HOME_CITY}`;
     document.getElementById("hero-stats").innerHTML = `
       <div class="stat"><div class="num">${listings.length}</div><div class="label">Active listings</div></div>
       <div class="stat"><div class="num">${localityCount}</div><div class="label">Localities covered</div></div>
@@ -465,11 +437,9 @@
     renderLocValue();
 
     const catCats = document.getElementById("cat-cats");
-    const officialTags = getOfficialTags();
-    catCats.innerHTML = officialTags.length
-      ? officialTags.map((t) => `<a href="browse.html?cat=${encodeURIComponent(t.tag)}" class="cat-chip">${tagIcon(t.tag)} ${escapeHtml(t.tag)}</a>`).join("")
-        + `<a href="browse.html" class="cat-chip" style="color:var(--muted);">🏷️ More tags…</a>`
-      : `<a href="browse.html" class="cat-chip">🏷️ Browse all tags</a>`;
+    catCats.innerHTML = CATEGORIES.map((cat) =>
+      `<a href="browse.html?cat=${encodeURIComponent(cat)}" class="cat-chip">${CATEGORY_ICONS[cat] || ""}${escapeHtml(cat)}</a>`
+    ).join("");
 
     renderTrending();
   }
@@ -477,7 +447,6 @@
   document.addEventListener("DOMContentLoaded", async () => {
     requireSupabaseConfigured();
     await Store.primeCache();
-    await Store.loadLocalities();
 
     if (Store.isLoggedIn()) {
       await initPage("home"); // mounts the bottom nav + unread-message dot

@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Seller profile — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -80,7 +82,7 @@
 
     root.innerHTML = `
       <div class="account-head">
-        <div class="avatar" style="width:62px;height:62px;font-size:20px;"><img src="${avatarUrl(seller.avatarSeed, 124)}" alt="${escapeHtml(seller.name)}" /></div>
+        <div class="avatar" style="width:62px;height:62px;font-size:20px;">${characterAvatarHtml(seller.avatarType)}</div>
         <div>
           <h2>${escapeHtml(seller.name)} ${seller.verified ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">New seller</span>`}</h2>
           <div class="sub">📍 ${seller.locality || "Locality not set"}, ${seller.city} · Member since ${seller.memberSince}</div>
@@ -135,8 +137,45 @@
           <div class="trust-stat"><strong>${accountAgeDays < 1 ? "New today" : accountAgeDays + "d"}</strong><span>Account age</span></div>
           <div class="trust-stat untracked"><strong>Not tracked yet</strong><span>Completion / cancellations</span></div>
         </div>
+        <div id="vouch-box"></div>
       </div>
     `;
+    await renderVouchBox();
+  }
+
+  async function renderVouchBox() {
+    const box = document.getElementById("vouch-box");
+    if (!box) return;
+    const stats = await Store.getVouchStats(sellerId).catch(() => ({ count: 0, vouched: false, sample: [] }));
+    const avatars = stats.sample.map((v) => `<span class="vouch-avatar-item">${characterAvatarHtml(v.avatarType)}</span>`).join("");
+    box.innerHTML = `
+      <div class="vouch-box">
+        <div class="vouch-avatars">${avatars}</div>
+        <div class="vouch-box-text">
+          <div class="t1">${stats.count === 0 ? "No vouches yet" : `${stats.count} neighbour${stats.count === 1 ? "" : "s"} vouched`}</div>
+          <div class="t2">for smooth, honest deals</div>
+        </div>
+        ${!isMe ? `<button class="vouch-toggle-btn ${stats.vouched ? "on" : ""}" id="vouch-toggle-btn">${stats.vouched ? "✓ Vouched" : "Vouch"}</button>` : ""}
+      </div>
+    `;
+    if (!isMe) {
+      document.getElementById("vouch-toggle-btn").addEventListener("click", async (e) => {
+        if (!Store.isLoggedIn()) {
+          window.location.href = "login.html?redirect=" + encodeURIComponent(window.location.pathname.split("/").pop() + window.location.search);
+          return;
+        }
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        try {
+          const nowVouched = await Store.toggleVouch(sellerId);
+          await renderVouchBox();
+          toast(nowVouched ? "Thanks for vouching" : "Vouch removed");
+        } catch (err) {
+          toast(err.message || "Couldn't update — try again");
+          btn.disabled = false;
+        }
+      });
+    }
   }
 
   async function renderReviews() {
@@ -163,7 +202,7 @@
         ${reviews.map((r) => `
           <div class="review-card">
             <div class="review-head">
-              <div class="avatar" style="width:34px;height:34px;"><img src="${avatarUrl(r.reviewerAvatarSeed, 68)}" alt="${escapeHtml(r.reviewerName)}" /></div>
+              <div class="avatar" style="width:34px;height:34px;">${characterAvatarHtml(r.reviewerAvatarType)}</div>
               <div>
                 <p class="review-name">${escapeHtml(r.reviewerName)}</p>
                 <div>${starsHtml(r.rating, 11)}</div>

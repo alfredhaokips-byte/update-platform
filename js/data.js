@@ -2,17 +2,14 @@
    data, no localStorage: everything here talks to Postgres via `sb`
    (js/supabase-client.js) or reads from Store's in-memory cache.
 
-   Cache pattern: a handful of functions (isSaved, getUser, getTagCounts,
-   getOfficialTags, getAllTagsSorted, getSellerById) are synchronous because
-   they're called many times per render (once per card, once per Q&A item).
-   Making every one of those an awaited network call would mean dozens of
-   round-trips per page. Instead, pages call the async fetchers once
-   (Store.primeCache(), Store.getListings(), ...), which populate the cache,
-   and the sync helpers just read from it afterwards. */
+   Cache pattern: a handful of functions (isSaved, getUser, getSellerById)
+   are synchronous because they're called many times per render (once per
+   card, once per Q&A item). Making every one of those an awaited network
+   call would mean dozens of round-trips per page. Instead, pages call the
+   async fetchers once (Store.primeCache(), Store.getListings(), ...), which
+   populate the cache, and the sync helpers just read from it afterwards. */
 
 const HOME_CITY = "Delhi NCR";
-const TAG_GRADUATION_THRESHOLD = 2;
-const TAG_ICON_PALETTE = ["📦", "🔌", "🛋️", "🚗", "👕", "🍳", "📚", "🏸", "📱", "🎸", "🧸", "🪴", "🖼️", "⌚", "🎮", "🚲"];
 const CONDITIONS = ["New", "Used"];
 const REPORT_TYPES = [
   "Scam or fraud attempt",
@@ -22,20 +19,34 @@ const REPORT_TYPES = [
   "Bug or app problem",
   "Something else",
 ];
-let LOCALITIES = []; // populated by Store.loadLocalities(); starts empty until then
 
-function tagIcon(tag) {
-  const key = (tag || "").trim().toLowerCase();
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return TAG_ICON_PALETTE[hash % TAG_ICON_PALETTE.length];
-}
-
-function normalizeTag(raw) {
-  return (raw || "").trim().replace(/\s+/g, " ");
-}
+/* Fixed category set (replaces the earlier free-text/graduating-tag system —
+   a closed list reads better at a glance and is what the category filter
+   chips on Browse and the picker on Sell now both use). Existing listings
+   posted before this change may carry an older free-text category value;
+   CATEGORY_ICONS[cat] is simply undefined for those, which just means no
+   icon renders next to them — harmless. */
+const CATEGORIES = ["Electronics", "Stationary", "Books", "Utilities", "Accessories", "Fashion"];
+const CATEGORY_ICONS = {
+  Electronics: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/></svg>`,
+  Stationary: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 9h6M9 13h6"/></svg>`,
+  Books: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+  Utilities: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
+  Accessories: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M6 21v-1a6 6 0 0 1 12 0v1"/></svg>`,
+  Fashion: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h4l2 3 2-3h4l3 4-4 3v10H7V11L3 8z"/></svg>`,
+};
 
 function formatPrice(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
+
+/* The optional, cosmetic character avatar — a flat silhouette in one of three
+   colors, picked at signup or from Account, never required. avatarType is
+   "female" | "male" | "neutral" (the DB default when never chosen). */
+function characterAvatarHtml(avatarType) {
+  const type = avatarType === "female" || avatarType === "male" ? avatarType : "neutral";
+  const bg = type === "female" ? "var(--sage-bg)" : type === "male" ? "var(--clay-bg)" : "var(--surface-2)";
+  const fill = type === "female" ? "var(--sage-deep)" : type === "male" ? "var(--clay)" : "var(--muted)";
+  return `<svg viewBox="0 0 64 64" style="background:${bg};"><circle cx="32" cy="24" r="13" fill="${fill}"/><path d="M10 58c0-13 10-20 22-20s22 7 22 20" fill="${fill}"/></svg>`;
+}
 
 function timeAgo(dateStr) {
   const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
@@ -44,11 +55,6 @@ function timeAgo(dateStr) {
   return days + " days ago";
 }
 const reviewTimeAgo = timeAgo;
-
-function avatarUrl(seed, size) {
-  size = size || 64;
-  return `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(seed)}&size=${size}`;
-}
 
 function listingImg(seed, w, h) {
   w = w || 480; h = h || 360;
@@ -104,10 +110,14 @@ function mapProfile(row) {
     memberSinceDate: row.created_at,
     locality: row.locality,
     city: row.city,
+    state: row.state,
+    lat: row.lat,
+    lng: row.lng,
     emailVerified: !!row.email_verified,
     phone: row.phone,
     phoneVerified: !!row.phone_verified,
     selfieVerified: !!row.selfie_verified,
+    avatarType: row.avatar_type || "neutral",
   };
 }
 
@@ -123,6 +133,9 @@ function mapListing(row) {
     price: row.price,
     locality: row.locality,
     city: row.city,
+    state: row.state,
+    lat: row.lat,
+    lng: row.lng,
     sellerId: row.seller_id,
     condition: row.condition,
     desc: row.description,
@@ -134,7 +147,7 @@ function mapListing(row) {
 }
 
 const Store = {
-  _cache: { profile: null, savedIds: new Set(), listings: null, profileById: new Map(), localityCity: new Map() },
+  _cache: { profile: null, savedIds: new Set(), listings: null, profileById: new Map() },
 
   /* Call once per page, before any render that uses the sync helpers below. */
   async primeCache() {
@@ -163,32 +176,17 @@ const Store = {
   isLoggedIn() { return !!this._cache.profile; },
   getUser() { return this._cache.profile; },
 
-  async loadLocalities() {
-    const { data, error } = await sb.from("localities").select("name, city").order("name");
-    if (error) throw error;
-    LOCALITIES = (data || []).map((r) => r.name);
-    this._cache.localityCity = new Map((data || []).map((r) => [r.name, r.city]));
-    return LOCALITIES;
-  },
-
-  /* The broader-area grouping the brief asks for ("group Gurgaon + Gurgaon
-     localities together") is just the localities table's own `city` column —
-     every locality already belongs to exactly one city/metro group there, so
-     there's no separate mapping table to maintain. */
-  cityForLocality(localityName) {
-    return (this._cache.localityCity && this._cache.localityCity.get(localityName)) || HOME_CITY;
-  },
-
-  /* Saves the signed-in user's locality (and the city it belongs to) and
-     updates the cached profile so "Nearby" reflects it immediately. */
-  async setLocality(localityName) {
+  /* Saves the signed-in user's locality from a Google Places result (see
+     js/maps-client.js) and updates the cached profile so "Nearby" reflects
+     it immediately. `place` is { locality, city, state, lat, lng }. */
+  async setLocality(place) {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in to set a locality");
-    const city = this.cityForLocality(localityName);
-    const { error } = await sb.from("profiles").update({ locality: localityName, city }).eq("id", user.id);
+    const { error } = await sb.from("profiles").update({
+      locality: place.locality, city: place.city, state: place.state, lat: place.lat, lng: place.lng,
+    }).eq("id", user.id);
     if (error) throw error;
-    user.locality = localityName;
-    user.city = city;
+    Object.assign(user, { locality: place.locality, city: place.city, state: place.state, lat: place.lat, lng: place.lng });
     return user;
   },
 
@@ -239,12 +237,19 @@ const Store = {
     return mapListing(data);
   },
 
-  async addListing({ title, category, price, locality, condition, desc }) {
+  /* `place` is { locality, city, state, lat, lng } from Google Places
+     Autocomplete on the Sell form — falls back to the seller's own profile
+     location if the form's place field wasn't (or couldn't be) filled in. */
+  async addListing({ title, category, price, place, condition, desc }) {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in to post a listing");
+    const loc = place || { locality: user.locality, city: user.city, state: user.state, lat: user.lat, lng: user.lng };
     const { data, error } = await sb
       .from("listings")
-      .insert({ seller_id: user.id, title, category, price, locality, city: user.city || HOME_CITY, condition, description: desc, images: [] })
+      .insert({
+        seller_id: user.id, title, category, price, condition, description: desc, images: [],
+        locality: loc.locality, city: loc.city || HOME_CITY, state: loc.state, lat: loc.lat, lng: loc.lng,
+      })
       .select()
       .single();
     if (error) throw error;
@@ -302,7 +307,7 @@ const Store = {
     return data.map((r) => ({
       id: r.id,
       reviewerName: r.reviewer ? r.reviewer.name : "Former user",
-      reviewerAvatarSeed: r.reviewer ? r.reviewer.avatar_seed : "deleted",
+      reviewerAvatarType: r.reviewer ? (r.reviewer.avatar_type || "neutral") : "neutral",
       rating: r.rating,
       text: r.text,
       createdAt: r.created_at,
@@ -375,12 +380,87 @@ const Store = {
     });
   },
 
+  /* Batched, count-only vouch totals for a set of sellers — one query, no
+     voucher profile data. Used for listing/browse cards, where fetching
+     full voucher details per card would mean one query per card. */
+  async getVouchCounts(sellerIds) {
+    const ids = Array.from(new Set(sellerIds)).filter(Boolean);
+    if (ids.length === 0) return new Map();
+    const { data, error } = await sb.from("vouches").select("seller_id").in("seller_id", ids);
+    if (error) throw error;
+    const counts = new Map();
+    data.forEach((r) => counts.set(r.seller_id, (counts.get(r.seller_id) || 0) + 1));
+    return counts;
+  },
+
+  /* Full vouch detail for one seller — count, whether the signed-in user has
+     already vouched, and a few real vouchers to show. Used on a seller's own
+     profile/detail view, where only one seller is in play at a time. */
+  async getVouchStats(sellerId) {
+    const { data, error } = await sb
+      .from("vouches")
+      .select("voucher_id, voucher:profiles!vouches_voucher_id_fkey(*)")
+      .eq("seller_id", sellerId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    const vouchers = [];
+    data.forEach((row) => {
+      if (row.voucher) {
+        const p = mapProfile(row.voucher);
+        this._cache.profileById.set(p.id, p);
+        vouchers.push(p);
+      }
+    });
+    const user = this.getUser();
+    return {
+      count: data.length,
+      vouched: !!(user && data.some((r) => r.voucher_id === user.id)),
+      sample: vouchers.slice(0, 3),
+    };
+  },
+
+  async toggleVouch(sellerId) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in to vouch");
+    if (user.id === sellerId) throw new Error("You can't vouch for yourself");
+    const { data: existing, error: selErr } = await sb
+      .from("vouches").select("voucher_id").eq("voucher_id", user.id).eq("seller_id", sellerId).maybeSingle();
+    if (selErr) throw selErr;
+    if (existing) {
+      const { error } = await sb.from("vouches").delete().eq("voucher_id", user.id).eq("seller_id", sellerId);
+      if (error) throw error;
+      return false;
+    } else {
+      const { error } = await sb.from("vouches").insert({ voucher_id: user.id, seller_id: sellerId });
+      if (error) throw error;
+      return true;
+    }
+  },
+
   async setPhone(phone) {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in");
     const { error } = await sb.from("profiles").update({ phone }).eq("id", user.id);
     if (error) throw error;
     user.phone = phone;
+  },
+
+  /* Optional, cosmetic only — never required to use the app. */
+  async setAvatarType(avatarType) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in");
+    const { error } = await sb.from("profiles").update({ avatar_type: avatarType }).eq("id", user.id);
+    if (error) throw error;
+    user.avatarType = avatarType;
+  },
+
+  /* RLS ("users can delete their own listings" in schema.sql) already
+     restricts this to the listing's own seller_id — this call just has to
+     be made as that user. */
+  async deleteListing(id) {
+    const { error } = await sb.from("listings").delete().eq("id", id);
+    if (error) throw error;
+    if (this._cache.listings) this._cache.listings = this._cache.listings.filter((l) => l.id !== id);
   },
 
   async getQA(listingId) {
@@ -515,34 +595,4 @@ const Store = {
 
 function getSellerById(id) {
   return Store._cache.profileById.get(id) || null;
-}
-
-/* Tag stats are derived from whatever's in Store._cache.listings — call
-   Store.getListings() earlier on the page before using these. */
-function getTagCounts() {
-  const byKey = new Map();
-  (Store._cache.listings || []).forEach((l) => {
-    const display = normalizeTag(l.category);
-    if (!display) return;
-    const key = display.toLowerCase();
-    if (!byKey.has(key)) byKey.set(key, { tag: display, count: 0 });
-    byKey.get(key).count++;
-  });
-  return Array.from(byKey.values()).sort((a, b) => b.count - a.count);
-}
-
-function getOfficialTags() {
-  return getTagCounts().filter((t) => t.count >= TAG_GRADUATION_THRESHOLD);
-}
-
-function getAllTagsSorted() {
-  return getTagCounts().sort((a, b) => a.tag.localeCompare(b.tag));
-}
-
-function tagsUntilGraduation(tag) {
-  const key = normalizeTag(tag).toLowerCase();
-  if (!key) return TAG_GRADUATION_THRESHOLD;
-  const existing = getTagCounts().find((t) => t.tag.toLowerCase() === key);
-  const count = existing ? existing.count : 0;
-  return Math.max(0, TAG_GRADUATION_THRESHOLD - count);
 }

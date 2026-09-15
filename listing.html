@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Listing — Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -73,6 +75,7 @@
     const reviews = await Store.getReviews(listing.sellerId);
     const sellerStats = Store.reviewStats(reviews);
     const trust = await Store.getSellerTrustStats(listing.sellerId).catch(() => ({ responseRatePct: null }));
+    const vouchStats = await Store.getVouchStats(listing.sellerId).catch(() => ({ count: 0 }));
     document.title = listing.title + " — Marketplace";
 
     const galleryUrls = listingGalleryUrls(listing);
@@ -91,10 +94,10 @@
         </div>
         <p class="detail-price">${formatPrice(listing.price)}</p>
         <p class="detail-meta">📍 ${listing.locality}, ${listing.city} · Posted ${timeAgo(listing.createdAt).toLowerCase()} · ${listing.views} views</p>
-        <a href="browse.html?cat=${encodeURIComponent(listing.category)}" class="cat-chip" style="display:inline-flex;margin-bottom:14px;">${tagIcon(listing.category)} ${escapeHtml(listing.category)}</a>
+        <a href="browse.html?cat=${encodeURIComponent(listing.category)}" class="cat-chip" style="display:inline-flex;margin-bottom:14px;">${CATEGORY_ICONS[listing.category] || ""}${escapeHtml(listing.category)}</a>
 
         <a href="profile.html?seller=${seller.id}" class="seller-card row">
-          <div class="avatar"><img src="${avatarUrl(seller.avatarSeed, 88)}" alt="${escapeHtml(seller.name)}" /></div>
+          <div class="avatar">${characterAvatarHtml(seller.avatarType)}</div>
           <div style="flex:1;">
             <p class="seller-name">${escapeHtml(seller.name)}</p>
             <p class="seller-sub">Member since ${seller.memberSince} · ${seller.deals} deal${seller.deals === 1 ? "" : "s"}${trust.responseRatePct !== null ? ` · ${trust.responseRatePct}% response rate` : ""}</p>
@@ -102,6 +105,7 @@
             <div class="trust-badges-row" style="margin-top:8px;">
               <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? "✓" : "○"} Email</span>
               <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? "✓" : "○"} Selfie</span>
+              ${vouchStats.count > 0 ? `<span class="trust-badge yes">🤝 ${vouchStats.count} vouched</span>` : ""}
             </div>
           </div>
           ${seller.verified ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">New seller</span>`}
