@@ -38,6 +38,25 @@ const CATEGORY_ICONS = {
 
 function formatPrice(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
 
+/* Straight-line (not driving-route) distance in km between two coordinates.
+   Returns null if either point is missing — plenty of older listings/profiles
+   predate lat/lng (see supabase/pan-india.sql), so this has to degrade
+   gracefully rather than assume the data is there. */
+function haversineKm(lat1, lng1, lat2, lng2) {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return null;
+  const R = 6371;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDistance(km) {
+  if (km == null) return "";
+  return km < 1 ? `${Math.max(1, Math.round(km * 1000))} m away` : `${km.toFixed(1)} km away`;
+}
+
 /* The optional, cosmetic character avatar — a flat silhouette in one of three
    colors, picked at signup or from Account, never required. avatarType is
    "female" | "male" | "neutral" (the DB default when never chosen). */
@@ -118,6 +137,7 @@ function mapProfile(row) {
     phoneVerified: !!row.phone_verified,
     selfieVerified: !!row.selfie_verified,
     avatarType: row.avatar_type || "neutral",
+    isAdmin: !!row.is_admin,
   };
 }
 
@@ -175,6 +195,22 @@ const Store = {
 
   isLoggedIn() { return !!this._cache.profile; },
   getUser() { return this._cache.profile; },
+
+  /* The user's real device location, cached in memory for this session only
+     (never localStorage, never sent to the DB) — re-navigating pages won't
+     re-prompt, but closing the tab forgets it entirely. Only ever called
+     from a user tap (never on page load) — see the "Nearby" tab handlers. */
+  _geo: null,
+  getCachedGeo() { return this._geo; },
+  async requestGeo() {
+    if (this._geo) return this._geo;
+    if (!navigator.geolocation) throw new Error("Location isn't available on this device/browser");
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000, maximumAge: 300000 });
+    });
+    this._geo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    return this._geo;
+  },
 
   /* Saves the signed-in user's locality from a Google Places result (see
      js/maps-client.js) and updates the cached profile so "Nearby" reflects
@@ -498,6 +534,85 @@ const Store = {
     if (error) throw error;
   },
 
+  /* ---------- Community forum (general / feedback / notice) ---------- */
+  async getCommunityPosts(section) {
+    const { data, error } = await sb
+      .from("community_posts")
+      .select("*, author:profiles!community_posts_author_id_fkey(*)")
+      .eq("section", section)
+      .is("parent_id", null)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+
+    const ids = data.map((p) => p.id);
+    let replyCounts = {};
+    if (ids.length) {
+      const { data: replies } = await sb.from("community_posts").select("parent_id").in("parent_id", ids);
+      (replies || []).forEach((r) => { replyCounts[r.parent_id] = (replyCounts[r.parent_id] || 0) + 1; });
+    }
+    return data.map((p) => {
+      if (p.author) this._cache.profileById.set(p.author.id, mapProfile(p.author));
+      return {
+        id: p.id, authorId: p.author_id, section: p.section, title: p.title, body: p.body,
+        status: p.status, votes: p.votes, createdAt: p.created_at, replyCount: replyCounts[p.id] || 0,
+      };
+    });
+  },
+
+  async getCommunityPost(id) {
+    const { data, error } = await sb
+      .from("community_posts")
+      .select("*, author:profiles!community_posts_author_id_fkey(*)")
+      .or(`id.eq.${id},parent_id.eq.${id}`)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    data.forEach((row) => { if (row.author) this._cache.profileById.set(row.author.id, mapProfile(row.author)); });
+
+    const root = data.find((r) => r.id === id);
+    if (!root) return null;
+    const replies = data.filter((r) => r.parent_id === id).map((r) => ({
+      id: r.id, authorId: r.author_id, body: r.body, createdAt: r.created_at,
+    }));
+    return {
+      id: root.id, authorId: root.author_id, section: root.section, title: root.title, body: root.body,
+      status: root.status, votes: root.votes, createdAt: root.created_at, replies,
+    };
+  },
+
+  async postCommunityPost({ section, title, body }) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in to post");
+    const { data, error } = await sb.from("community_posts")
+      .insert({ author_id: user.id, section, title: title || null, body })
+      .select("id").single();
+    if (error) throw error;
+    return data.id;
+  },
+
+  async postCommunityReply(postId, body) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in to reply");
+    const { data: parent, error: parentErr } = await sb.from("community_posts").select("section").eq("id", postId).single();
+    if (parentErr) throw parentErr;
+    const { error } = await sb.from("community_posts")
+      .insert({ author_id: user.id, parent_id: postId, section: parent.section, body });
+    if (error) throw error;
+  },
+
+  async voteCommunity(postId, delta) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in to vote");
+    const { error } = await sb.rpc("cast_community_vote", { p_id: postId, new_value: delta });
+    if (error) throw error;
+  },
+
+  /* Admin-only — enforced again server-side by the RPC itself, this is just
+     the client-side call. */
+  async setFeedbackStatus(postId, status) {
+    const { error } = await sb.rpc("set_feedback_status", { p_id: postId, new_status: status });
+    if (error) throw error;
+  },
+
   async getThreads() {
     const user = this.getUser();
     if (!user) return [];
@@ -590,6 +705,20 @@ const Store = {
       reporter_id: user.id, type, description, listing_id: listingId || null, reported_seller_id: sellerId || null,
     });
     if (error) throw error;
+  },
+
+  /* Collection only — this does not send anything. Actually emailing
+     subscribers needs a separate service (Resend, most likely, per the
+     pattern already used for message notifications) and a decision about
+     cadence/content, which is a product call for later, not something to
+     build speculatively now. */
+  async subscribeNewsletter(email) {
+    const { error } = await sb.from("newsletter_subscribers").insert({ email });
+    // A duplicate email hits the unique constraint — treat that as success
+    // too (no select policy exists to check first, and confirming "you're
+    // already on the list" either way avoids leaking whether an email is
+    // already subscribed).
+    if (error && error.code !== "23505") throw error;
   },
 };
 

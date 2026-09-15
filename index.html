@@ -214,6 +214,15 @@
             Mohalla Market
           </a>
           <p>A sustainable, trust-first marketplace — built around a neighbourhood, not an algorithm.</p>
+          <form id="newsletter-form" style="margin-top:18px;max-width:280px;">
+            <p style="font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Get updates on new listings &amp; features</p>
+            <div style="display:flex;gap:8px;">
+              <input type="email" id="newsletter-email" placeholder="you@example.com" required
+                style="flex:1;min-width:0;border:1.5px solid var(--border-2);border-radius:10px;padding:10px 12px;font-size:13px;background:var(--surface);color:var(--ink);" />
+              <button type="submit" class="btn-pill btn-sage" style="padding:10px 16px;">Join</button>
+            </div>
+            <p id="newsletter-msg" style="font-size:12px;color:var(--sage-deep);margin-top:8px;" hidden></p>
+          </form>
         </div>
         <div>
           <h4>Marketplace</h4>
@@ -255,7 +264,7 @@
         <p class="loc-label">Location</p>
         <p class="loc-value" id="loc-value">📍 Delhi NCR</p>
       </div>
-      <a href="messages.html" class="icon-btn">🔔<span class="dot"></span></a>
+      <a href="messages.html" class="icon-btn">🔔<span class="dot" id="msg-dot" hidden></span></a>
     </div>
     <div class="row search-row">
       <a href="browse.html" class="search-bar">🔍 What are you looking for?</a>
@@ -308,16 +317,51 @@
     return (user && user.locality) ? user.city : HOME_CITY;
   }
 
+  let geoAskedThisSession = false;
+
   function setScope(s) {
     scope = s;
     document.querySelectorAll("#scope-cats .pill-btn").forEach((b) => b.classList.toggle("active", b.dataset.scope === s));
+    if (s === "nearby") maybeUseGeoThenRender();
+    else renderTrending();
+  }
+
+  /* Real GPS distance is strictly an enhancement on top of the existing
+     city-based Nearby — only requested on a tap (never on page load), only
+     asked once per session, and any decline/failure just falls back to the
+     city match silently rather than blocking or erroring. */
+  async function maybeUseGeoThenRender() {
+    if (!Store.getCachedGeo() && !geoAskedThisSession) {
+      geoAskedThisSession = true;
+      const wantsGeo = confirm("See what's actually close to you? This uses your device's location just for this session — nothing is saved.");
+      if (wantsGeo) {
+        try { await Store.requestGeo(); }
+        catch (err) { /* denied, unsupported, or timed out — city-based Nearby below covers it */ }
+      }
+    }
     renderTrending();
   }
 
   function renderTrending() {
     let listings = allListings;
-    if (scope === "nearby") listings = listings.filter((l) => l.city === nearbyCity());
-    const trending = [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
+    const geo = scope === "nearby" ? Store.getCachedGeo() : null;
+    let sortedByDistance = false;
+
+    if (scope === "nearby" && geo) {
+      const withDistance = listings
+        .map((l) => Object.assign({}, l, { _distanceKm: haversineKm(geo.lat, geo.lng, l.lat, l.lng) }))
+        .filter((l) => l._distanceKm != null);
+      if (withDistance.length > 0) {
+        listings = withDistance.sort((a, b) => a._distanceKm - b._distanceKm);
+        sortedByDistance = true;
+      } else {
+        listings = listings.filter((l) => l.city === nearbyCity()); // no listings have real coordinates yet — fall back
+      }
+    } else if (scope === "nearby") {
+      listings = listings.filter((l) => l.city === nearbyCity());
+    }
+
+    const trending = sortedByDistance ? listings.slice(0, 8) : [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
     document.getElementById("trending-grid").innerHTML = trending.length
       ? trending.map(listingCardHtml).join("")
       : `<div class="empty-state" style="grid-column:1/-1;"><div class="big">📭</div><h3>No listings yet</h3><p>Try "All India" to see more.</p></div>`;
@@ -457,6 +501,26 @@
       // logged-out visitors, not part of the in-app tab flow.
       document.getElementById("landing-root").hidden = false;
       await renderLanding();
+
+      document.getElementById("newsletter-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById("newsletter-email");
+        const msgEl = document.getElementById("newsletter-msg");
+        const btn = e.target.querySelector("button[type=submit]");
+        btn.disabled = true;
+        try {
+          await Store.subscribeNewsletter(emailInput.value.trim());
+          emailInput.value = "";
+          msgEl.textContent = "You're on the list!";
+          msgEl.hidden = false;
+        } catch (err) {
+          msgEl.textContent = err.message || "Couldn't sign up — try again.";
+          msgEl.style.color = "var(--danger)";
+          msgEl.hidden = false;
+        } finally {
+          btn.disabled = false;
+        }
+      });
     }
   });
 </script>

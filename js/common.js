@@ -73,7 +73,7 @@ mountThemeToggle();
 /* ---------- Bottom tab bar ---------- */
 const NAV_ITEMS = [
   { key: "home", icon: "⌂", label: "Home", href: "index.html" },
-  { key: "community", icon: "💬", label: "Community", href: "messages.html" },
+  { key: "community", icon: "💬", label: "Community", href: "community.html" },
   { key: "sell", icon: "➕", label: "Sell", href: "post-ad.html" },
   { key: "myads", icon: "📋", label: "My ads", href: "my-ads.html" },
   { key: "account", icon: "👤", label: "Account", href: "account.html" },
@@ -85,7 +85,6 @@ function bottomNavHtml(activeKey) {
       ${NAV_ITEMS.map((item) => `
         <a class="nav-item ${item.key === activeKey ? "active" : ""}" href="${item.href}">
           <span class="nav-icon">${item.icon}</span>${item.label}
-          ${item.key === "community" ? `<span class="dot" id="msg-dot" hidden></span>` : ""}
         </a>
       `).join("")}
     </div>
@@ -113,8 +112,96 @@ async function initPage(activeNavKey) {
       const unread = threads.reduce((sum, t) => sum + t.unread, 0);
       const dot = document.getElementById("msg-dot");
       if (dot) dot.hidden = unread === 0;
+      startNotificationPoller(unread);
     } catch (e) { /* non-critical — leave the dot hidden on failure */ }
   }
+}
+
+/* ---------- In-tab notifications (item 3a) ----------
+   This covers only "the tab is open" notifications via setInterval polling +
+   the Notification API. True push (app/tab closed) needs a service worker,
+   VAPID keys, and a server-side trigger (e.g. a Supabase Edge Function on
+   message insert) — meaningfully more infrastructure, intentionally deferred
+   as its own follow-up rather than attempted here. */
+const NOTIFICATIONS_PREF_KEY = "mm-notifications-enabled";
+const SAVED_PRICES_KEY = "mm-saved-prices";
+const NOTIFICATION_POLL_MS = 45000;
+let _notifPollerStarted = false;
+
+function getNotificationsEnabled() {
+  try { return localStorage.getItem(NOTIFICATIONS_PREF_KEY) === "1" && Notification.permission === "granted"; }
+  catch (e) { return false; }
+}
+
+async function setNotificationsEnabled(want) {
+  if (!("Notification" in window)) throw new Error("Notifications aren't supported on this device/browser");
+  if (want) {
+    const perm = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+    if (perm !== "granted") { try { localStorage.setItem(NOTIFICATIONS_PREF_KEY, "0"); } catch (e) {} return false; }
+    try { localStorage.setItem(NOTIFICATIONS_PREF_KEY, "1"); } catch (e) {}
+    startNotificationPoller();
+    return true;
+  } else {
+    try { localStorage.setItem(NOTIFICATIONS_PREF_KEY, "0"); } catch (e) {}
+    return false;
+  }
+}
+
+function notifyIfEnabled(title, body) {
+  if (!getNotificationsEnabled()) return;
+  try { new Notification(title, { body, icon: "/favicon.ico" }); } catch (e) { /* non-critical */ }
+}
+
+let _lastKnownUnread = null;
+let _lastKnownVouchCount = null;
+
+async function checkForNotifiableEvents() {
+  if (!Store.isLoggedIn()) return;
+
+  try {
+    const threads = await Store.getThreads();
+    const unread = threads.reduce((sum, t) => sum + t.unread, 0);
+    if (_lastKnownUnread !== null && unread > _lastKnownUnread) {
+      notifyIfEnabled("New message", "You've got a new message on Marketplace.");
+    }
+    _lastKnownUnread = unread;
+  } catch (e) { /* non-critical */ }
+
+  try {
+    const stats = await Store.getVouchStats(Store.getUser().id);
+    if (_lastKnownVouchCount !== null && stats.count > _lastKnownVouchCount) {
+      notifyIfEnabled("Someone vouched for you", "Your trust on Marketplace just grew a little.");
+    }
+    _lastKnownVouchCount = stats.count;
+  } catch (e) { /* non-critical */ }
+
+  try {
+    const savedIds = Store.getSaved();
+    if (savedIds.length) {
+      let prevPrices = {};
+      try { prevPrices = JSON.parse(localStorage.getItem(SAVED_PRICES_KEY) || "{}"); } catch (e) {}
+      const listings = await Store.getListings();
+      const currentPrices = {};
+      listings.forEach((l) => {
+        if (!savedIds.includes(l.id)) return;
+        currentPrices[l.id] = l.price;
+        if (prevPrices[l.id] !== undefined && prevPrices[l.id] !== l.price) {
+          notifyIfEnabled("Price changed", `${l.title} is now ${formatPrice(l.price)}.`);
+        }
+      });
+      try { localStorage.setItem(SAVED_PRICES_KEY, JSON.stringify(currentPrices)); } catch (e) {}
+    }
+  } catch (e) { /* non-critical */ }
+}
+
+/* `seedUnread`, when passed, skips one redundant getThreads() call by
+   reusing what initPage() just fetched for the unread dot. */
+function startNotificationPoller(seedUnread) {
+  if (_notifPollerStarted || !getNotificationsEnabled()) return;
+  _notifPollerStarted = true;
+  if (typeof seedUnread === "number") _lastKnownUnread = seedUnread;
+  checkForNotifiableEvents(); // establishes remaining baselines without notifying on the first tick
+  setInterval(checkForNotifiableEvents, NOTIFICATION_POLL_MS);
 }
 
 /* ---------- Back-row header for sub-pages ---------- */
@@ -146,6 +233,7 @@ function listingCardHtml(listing) {
         <p class="product-title">${escapeHtml(listing.title)}</p>
         <p class="product-price">${formatPrice(listing.price)}</p>
         <p class="product-tag">${CATEGORY_ICONS[listing.category] || ""} ${escapeHtml(listing.category)}</p>
+        ${listing._distanceKm != null ? `<p class="product-distance">${formatDistance(listing._distanceKm)}</p>` : ""}
         <div class="trust-row">${trust}</div>
       </div>
     </a>

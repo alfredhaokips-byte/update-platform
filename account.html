@@ -24,7 +24,17 @@
     <a href="verify.html" class="menu-item"><span class="ic">✓</span>Get verified<span class="chev">›</span></a>
     <button class="menu-item" onclick="toast('Edit profile — demo mode')"><span class="ic">✏️</span>Edit profile<span class="chev">›</span></button>
     <button class="menu-item" id="edit-character-btn"><span class="ic">🧑</span>Profile character<span class="chev">›</span></button>
-    <button class="menu-item" onclick="toast('Notification settings — demo mode')"><span class="ic">🔔</span>Notifications<span class="chev">›</span></button>
+    <div class="menu-item" style="cursor:default;">
+      <span class="ic">🔔</span>
+      <span style="flex:1;">
+        Notifications
+        <span style="display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:1px;">New messages &amp; vouches, while this tab is open</span>
+      </span>
+      <label class="switch">
+        <input type="checkbox" id="notif-toggle" />
+        <span class="switch-track"></span>
+      </label>
+    </div>
     <a href="help.html" class="menu-item"><span class="ic">🛡️</span>Safety &amp; help<span class="chev">›</span></a>
     <button class="menu-item" onclick="toast('r/DelhiMarketplace-style community guidelines — demo mode')"><span class="ic">📜</span>Community guidelines<span class="chev">›</span></button>
     <button class="menu-item" id="logout-btn" style="color:var(--danger);"><span class="ic">↪</span>Log out</button>
@@ -94,6 +104,19 @@
     document.getElementById("edit-character-btn").addEventListener("click", () => {
       renderCharGrid(user.avatarType);
       openModal("char-modal");
+    });
+
+    const notifToggle = document.getElementById("notif-toggle");
+    notifToggle.checked = getNotificationsEnabled();
+    notifToggle.addEventListener("change", async () => {
+      if (notifToggle.checked) {
+        const granted = await setNotificationsEnabled(true);
+        notifToggle.checked = granted;
+        toast(granted ? "Notifications on for this tab" : "Notifications blocked — check your browser's site settings");
+      } else {
+        await setNotificationsEnabled(false);
+        toast("Notifications off");
+      }
     });
   });
 

@@ -24,9 +24,19 @@ exactly what's happening.
 7. Same again with `supabase/pan-india.sql` — adds `state`/`lat`/`lng` to
    `profiles` and `listings`, and drops the old Delhi-NCR-only default on
    `city` now that location comes from Google Places (see §4 below).
-8. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
-   key (not `service_role`).
-9. Paste them into `js/supabase-client.js`:
+8. Same again with `supabase/newsletter.sql` — the `newsletter_subscribers`
+   table (publicly writable, not readable back — collection only, see
+   "Newsletter signup" below).
+9. Same again with `supabase/community.sql` — the Community forum (General
+   discussion, Feedback with vouching + status, Notice Board), and adds
+   `profiles.is_admin`. **After running it**, make yourself an admin (needed
+   to post to the Notice Board and set Feedback status chips) — SQL Editor:
+   ```sql
+   update profiles set is_admin = true where id = (select id from auth.users where email = 'you@example.com');
+   ```
+10. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+    key (not `service_role`).
+11. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -232,6 +242,50 @@ read-only count next to the trust badges on `listing.html`. Backed by
   only where the city comes from. See §2 above for the Google Maps setup
   this needs, and `supabase/pan-india.sql` for the schema change.
 
+## Dark-mode nav fix, GPS Nearby, notifications, newsletter, Community forum
+
+- **Bottom nav dark mode.** Was hardcoded to a white background — now uses
+  `var(--surface)` like everything else, so it flips with the rest of the
+  page.
+- **GPS-based Nearby.** Tapping "Nearby" on the home feed now offers real
+  device-location sorting (`js/data.js`'s `haversineKm`/`Store.requestGeo`) —
+  only on that tap, never on page load, with a plain-language reason shown
+  before the browser's own permission prompt. Decline, no-`geolocation`
+  support, or a timeout all fall back to the existing city match silently.
+  The location itself is cached in memory for the session only, never
+  persisted. Cards show "X km/m away" when sorted this way
+  (`.product-distance` in `listingCardHtml`).
+- **In-tab notifications.** Account → Notifications toggle requests browser
+  `Notification` permission and, while enabled, polls every 45s
+  (`js/common.js`'s `checkForNotifiableEvents`) for new messages, new
+  vouches, and price changes on your saved listings, firing a
+  `Notification` for each. This only fires while a tab is open — real push
+  for when the app/tab is closed needs a service worker, VAPID keys, and a
+  server-side trigger (e.g. a Supabase Edge Function on message insert, the
+  same shape as the email-notification function above); that's flagged in
+  the code as an intentionally separate, bigger follow-up, not attempted here.
+- **Newsletter signup.** Footer of the landing page — collects an email into
+  `newsletter_subscribers` (`Store.subscribeNewsletter`). Collection only;
+  it doesn't send anything. Actually emailing subscribers is flagged in the
+  code as the next step, once there's a cadence/content decision to build
+  toward — Resend (already used for message notifications) is the natural
+  choice there too.
+- **Community forum.** The bottom nav's Community tab now goes to
+  `community.html` (direct messages moved to the bell icon on Home and a
+  header icon inside Community, same as before) with three sections:
+  - **General** — open discussion, upvote/downvote, replies.
+  - **Feedback** — bug reports and suggestions about the app itself (kept
+    separate from General on purpose — different audience/purpose). Reuses
+    the seller-vouch mechanic (same avatar-stack + marigold-seal look) as
+    the vote, and carries a status chip — Open / Acknowledged / Fixed /
+    Won't fix — settable only by an admin (`profiles.is_admin`, set via SQL,
+    see §1 above; enforced server-side by the `set_feedback_status` RPC, not
+    just hidden in the UI).
+  - **Notice Board** — read-mostly announcements; only an admin can post
+    (enforced in `community.sql`'s RLS insert policy).
+  All three share one self-referencing table (`community_posts`), mirroring
+  the `qa_questions` pattern from `schema.sql`.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
@@ -248,9 +302,14 @@ Also out of scope for now (flagged for awareness):
 - Phone OTP auth/verification (Phase 0 ships email/password only; phone
   numbers can be saved on `verify.html` but nothing verifies them yet)
 - Image compression/resizing before upload
-- True GPS distance-based "X km away" sorting — Nearby is locality/city-based
 - Realtime chat — messages send/receive correctly but don't push live; you see
-  a reply on next page load/refresh, not instantly
+  a reply on next page load/refresh, not instantly (the in-tab notification
+  poller covers "new message" in the meantime, but only while a tab is open)
+- True push notifications (app/tab closed) — needs a service worker, VAPID
+  keys, and a server-side trigger; intentionally deferred, see "In-tab
+  notifications" above
+- Actually sending newsletter emails — collection only for now, see
+  "Newsletter signup" above
 - Editing your own listings after posting (deleting them is built — see
   "Delete listings" above)
 - Order/transaction lifecycle (accept/complete/cancel) — nothing tracks this,
