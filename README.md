@@ -57,9 +57,12 @@ exactly what's happening.
     `listings.instagram_posted` and the single-row `app_settings` table (see
     "Photo/video lightbox, camera capture, video upload, Instagram
     auto-posting" below).
-16. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+16. Same again with `supabase/seller-type.sql` — adds
+    `profiles.seller_type`/`shop_name`/`shop_description` (see "Business vs.
+    individual sellers" below).
+17. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
     key (not `service_role`).
-17. Paste them into `js/supabase-client.js`:
+18. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -161,17 +164,18 @@ existing feed. Six things were built here:
    rather than faked — this app has no order/transaction lifecycle to derive
    them from honestly.
 3. **Progressive verification** — posting a listing requires a confirmed
-   email; listings over ₹10,000 require selfie verification
-   (`SELFIE_VERIFICATION_PRICE_THRESHOLD` in `js/data.js`). One deviation
-   from the brief: it names "phone verified" as the gate for posting at all,
-   but real phone OTP was explicitly deferred in Phase 0 (no SMS provider
-   wired up) — gating on it would make posting permanently impossible for
-   everyone. Email confirmation is the real, working equivalent, so that's
-   what's enforced instead. `verify.html` is the verification hub — email
-   status is real, selfie is a "coming soon" placeholder (real liveness
-   detection is its own dedicated phase, not built here). Phone OTP was
-   tried later and then fully removed — see "Phone OTP verification,
-   removed" below.
+   email. One deviation from the brief: it names "phone verified" as the
+   gate for posting at all, but real phone OTP was explicitly deferred in
+   Phase 0 (no SMS provider wired up) — gating on it would make posting
+   permanently impossible for everyone. Email confirmation is the real,
+   working equivalent, so that's what's enforced instead. `verify.html` is
+   the verification hub — email status is real, selfie is a "coming soon"
+   placeholder (real liveness detection is its own dedicated phase, not
+   built here). Phone OTP was tried later and then fully removed — see
+   "Phone OTP verification, removed" below. A ₹10,000-and-up selfie-
+   verification requirement was tried too and also removed, for the same
+   reason (no working verification method behind it) — see "My Ads icon
+   bug, stale price gate removed, business vs. individual sellers" below.
 4. **Trust signals on listings** — the seller card on `listing.html` now
    shows response rate and verification badges, plus a "Listing confidence"
    checklist (real photos / condition disclosed / description complete /
@@ -658,12 +662,67 @@ Real, working contact details, not buried in `help.html`:
     @mohallamarketplace — that's the next step once the Meta-side setup is
     in place, not something achievable from this codebase alone.
 
+## My Ads icon bug, stale price gate removed, business vs. individual sellers
+
+- **My Ads placeholder icon, fixed.** The original "broken icon" bug (an
+  unsized category SVG rendering at its default ~300×150px) was fixed on
+  the shared card component (`listingCardHtml()` in `js/common.js`) back
+  when it was first found — but `my-ads.html` has always rendered its own
+  separate card markup (a delete button instead of a save button, no
+  seller-trust row), so it kept the old, unfixed category-icon line and
+  nobody noticed. Same fix, applied to the file it was missed in: the icon
+  is gone, category still shows as plain text, exactly like every other
+  card. There was never a real "no-photo fallback" here to redesign — the
+  icon rendered unconditionally, real photo or not, which is exactly the
+  bug that was reported.
+- **The ₹10,000 verification gate is gone.** Turned out to be tied to
+  *selfie* verification, not phone (`SELFIE_VERIFICATION_PRICE_THRESHOLD`
+  in `js/data.js`, checked in `post-ad.html`'s submit handler) — but the
+  underlying problem was identical either way: selfie/liveness verification
+  was never built (`verify.html` has always honestly said "Selfie —
+  coming soon"), so `selfieVerified` has no path to `true` for anyone,
+  meaning this gate silently blocked every listing over ₹10,000 with no
+  way to ever pass it. Removed the check entirely from the publish flow —
+  listings of any price publish the same way now. `verify.html`'s copy
+  updated to match (no more claiming a ₹10,000 requirement that no longer
+  exists); the Selfie badge itself stays, still honestly labeled "coming
+  soon," since a future stronger verification tier is still on the table —
+  just not gating anything today. Re-adding a price gate later is fine,
+  once a real verification method exists to gate on.
+- **Business vs. individual sellers**, `profiles.seller_type` (default
+  `'individual'`, or `'business'`) plus optional `shop_name`/
+  `shop_description` — self-declared, like every other unverified signal on
+  this app, not a trust claim. Toggled from Edit Profile ("I'm selling as a
+  small business/shop"), which reveals two extra fields (shop name, 60
+  chars; shop description, 160) that are cleared automatically when
+  switched back to individual, so a stale shop name can't linger.
+  - **"Shop" label** — a small clay-toned pill (`.shop-tag` for the compact
+    card context, `.badge-shop` for header contexts), deliberately never
+    reusing the Verified/Unverified green-or-gray so it reads as a category
+    ("this is a shop"), not a trust badge. Shown next to the seller's name
+    everywhere it appears: listing cards (`listingCardHtml()`), listing
+    detail's seller card, and profile/account headers. A business seller's
+    shop name and description show as their own lines on listing detail and
+    profile/account — separate from, and in addition to, the personal
+    status/bio field that already existed.
+  - No different rules, fees, or verification for business sellers — purely
+    labeling and display, per the brief.
+- **New "Handcrafted" category**, alongside the existing six
+  (`CATEGORIES`/`CATEGORY_ICONS` in `js/data.js`) — a scissors icon, for
+  original/handmade items. `listings.category` was always free-text at the
+  database level (no fixed enum to migrate), so this is a one-line, purely
+  app-side addition that the category picker on Sell and the filter chips
+  on Browse both pick up automatically.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
 
-- Real selfie/liveness capture (the verification *gate* exists; the camera +
-  liveness-check UI itself doesn't)
+- Real selfie/liveness capture — the "coming soon" badge exists
+  (`verify.html`); the camera + liveness-check UI, and any gate tied to it,
+  don't (a price-based gate was tried and removed since nothing could ever
+  pass it — see "My Ads icon bug, stale price gate removed, business vs.
+  individual sellers" above)
 - AI chat-safety scam-pattern warnings
 - AI risk scoring on signup/listing
 - AI photo → listing assistant (category/condition/price suggestions)

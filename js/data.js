@@ -26,7 +26,7 @@ const REPORT_TYPES = [
    posted before this change may carry an older free-text category value;
    CATEGORY_ICONS[cat] is simply undefined for those, which just means no
    icon renders next to them — harmless. */
-const CATEGORIES = ["Electronics", "Stationary", "Books", "Utilities", "Accessories", "Fashion"];
+const CATEGORIES = ["Electronics", "Stationary", "Books", "Utilities", "Accessories", "Fashion", "Handcrafted"];
 const CATEGORY_ICONS = {
   Electronics: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/></svg>`,
   Stationary: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a2 2 0 0 1 2-2h10l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M9 9h6M9 13h6"/></svg>`,
@@ -34,6 +34,7 @@ const CATEGORY_ICONS = {
   Utilities: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
   Accessories: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M6 21v-1a6 6 0 0 1 12 0v1"/></svg>`,
   Fashion: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h4l2 3 2-3h4l3 4-4 3v10H7V11L3 8z"/></svg>`,
+  Handcrafted: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.5 15.5M8.5 8.5L20 20"/></svg>`,
 };
 
 /* A filled heart — deliberately distinct from the "Verified" checkmark
@@ -186,11 +187,12 @@ function mapProfile(row) {
     avatarUrl: row.avatar_url || null,
     statusText: row.status_text || null,
     newsletterOptIn: row.newsletter_opt_in !== false,
+    sellerType: row.seller_type === "business" ? "business" : "individual",
+    isBusiness: row.seller_type === "business",
+    shopName: row.shop_name || null,
+    shopDescription: row.shop_description || null,
   };
 }
-
-/* Price above which a listing requires selfie/liveness verification to publish. */
-const SELFIE_VERIFICATION_PRICE_THRESHOLD = 10000;
 
 /* Maps a DB listing row (with embedded seller profile) to the UI shape. */
 function mapListing(row) {
@@ -602,6 +604,28 @@ const Store = {
     const { error } = await sb.from("profiles").update({ status_text: trimmed || null }).eq("id", user.id);
     if (error) throw error;
     user.statusText = trimmed || null;
+  },
+
+  /* Self-declared, like every other unverified trust signal on this app —
+     `isBusiness` toggles the "Shop" label, shopName/shopDescription are
+     only meaningful (and only shown) when it's on. Clears both when
+     switching back to individual so a stale shop name can't linger. */
+  async setSellerType({ isBusiness, shopName, shopDescription }) {
+    const user = this.getUser();
+    if (!user) throw new Error("Must be signed in");
+    const patch = isBusiness
+      ? {
+          seller_type: "business",
+          shop_name: (shopName || "").trim().slice(0, 60) || null,
+          shop_description: (shopDescription || "").trim().slice(0, 160) || null,
+        }
+      : { seller_type: "individual", shop_name: null, shop_description: null };
+    const { error } = await sb.from("profiles").update(patch).eq("id", user.id);
+    if (error) throw error;
+    user.sellerType = patch.seller_type;
+    user.isBusiness = isBusiness;
+    user.shopName = patch.shop_name;
+    user.shopDescription = patch.shop_description;
   },
 
   async setNewsletterOptIn(optIn) {

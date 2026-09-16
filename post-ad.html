@@ -234,11 +234,6 @@
       if (!category) { toast("Please pick a category"); return; }
       if (!selectedCond) { toast("Please pick a condition"); return; }
       if (selectedPhotos.length === 0) { toast("Add at least one real photo or video of the item"); return; }
-      if (price > SELFIE_VERIFICATION_PRICE_THRESHOLD && !Store.getUser().selfieVerified) {
-        toast(`Selfie verification is required to list items over ${formatPrice(SELFIE_VERIFICATION_PRICE_THRESHOLD)}`);
-        setTimeout(() => { window.location.href = "verify.html"; }, 1200);
-        return;
-      }
 
       const submitBtn = e.target.querySelector("button[type=submit]");
       const progressEl = document.getElementById("upload-progress");

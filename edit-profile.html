@@ -39,6 +39,30 @@
         <textarea id="f-status" maxlength="140" placeholder="A line about you — optional" style="min-height:70px;"></textarea>
         <div class="hint"><span id="status-count">0</span>/140</div>
       </div>
+
+      <div class="form-row">
+        <div class="row between" style="cursor:default;">
+          <label for="f-is-business" style="margin:0;">I'm selling as a small business/shop</label>
+          <label class="switch">
+            <input type="checkbox" id="f-is-business" />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div class="hint">Self-declared, like every other label on this app that isn't checked — shows a "Shop" tag next to your name. No different rules, fees, or verification.</div>
+      </div>
+
+      <div id="shop-fields" hidden>
+        <div class="form-row">
+          <label for="f-shop-name">Shop name</label>
+          <input type="text" id="f-shop-name" maxlength="60" placeholder="e.g. Corsage" />
+        </div>
+        <div class="form-row">
+          <label for="f-shop-desc">Shop description</label>
+          <textarea id="f-shop-desc" maxlength="160" placeholder="e.g. Curated pre-loved fashion, Noida" style="min-height:60px;"></textarea>
+          <div class="hint"><span id="shop-desc-count">0</span>/160</div>
+        </div>
+      </div>
+
       <button type="submit" class="btn btn-fill btn-block" id="save-btn">Save</button>
     </form>
   </div>
@@ -61,6 +85,18 @@
     document.getElementById("avatar-preview").innerHTML = avatarHtml(user);
     document.getElementById("f-status").value = user.statusText || "";
     document.getElementById("status-count").textContent = (user.statusText || "").length;
+
+    const businessToggle = document.getElementById("f-is-business");
+    const shopFields = document.getElementById("shop-fields");
+    businessToggle.checked = user.isBusiness;
+    shopFields.hidden = !user.isBusiness;
+    document.getElementById("f-shop-name").value = user.shopName || "";
+    document.getElementById("f-shop-desc").value = user.shopDescription || "";
+    document.getElementById("shop-desc-count").textContent = (user.shopDescription || "").length;
+    businessToggle.addEventListener("change", () => { shopFields.hidden = !businessToggle.checked; });
+    document.getElementById("f-shop-desc").addEventListener("input", (e) => {
+      document.getElementById("shop-desc-count").textContent = e.target.value.length;
+    });
 
     async function handleAvatarPick(e) {
       const file = e.target.files[0];
@@ -92,6 +128,11 @@
       btn.textContent = "Saving...";
       try {
         await Store.setStatusText(document.getElementById("f-status").value);
+        await Store.setSellerType({
+          isBusiness: businessToggle.checked,
+          shopName: document.getElementById("f-shop-name").value,
+          shopDescription: document.getElementById("f-shop-desc").value,
+        });
         toast("Profile updated");
         window.location.href = "account.html";
       } catch (err) {

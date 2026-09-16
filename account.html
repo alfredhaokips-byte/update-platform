@@ -106,8 +106,10 @@
     document.getElementById("account-head").innerHTML = `
       <div class="avatar">${avatarHtml(user)}</div>
       <div>
-        <h2>${escapeHtml(user.name)} ${isSellerVerified(user) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}</h2>
+        <h2>${escapeHtml(user.name)} ${user.isBusiness ? `<span class="shop-tag">Shop</span>` : ""} ${isSellerVerified(user) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}</h2>
         <div class="sub">📍 ${user.locality || "No locality set"}, ${user.city} · Member since ${user.memberSince}</div>
+        ${user.isBusiness && user.shopName ? `<div class="sub" style="margin-top:2px;font-weight:700;">${escapeHtml(user.shopName)}</div>` : ""}
+        ${user.isBusiness && user.shopDescription ? `<div class="sub" style="margin-top:2px;font-style:italic;">${escapeHtml(user.shopDescription)}</div>` : ""}
         ${user.statusText ? `<div class="sub" style="margin-top:2px;font-style:italic;">${escapeHtml(user.statusText)}</div>` : ""}
       </div>
     `;

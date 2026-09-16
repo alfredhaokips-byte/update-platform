@@ -252,6 +252,7 @@ function listingCardHtml(listing) {
   const verified = isSellerVerified(seller);
   const trust = `
     <span class="seller-name-sm">${escapeHtml(sellerName)}</span>
+    ${seller && seller.isBusiness ? `<span class="shop-tag">Shop</span>` : ""}
     <span class="verify-label ${verified ? "yes" : "no"}">${verified ? "Verified" : "Unverified"}</span>
   `;
   return `

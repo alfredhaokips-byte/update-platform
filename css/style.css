@@ -199,6 +199,13 @@ input, select, textarea { font-family: inherit; }
 .verify-label { flex-shrink: 0; font-weight: 700; }
 .verify-label.yes { color: var(--verified-fg); }
 .verify-label.no { color: var(--muted-2); }
+/* A category label ("this is a shop"), not a trust claim — deliberately
+   never reuses the Verified/Unverified green-or-gray so it can't be read
+   as one. Same clay tone as the Fashion/Trust icons elsewhere. */
+.shop-tag {
+  flex-shrink: 0; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.03em;
+  background: var(--clay-bg); color: var(--clay); padding: 2px 6px; border-radius: 999px;
+}
 .verified { color: var(--verified-check); font-weight: 800; }
 .muted { color: var(--muted-2); }
 
@@ -251,6 +258,7 @@ input, select, textarea { font-family: inherit; }
 }
 .badge-verified { background: var(--verified-bg); color: var(--verified-fg); }
 .badge-new { background: var(--surface-2); color: var(--muted); }
+.badge-shop { background: var(--clay-bg); color: var(--clay); }
 
 .seller-card { background: var(--surface); border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; gap: 10px; }
 .avatar {

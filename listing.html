@@ -131,7 +131,9 @@
         <a href="profile.html?seller=${seller.id}" class="seller-card row">
           <div class="avatar">${avatarHtml(seller)}</div>
           <div style="flex:1;">
-            <p class="seller-name">${escapeHtml(seller.name)}</p>
+            <p class="seller-name">${escapeHtml(seller.name)} ${seller.isBusiness ? `<span class="shop-tag">Shop</span>` : ""}</p>
+            ${seller.isBusiness && seller.shopName ? `<p class="seller-sub" style="font-weight:700;">${escapeHtml(seller.shopName)}</p>` : ""}
+            ${seller.isBusiness && seller.shopDescription ? `<p class="seller-sub" style="font-style:italic;">${escapeHtml(seller.shopDescription)}</p>` : ""}
             ${seller.statusText ? `<p class="seller-sub" style="font-style:italic;">${escapeHtml(seller.statusText)}</p>` : ""}
             <p class="seller-sub">Member since ${seller.memberSince} · ${seller.deals} deal${seller.deals === 1 ? "" : "s"}${trust.responseRatePct !== null ? ` · ${trust.responseRatePct}% response rate` : ""}</p>
             ${sellerStats.count > 0 ? `<p class="seller-sub" style="margin-top:2px;">${starsHtml(sellerStats.avg, 11)} <b style="color:var(--ink-mid);">${sellerStats.avg}</b> (${sellerStats.count} review${sellerStats.count === 1 ? "" : "s"})</p>` : ""}

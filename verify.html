@@ -18,7 +18,7 @@
   </div>
 
   <div class="form-wrap" style="padding-top:6px;">
-    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:6px;">Verification unlocks more of the marketplace as you complete it — posting requires a confirmed email, and listings over <b id="threshold-label"></b> need selfie verification too.</p>
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:6px;">Verification unlocks more of the marketplace as you complete it — posting requires a confirmed email.</p>
 
     <div class="review-card" style="margin-top:16px;">
       <div class="verify-row">
@@ -34,7 +34,7 @@
         <span class="ic">🤳</span>
         <div class="body">
           <strong>Selfie verification</strong>
-          <p>Required to sell items over <span id="threshold-label-2"></span>. Camera-based liveness check is coming in a future update.</p>
+          <p>A stronger trust tier for the future, not required to sell anything yet — camera-based liveness check is coming in a later update.</p>
         </div>
         <span class="trust-badge pending">Coming soon</span>
       </div>
@@ -54,10 +54,6 @@
     await initPage("account");
     const session = await Auth.requireAuth();
     if (!session) return;
-
-    const thresholdText = formatPrice(SELFIE_VERIFICATION_PRICE_THRESHOLD);
-    document.getElementById("threshold-label").textContent = thresholdText;
-    document.getElementById("threshold-label-2").textContent = thresholdText;
 
     const user = Store.getUser();
     const emailStatusEl = document.getElementById("email-status");

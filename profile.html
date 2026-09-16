@@ -84,8 +84,10 @@
       <div class="account-head">
         <div class="avatar" style="width:62px;height:62px;font-size:20px;">${avatarHtml(seller)}</div>
         <div>
-          <h2>${escapeHtml(seller.name)} ${isSellerVerified(seller) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}</h2>
+          <h2>${escapeHtml(seller.name)} ${seller.isBusiness ? `<span class="shop-tag">Shop</span>` : ""} ${isSellerVerified(seller) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}</h2>
           <div class="sub">📍 ${seller.locality || "Locality not set"}, ${seller.city} · Member since ${seller.memberSince}</div>
+          ${seller.isBusiness && seller.shopName ? `<div class="sub" style="margin-top:2px;font-weight:700;">${escapeHtml(seller.shopName)}</div>` : ""}
+          ${seller.isBusiness && seller.shopDescription ? `<div class="sub" style="margin-top:2px;font-style:italic;">${escapeHtml(seller.shopDescription)}</div>` : ""}
           ${seller.statusText ? `<div class="sub" style="margin-top:2px;font-style:italic;">${escapeHtml(seller.statusText)}</div>` : ""}
         </div>
       </div>
