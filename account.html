@@ -46,6 +46,17 @@
         <span class="switch-track"></span>
       </label>
     </div>
+    <div class="menu-item" id="instagram-toggle-row" style="cursor:default;" hidden>
+      <span class="ic">📸</span>
+      <span style="flex:1;">
+        Auto-post new listings to Instagram
+        <span style="display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:1px;">Admin only — pause the integration here without removing it</span>
+      </span>
+      <label class="switch">
+        <input type="checkbox" id="instagram-toggle" />
+        <span class="switch-track"></span>
+      </label>
+    </div>
     <a href="help.html" class="menu-item"><span class="ic">🛡️</span>Safety &amp; help<span class="chev">›</span></a>
     <button class="menu-item" onclick="toast('r/DelhiMarketplace-style community guidelines — demo mode')"><span class="ic">📜</span>Community guidelines<span class="chev">›</span></button>
     <button class="menu-item" id="logout-btn" style="color:var(--danger);"><span class="ic">↪</span>Log out</button>
@@ -142,6 +153,24 @@
         toast(err.message || "Couldn't update");
       }
     });
+
+    if (user.isAdmin) {
+      const row = document.getElementById("instagram-toggle-row");
+      row.hidden = false;
+      const igToggle = document.getElementById("instagram-toggle");
+      try {
+        igToggle.checked = await Store.getInstagramAutoPost();
+      } catch (err) { /* app_settings may not be set up yet — leave unchecked, non-critical */ }
+      igToggle.addEventListener("change", async () => {
+        try {
+          await Store.setInstagramAutoPost(igToggle.checked);
+          toast(igToggle.checked ? "Instagram auto-posting resumed" : "Instagram auto-posting paused");
+        } catch (err) {
+          igToggle.checked = !igToggle.checked;
+          toast(err.message || "Couldn't update");
+        }
+      });
+    }
   });
 
   const CHARACTER_OPTIONS = [

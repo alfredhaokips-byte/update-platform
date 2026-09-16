@@ -96,7 +96,15 @@ function listingImg(seed, w, h) {
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`;
 }
 
+/* Despite the name, this really means "a real uploaded media URL" — photo
+   or video, both live at real https:// URLs in Supabase Storage. Never
+   renamed since every existing call site already reads it that way. */
 function isPhotoUrl(s) { return typeof s === "string" && /^https?:\/\//.test(s); }
+
+/* Listing media is stored as plain URLs with no separate "is this a video"
+   column — the uploaded file's own extension (preserved in the Storage path
+   by uploadListingPhoto) is the only signal, so this just checks that. */
+function isVideoUrl(s) { return typeof s === "string" && /\.(mp4|mov|webm)(\?|$)/i.test(s); }
 
 /* Single thumbnail for a card. Real uploaded photo if this listing has one,
    otherwise a stable placeholder (only true for listings posted before
@@ -104,6 +112,19 @@ function isPhotoUrl(s) { return typeof s === "string" && /^https?:\/\//.test(s);
 function listingThumbUrl(listing, w, h) {
   if (listing.images && listing.images.length && isPhotoUrl(listing.images[0])) return listing.images[0];
   return listingImg(listing.img, w, h);
+}
+
+/* Full card-thumbnail markup — an <img>, or (once a seller's first upload is
+   a short video clip) a muted, non-interactive <video> with a small play
+   badge so buyers know it's a clip before tapping in. Centralized here
+   rather than duplicated across common.js/index.html/my-ads.html, which
+   all render the exact same thumbnail. */
+function listingThumbHtml(listing, w, h) {
+  const url = listingThumbUrl(listing, w, h);
+  if (isVideoUrl(url)) {
+    return `<video src="${url}" muted playsinline preload="metadata"></video><span class="video-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>`;
+  }
+  return `<img src="${url}" alt="${escapeHtml(listing.title)}" loading="lazy" />`;
 }
 
 /* Full gallery for the detail page — same fallback logic, but a fake 3-image
@@ -589,6 +610,23 @@ const Store = {
     const { error } = await sb.from("profiles").update({ newsletter_opt_in: !!optIn }).eq("id", user.id);
     if (error) throw error;
     user.newsletterOptIn = !!optIn;
+  },
+
+  /* The single-row app_settings table (see supabase/instagram-autopost.sql)
+     — read by the post-to-instagram Edge Function on every new listing,
+     written only by an admin from Account. Defaults to true if the row
+     somehow doesn't exist yet (matches the column's own DB default). */
+  async getInstagramAutoPost() {
+    const { data, error } = await sb.from("app_settings").select("instagram_auto_post").eq("id", 1).maybeSingle();
+    if (error) throw error;
+    return data ? data.instagram_auto_post : true;
+  },
+
+  /* Admin-only — enforced again server-side by RLS on app_settings, this is
+     just the client-side call. */
+  async setInstagramAutoPost(enabled) {
+    const { error } = await sb.from("app_settings").update({ instagram_auto_post: !!enabled }).eq("id", 1);
+    if (error) throw error;
   },
 
   /* RLS ("users can delete their own listings" in schema.sql) already

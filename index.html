@@ -81,7 +81,7 @@
   #landing-root .showcase-inner{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
   #landing-root .show-card{ background:var(--surface); border:1px solid var(--border-2); border-radius:18px; overflow:hidden; }
   #landing-root .show-thumb{ aspect-ratio:4/3; background:linear-gradient(135deg, var(--sage-bg), var(--bg-alt)); position:relative; overflow:hidden; }
-  #landing-root .show-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  #landing-root .show-thumb img, #landing-root .show-thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
   #landing-root .show-cond{ position:absolute; bottom:8px; left:8px; background:rgba(10,10,12,0.72); color:#fff; font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; }
   #landing-root .show-save{ position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.92); border:none; font-size:14px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); }
   #landing-root .show-save.active{ color:var(--clay); }
@@ -488,7 +488,7 @@
     return `
       <a href="listing.html?id=${listing.id}" class="show-card">
         <div class="show-thumb">
-          <img src="${listingThumbUrl(listing, 400, 300)}" alt="${escapeHtml(listing.title)}" loading="lazy" />
+          ${listingThumbHtml(listing, 400, 300)}
           <span class="show-cond">${escapeHtml(listing.condition)}</span>
           <button class="show-save ${saved ? "active" : ""}" title="Save" onclick="handleSaveClick(event,'${listing.id}')">${saved ? "♥" : "♡"}</button>
         </div>

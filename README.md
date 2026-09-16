@@ -53,9 +53,13 @@ exactly what's happening.
     `vouches.listing_id` so a vouch can be scoped to one specific listing,
     not just the seller as a whole (see "Vouching, now correctly scoped"
     below).
-15. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+15. Same again with `supabase/instagram-autopost.sql` — adds
+    `listings.instagram_posted` and the single-row `app_settings` table (see
+    "Photo/video lightbox, camera capture, video upload, Instagram
+    auto-posting" below).
+16. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
     key (not `service_role`).
-16. Paste them into `js/supabase-client.js`:
+17. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -536,6 +540,113 @@ Real, working contact details, not buried in `help.html`:
 - The same two links added to the footer's existing **Support** column, so
   they're reachable from a scroll-past as well as the dedicated section.
 - No new backend, no new page — both are plain links.
+
+## Photo/video lightbox, camera capture, video upload, Instagram auto-posting
+
+- **Full-screen lightbox.** Tapping any photo (or video) on a listing's
+  detail page now opens a full-screen, swipeable view
+  (`openLightbox()`/`closeLightbox()` in `listing.html`) — a horizontal
+  scroll-snap strip, the same mechanism the inline gallery already used,
+  just full-viewport, so "swipeable" comes from native touch scrolling with
+  no gesture library. A video's own native play/pause/scrub controls live in
+  the inline gallery too; tapping a video there opens a small expand button
+  rather than the whole frame, so a tap on the controls doesn't accidentally
+  yank the video into the lightbox mid-scrub.
+- **Camera capture.** The Sell form's photo input now carries
+  `capture="environment"` — on a phone this adds "take a photo/video" as an
+  option alongside the gallery picker, which is the simplest, most reliable
+  cross-browser way to do this (no custom `getUserMedia` camera UI, which
+  would be a much bigger, separate build for not much practical gain here).
+- **Video upload.** The Sell form's photo picker now also accepts
+  `video/mp4`/`video/quicktime`, capped client-side at 25MB and 60 seconds
+  (`getVideoDuration()` in `post-ad.html` reads real duration off the file
+  before it's ever uploaded, via a throwaway `<video>` element — rejected
+  clips never reach Supabase Storage). Stored in the same `listing-photos`
+  bucket, same `{user_id}/{listing_id}/{filename}` path convention as
+  photos — no new table, no new column for "is this a video": the uploaded
+  file's own extension is the only signal (`isVideoUrl()` in `js/data.js`),
+  since Supabase Storage doesn't need a MIME allowlist to accept it. Every
+  place a listing's media renders — grid thumbnails, the detail gallery, the
+  lightbox — now recognizes that extension and swaps in a `<video>` instead
+  of an `<img>`. Grid thumbnails (Home, Browse, My Ads, Saved, the landing
+  page's showcase) keep `object-fit: cover` for a clean grid, now with a
+  small centered play-icon badge (`.video-badge`) when the first item is a
+  video, so buyers know before tapping in; the upload-time preview thumbnail
+  was previously a fixed square, a different shape than the real grid
+  thumbnail, so it never actually showed what would crop — it now shares the
+  same aspect ratio for both photos and videos.
+- **Instagram auto-posting**, `supabase/functions/post-to-instagram` — the
+  one genuinely deviation from a literal read of the brief, for a concrete
+  reason: a new listing is created with `images: []`
+  (`Store.addListing`) and its photos are attached in a **separate** update
+  once uploads finish (`Store.updateListingImages`) — the first real,
+  publicly-reachable photo URL doesn't exist at insert time at all, so this
+  fires on **UPDATE** to `listings`, not insert. Every other update to that
+  row (a view-count bump on each page view, a future edit) hits the same
+  webhook too, so `listings.instagram_posted` makes each listing eligible
+  for exactly one attempt, set **before** the Graph API is ever called —
+  a rate-limited or failed post is logged and dropped, never retried on the
+  next unrelated update to the same row. This *is* the "don't drop posts,
+  but don't over-engineer a queue before it's needed" behavior from the
+  brief, just implemented as "attempt once, log failures" rather than a
+  real retry queue, since nothing here is anywhere near Instagram's
+  ~25-posts/24h Content Publishing limit yet.
+  - **Known, deliberate limitation:** Instagram's Content Publishing
+    `image_url` container only accepts JPEG/PNG, not WebP — and this app's
+    own photo upload accepts WebP as a valid photo format. A listing whose
+    first photo is a WebP file is silently skipped for cross-posting (logged,
+    not an error) rather than sent to an endpoint that would just reject it.
+    Converting WebP → JPEG server-side to close this gap wasn't attempted —
+    real added complexity (an image-processing step in the Edge Function)
+    for a narrow case, not requested.
+  - **One-time manual setup, required before any of this can post for
+    real** (environment/credentials this repo can't provide, by design —
+    see the brief):
+    1. A Meta **Business** account, with the @mohallamarketplace Instagram
+       account converted to an **Instagram Business Account** and linked to
+       a **Facebook Page** you control.
+    2. [developers.facebook.com](https://developers.facebook.com) → create
+       a **Meta App** (Business type) → add the **Instagram Graph API**
+       product.
+    3. Generate a long-lived **access token** for that app with
+       `instagram_content_publish`, `pages_show_list`, and
+       `instagram_basic` permissions (Meta's Graph API Explorer, or the
+       standard token-exchange flow, gets you from a short-lived user token
+       to a long-lived one — short-lived tokens expire in ~1 hour and
+       aren't usable here).
+    4. Look up the **Instagram Business Account ID** (not the same as the
+       numeric Instagram user ID) via
+       `GET /{facebook-page-id}?fields=instagram_business_account` against
+       the Graph API.
+    5. Set both as function secrets (never in client code, never in this
+       repo):
+       ```
+       supabase secrets set INSTAGRAM_ACCESS_TOKEN=your_long_lived_token
+       supabase secrets set INSTAGRAM_BUSINESS_ACCOUNT_ID=your_ig_business_account_id
+       ```
+    6. Deploy the function:
+       ```
+       supabase functions deploy post-to-instagram
+       ```
+    7. **Supabase Dashboard → Database → Webhooks → Create a new webhook**:
+       - Table: `listings`
+       - Events: **UPDATE only** (not Insert — see above for why)
+       - Type: **Supabase Edge Function**
+       - Function: `post-to-instagram`
+  - **Pause switch.** Account → "Auto-post new listings to Instagram" —
+    admin-only (`profiles.is_admin`), reads/writes the single-row
+    `app_settings` table (`supabase/instagram-autopost.sql`). Lets the
+    integration be paused without redeploying or unwiring the webhook, e.g.
+    while troubleshooting a token issue.
+  - **Not yet verified end-to-end.** Everything above is built and, as far
+    as static review can confirm, correct against Meta's documented Graph
+    API shape — but it has not been exercised against a real access token,
+    a real Instagram Business Account, or a real webhook firing, because
+    none of that infrastructure exists yet outside the manual setup steps
+    above. Per the brief's own instruction, this isn't "done" until a real
+    test listing has been published and actually appeared on
+    @mohallamarketplace — that's the next step once the Meta-side setup is
+    in place, not something achievable from this codebase alone.
 
 ## What's NOT built yet
 

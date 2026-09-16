@@ -43,6 +43,12 @@
   </div>
 </div>
 
+<!-- Full-screen photo/video lightbox -->
+<div class="lightbox-overlay" id="lightbox" hidden>
+  <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+  <div class="lightbox-strip" id="lightbox-strip"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
@@ -51,9 +57,29 @@
 <script>
   const listingId = qs("id");
   let listing = null;
+  let galleryUrls = [];
 
   function listingConfidenceItem(isTrue, label) {
     return `<div class="confidence-item ${isTrue ? "yes" : "no"}"><span class="mark">${isTrue ? "✓" : "–"}</span>${escapeHtml(label)}</div>`;
+  }
+
+  function openLightbox(index) {
+    const strip = document.getElementById("lightbox-strip");
+    strip.innerHTML = galleryUrls.map((url) => `
+      <div class="lightbox-slide">
+        ${isVideoUrl(url)
+          ? `<video src="${url}" controls playsinline></video>`
+          : `<img src="${url}" alt="${escapeHtml(listing.title)}" />`}
+      </div>
+    `).join("");
+    document.getElementById("lightbox").hidden = false;
+    strip.scrollTo({ left: index * strip.clientWidth });
+  }
+
+  function closeLightbox() {
+    const lb = document.getElementById("lightbox");
+    lb.hidden = true;
+    document.getElementById("lightbox-strip").querySelectorAll("video").forEach((v) => v.pause());
   }
 
   function requireLoginOr(action) {
@@ -78,7 +104,7 @@
     const vouchStats = await Store.getVouchStats(listing.sellerId, listing.id).catch(() => ({ count: 0 }));
     document.title = listing.title + " — Marketplace";
 
-    const galleryUrls = listingGalleryUrls(listing);
+    galleryUrls = listingGalleryUrls(listing);
     const saved = Store.isSaved(listing.id);
     const isMine = Store.isLoggedIn() && Store.getUser().id === listing.sellerId;
 
@@ -86,7 +112,13 @@
       ${backRowHtml(null, `<div class="row" style="gap:8px;"><a class="icon-btn" href="help.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}" title="Report this listing">⚑</a><a class="icon-btn" href="javascript:void(0)" onclick="toast('Link copied (demo)')">↗</a></div>`)}
       <div class="detail-wrap">
         <div class="detail-imgs">
-          ${galleryUrls.map((url) => `<div class="detail-img"><img src="${url}" alt="${escapeHtml(listing.title)}" /></div>`).join("")}
+          ${galleryUrls.map((url, i) => `
+            <div class="detail-img">
+              ${isVideoUrl(url)
+                ? `<video src="${url}" controls playsinline></video><button type="button" class="detail-img-expand" onclick="openLightbox(${i})" aria-label="View full screen">⤢</button>`
+                : `<img src="${url}" alt="${escapeHtml(listing.title)}" onclick="openLightbox(${i})" />`}
+            </div>
+          `).join("")}
         </div>
         <div class="row between detail-title-row">
           <p class="detail-title">${escapeHtml(listing.title)}</p>
@@ -119,7 +151,7 @@
         <div class="detail-info" style="margin-bottom:16px;">
           <h3 style="font-size:13px;margin-bottom:2px;">Listing confidence</h3>
           <div class="confidence-list">
-            ${listingConfidenceItem(listing.images && listing.images.length > 0 && listing.images.every(isPhotoUrl), "Real photos uploaded")}
+            ${listingConfidenceItem(listing.images && listing.images.length > 0 && listing.images.every(isPhotoUrl), "Real photos or video uploaded")}
             ${listingConfidenceItem(!!listing.condition, "Condition disclosed (" + listing.condition + ")")}
             ${listingConfidenceItem(listing.desc && listing.desc.trim().length >= 40, "Description complete")}
             ${listingConfidenceItem(isSellerVerified(seller), "Seller verified")}

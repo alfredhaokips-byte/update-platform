@@ -257,7 +257,7 @@ function listingCardHtml(listing) {
   return `
     <a href="listing.html?id=${listing.id}" class="product-card">
       <div class="product-img">
-        <img src="${listingThumbUrl(listing, 400, 340)}" alt="${escapeHtml(listing.title)}" loading="lazy" />
+        ${listingThumbHtml(listing, 400, 340)}
         <span class="cond-tag">${listing.condition}</span>
         <button class="save-btn ${saved ? "active" : ""}" data-save-id="${listing.id}" title="Save" onclick="handleSaveClick(event, '${listing.id}')">${saved ? "♥" : "♡"}</button>
       </div>
