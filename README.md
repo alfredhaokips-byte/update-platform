@@ -714,6 +714,56 @@ Real, working contact details, not buried in `help.html`:
   app-side addition that the category picker on Sell and the filter chips
   on Browse both pick up automatically.
 
+## Minimum photos, description guidance, and — separately — an email deliverability fix
+
+- **3-photo minimum to publish.** `post-ad.html`'s Publish button
+  (`#publish-btn`) is disabled from page load until at least 3 photos/videos
+  are selected — a live counter ("2 of 3 minimum" → "3 photos added") and an
+  inline "Add at least 3 photos to publish" message make the requirement
+  visible before anyone reaches for the button, not just after
+  (`updatePhotoRequirementUI()`). This only affects the *create* flow —
+  nothing retroactively touches listings published before this existed;
+  there's no photo count re-check anywhere on the read/display side.
+- **Description guidance, in-context.** The placeholder now models a real,
+  good description instead of a generic prompt; a small always-visible
+  bullet list under the field (condition, how long used, why selling,
+  what's included, flaws) says what to cover without turning the field into
+  a wall of instructions; and a soft, non-blocking nudge ("A bit more detail
+  helps buyers trust the listing...") appears while the description is
+  under 25 characters and disappears once it isn't — never disables Publish,
+  per the brief's own "gentle... not a hard blocker."
+- **Email OTP delivery — the real fix needs one manual dashboard step, not
+  code.** If signup's 6-digit codes aren't arriving (or land in spam),
+  Supabase's own built-in email sender is almost certainly why — it's
+  rate-limited and unreliable past light testing, regardless of anything in
+  `js/auth.js`. The fix is routing auth email through Resend's SMTP instead,
+  reusing the same Resend account and API key already set up for
+  `notify-new-message`/`send-welcome-email`/`send-newsletter` (§ "Email
+  notifications on new messages" above) — one provider for everything,
+  rather than a second one just for this:
+  1. **Supabase Dashboard → Authentication → Emails → SMTP Settings** →
+     enable **Custom SMTP**.
+  2. Enter Resend's SMTP connection details (Resend's own docs have the
+     current exact values; as of writing):
+     - Host: `smtp.resend.com`
+     - Port: `587` (or `465` for SSL)
+     - Username: `resend` (literally that word, not your email)
+     - Password: your existing `RESEND_API_KEY` — Resend uses the same API
+       key as the SMTP password, so no new credential to generate
+     - Sender email: must be on a domain verified in Resend (Resend →
+       Domains) — `onboarding@resend.dev` works for testing against your
+       own Resend-registered address only, same free-tier limit already
+       true for the other Resend-backed emails in this app
+  3. Save — this is a global auth-email setting, so it also covers any
+     other Supabase auth email (password reset, etc.), not just signup OTP.
+  - **Not verified working** — this is entirely a dashboard configuration
+    change with no corresponding code in this repo to test against, and per
+    the brief it can't be called fixed until it's actually been exercised:
+    do the setup above, then sign up with a fresh test email and confirm
+    the code both arrives and lands outside spam. If the manual SMTP step
+    above hasn't been done yet, OTP delivery is still riding on Supabase's
+    default sender and will still be unreliable.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
