@@ -20,8 +20,17 @@
   <form class="form-wrap" id="ad-form">
     <div class="form-row">
       <label>Photos</label>
-      <input type="file" id="f-photos" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" capture="environment" multiple hidden />
+      <!-- Two separate inputs, not one — `capture` reliably restricts a
+           file input to camera-only on many mobile browsers instead of
+           adding it as an extra option, so relying on a single input for
+           both meant gallery selection silently disappeared. -->
+      <input type="file" id="f-photos-camera" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" capture="environment" multiple hidden />
+      <input type="file" id="f-photos-gallery" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" multiple hidden />
       <div class="img-upload-row" id="img-upload-row"></div>
+      <div class="row" id="add-photo-row" style="gap:8px;margin-top:10px;">
+        <button type="button" class="btn btn-outline btn-sm" style="flex:1;" onclick="document.getElementById('f-photos-camera').click()">📷 Take a photo</button>
+        <button type="button" class="btn btn-outline btn-sm" style="flex:1;" onclick="document.getElementById('f-photos-gallery').click()">🖼️ Choose from gallery</button>
+      </div>
       <div class="hint">Up to 5 photos or short videos, real ones from your device — JPG, PNG or WebP (5MB max), or MP4/MOV (up to 60s, 25MB max).</div>
       <p class="upload-progress" id="upload-progress"></p>
     </div>
@@ -91,18 +100,15 @@
 
   function renderPhotoRow() {
     const el = document.getElementById("img-upload-row");
-    const slots = selectedPhotos.map((p, i) => `
+    el.innerHTML = selectedPhotos.map((p, i) => `
       <div class="img-drop filled">
         ${p.isVideo
           ? `<video src="${p.previewUrl}" muted playsinline preload="metadata"></video>`
           : `<img src="${p.previewUrl}" alt="Photo ${i + 1}" />`}
         <button type="button" class="img-remove-btn" onclick="removePhoto(${i})" aria-label="Remove photo">✕</button>
       </div>
-    `);
-    if (selectedPhotos.length < MAX_PHOTOS) {
-      slots.push(`<div class="img-drop add-slot" onclick="document.getElementById('f-photos').click()">📷</div>`);
-    }
-    el.innerHTML = slots.join("");
+    `).join("");
+    document.getElementById("add-photo-row").hidden = selectedPhotos.length >= MAX_PHOTOS;
   }
 
   function removePhoto(i) {
@@ -124,9 +130,9 @@
     });
   }
 
-  async function handlePhotoPick(fileList) {
+  async function handlePhotoPick(fileList, sourceInput) {
     const incoming = Array.from(fileList);
-    document.getElementById("f-photos").value = ""; // allow re-picking the same file later
+    sourceInput.value = ""; // allow re-picking the same file later
     for (const file of incoming) {
       if (selectedPhotos.length >= MAX_PHOTOS) { toast(`Up to ${MAX_PHOTOS} photos`); break; }
       const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
@@ -210,7 +216,8 @@
     localityInput.addEventListener("input", () => { selectedPlace = null; mapPreview.hidden = true; });
 
     renderPhotoRow();
-    document.getElementById("f-photos").addEventListener("change", (e) => handlePhotoPick(e.target.files));
+    document.getElementById("f-photos-camera").addEventListener("change", (e) => handlePhotoPick(e.target.files, e.target));
+    document.getElementById("f-photos-gallery").addEventListener("change", (e) => handlePhotoPick(e.target.files, e.target));
 
     document.getElementById("f-desc").addEventListener("input", (e) => {
       document.getElementById("desc-count").textContent = e.target.value.length;

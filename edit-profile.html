@@ -18,12 +18,20 @@
   </div>
 
   <div class="form-wrap" style="padding-top:10px;text-align:center;">
-    <input type="file" id="f-photo" accept="image/jpeg,image/png,image/webp" hidden />
-    <button type="button" id="avatar-btn" style="width:96px;height:96px;border-radius:50%;overflow:hidden;border:none;padding:0;margin:0 auto 8px;cursor:pointer;background:var(--surface-2);position:relative;">
+    <!-- Two separate inputs, not one — `capture` reliably restricts a file
+         input to camera-only on many mobile browsers instead of adding it
+         as an extra option, so relying on a single input for both meant
+         gallery selection silently disappeared. -->
+    <input type="file" id="f-photo-camera" accept="image/jpeg,image/png,image/webp" capture="environment" hidden />
+    <input type="file" id="f-photo-gallery" accept="image/jpeg,image/png,image/webp" hidden />
+    <div id="avatar-preview-wrap" style="width:96px;height:96px;border-radius:50%;overflow:hidden;margin:0 auto 12px;background:var(--surface-2);">
       <div id="avatar-preview" style="width:100%;height:100%;"></div>
-      <div style="position:absolute;bottom:0;right:0;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--ink-contrast);display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid var(--bg);">✎</div>
-    </button>
-    <p class="hint" style="margin-bottom:22px;">Tap your photo to change it — JPG, PNG or WebP, 5MB max.</p>
+    </div>
+    <div class="row" style="gap:8px;justify-content:center;margin-bottom:10px;">
+      <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('f-photo-camera').click()">📷 Take a photo</button>
+      <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('f-photo-gallery').click()">🖼️ Choose from gallery</button>
+    </div>
+    <p class="hint" style="margin-bottom:22px;">JPG, PNG or WebP, 5MB max.</p>
 
     <form id="profile-form" style="text-align:left;">
       <div class="form-row">
@@ -54,9 +62,7 @@
     document.getElementById("f-status").value = user.statusText || "";
     document.getElementById("status-count").textContent = (user.statusText || "").length;
 
-    document.getElementById("avatar-btn").addEventListener("click", () => document.getElementById("f-photo").click());
-
-    document.getElementById("f-photo").addEventListener("change", async (e) => {
+    async function handleAvatarPick(e) {
       const file = e.target.files[0];
       e.target.value = "";
       if (!file) return;
@@ -71,7 +77,9 @@
         toast(err.message || "Couldn't upload — try again");
         document.getElementById("avatar-preview").innerHTML = avatarHtml(user);
       }
-    });
+    }
+    document.getElementById("f-photo-camera").addEventListener("change", handleAvatarPick);
+    document.getElementById("f-photo-gallery").addEventListener("change", handleAvatarPick);
 
     document.getElementById("f-status").addEventListener("input", (e) => {
       document.getElementById("status-count").textContent = e.target.value.length;

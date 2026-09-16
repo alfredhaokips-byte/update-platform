@@ -552,11 +552,21 @@ Real, working contact details, not buried in `help.html`:
   the inline gallery too; tapping a video there opens a small expand button
   rather than the whole frame, so a tap on the controls doesn't accidentally
   yank the video into the lightbox mid-scrub.
-- **Camera capture.** The Sell form's photo input now carries
-  `capture="environment"` — on a phone this adds "take a photo/video" as an
-  option alongside the gallery picker, which is the simplest, most reliable
-  cross-browser way to do this (no custom `getUserMedia` camera UI, which
-  would be a much bigger, separate build for not much practical gain here).
+- **Camera capture — two explicit inputs, not one.** The first version put
+  `capture="environment"` on the Sell form's single photo input, on the
+  assumption that this adds a camera option alongside the gallery picker.
+  On several real mobile browsers it instead *replaces* gallery access —
+  `capture` is a hint some browsers honor as "camera only," not "camera in
+  addition to" — so gallery selection silently disappeared. Fixed by
+  splitting into two real inputs and two labeled buttons, "📷 Take a photo"
+  and "🖼️ Choose from gallery": only the camera input carries `capture`,
+  the gallery input carries none at all, and both feed the same
+  upload/preview logic (`handlePhotoPick()` now takes the input element
+  that changed, so it knows which one to clear afterward). Applied to both
+  places photo upload exists — the Sell form (`post-ad.html`) and the
+  profile photo picker (`edit-profile.html`, which didn't actually have the
+  `capture` bug since camera capture was only ever added to the Sell form,
+  but gets the same explicit two-button treatment for consistency).
 - **Video upload.** The Sell form's photo picker now also accepts
   `video/mp4`/`video/quicktime`, capped client-side at 25MB and 60 seconds
   (`getVideoDuration()` in `post-ad.html` reads real duration off the file
