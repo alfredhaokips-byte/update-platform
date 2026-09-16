@@ -715,14 +715,11 @@ Real, working contact details, not buried in `help.html`:
 
 ## Minimum photos, description guidance, and — separately — an email deliverability fix
 
-- **3-photo minimum to publish.** `post-ad.html`'s Publish button
-  (`#publish-btn`) is disabled from page load until at least 3 photos/videos
-  are selected — a live counter ("2 of 3 minimum" → "3 photos added") and an
-  inline "Add at least 3 photos to publish" message make the requirement
-  visible before anyone reaches for the button, not just after
-  (`updatePhotoRequirementUI()`). This only affects the *create* flow —
-  nothing retroactively touches listings published before this existed;
-  there's no photo count re-check anywhere on the read/display side.
+- **3-photo minimum to publish.** ~~`post-ad.html`'s Publish button was
+  disabled until at least 3 photos/videos were selected~~ — **removed**, see
+  "Instagram deployment, seller vouching fixed, 3-photo minimum removed"
+  below. Publishing is back to requiring just one real photo/video, same as
+  before this was ever added.
 - **Description guidance, in-context.** The placeholder now models a real,
   good description instead of a generic prompt; a small always-visible
   bullet list under the field (condition, how long used, why selling,
@@ -773,9 +770,11 @@ Real, working contact details, not buried in `help.html`:
 
 ## Minimum photos, description guidance, share, and OTP made dormant
 
-- **3-photo minimum, description guidance.** Unchanged from when they
-  shipped — see "Minimum photos, description guidance, and — separately —
-  an email deliverability fix" above.
+- **Description guidance.** Unchanged from when it shipped — see "Minimum
+  photos, description guidance, and — separately — an email deliverability
+  fix" above. (The 3-photo minimum documented in that same section was
+  itself removed one batch later — see "Instagram deployment, seller
+  vouching fixed, 3-photo minimum removed" below.)
 - **Share a listing.** A real share button on `listing.html` — both the
   header's icon (previously a fake `toast('Link copied (demo)')` that did
   nothing) and a new button next to Chat/Buy Now now call one real
@@ -816,6 +815,87 @@ Real, working contact details, not buried in `help.html`:
     instead of going straight to `Store.primeCache()`/`showCharStep()`.
   - No leftover "check your email for a code" copy anywhere else in the
     app — audited signup and the pages around it.
+
+## Instagram deployment, seller vouching fixed, 3-photo minimum removed
+
+- **Instagram Edge Function — code is correct, deployment is still a
+  manual step I cannot complete from here.** The function itself
+  (`supabase/functions/post-to-instagram`) was re-reviewed line by line
+  against Meta's documented Content Publishing flow and is unchanged —
+  it was already correct. What's genuinely true, and was flagged honestly
+  every time this came up before: **it has never been deployed**, because
+  deploying requires `supabase login`, an interactive browser OAuth flow
+  that only a human can complete — there's no token or session available
+  to this session, checked directly (`supabase projects list` returns
+  "Access token not provided"; `supabase status` shows `linked_project:
+  null`). This isn't new information, but it's worth restating precisely
+  since "described as built" and "actually deployed" are genuinely
+  different things here, and the gap is a real one. To finish this
+  yourself, from this project's directory:
+  ```
+  supabase login
+  supabase link --project-ref ecdsteardeybzfnnidym
+  supabase secrets set INSTAGRAM_ACCESS_TOKEN=your_long_lived_token
+  supabase secrets set INSTAGRAM_BUSINESS_ACCOUNT_ID=your_ig_business_account_id
+  supabase functions deploy post-to-instagram
+  ```
+  Then wire the Database Webhook (Dashboard → Database → Webhooks →
+  table `listings`, event **UPDATE only**, function `post-to-instagram` —
+  see the code comment at the top of the function file for why UPDATE, not
+  INSERT) if it isn't already, and confirm in the dashboard's own Edge
+  Functions list (not the template gallery) that the function shows up as
+  deployed before considering any of this done.
+  - **On the two secrets specifically**: I have no way to inspect
+    Supabase's secrets manager from here, so I can't confirm their current
+    state either way — but nothing in any of my own instructions ever said
+    to add `INSTAGRAM_ACCESS_TOKEN`/`INSTAGRAM_BUSINESS_ACCOUNT_ID` to
+    Vercel, only to Supabase (`supabase secrets set`, above). If they were
+    added to Vercel at some point, that's a separate system Edge Functions
+    can't read from — treat them as **not yet set in Supabase** unless
+    you've confirmed otherwise with `supabase secrets list` (after linking)
+    or the dashboard's Edge Functions → Secrets page.
+  - **Worth checking while you're in there**: the same "written but never
+    deployed" gap may apply to `notify-new-message`, `send-welcome-email`,
+    and `send-newsletter` too, if those were never deployed either — worth
+    confirming all four show up as real functions, not just this one.
+  - **Not tested end-to-end** — can't be, until the above is done. Per the
+    brief, this isn't done until a real listing's photo actually appears on
+    @mohallamarketplace.
+- **Seller vouching — root cause found, it's a missing migration, not a
+  code bug.** Checked directly against the live database (not just the
+  code): `select listing_id from vouches limit 1` fails with `column
+  vouches.listing_id does not exist`. `supabase/vouches-per-listing.sql`
+  (written two batches ago, when per-listing vouch scoping was built) was
+  never actually run — so every real call to `Store.getVouchStats()` or
+  `Store.toggleVouch()` hits that missing column and fails, on **both** the
+  general seller-level vouch (profile.html) and the per-listing vouch
+  (listing.html), since the current query always references `listing_id`
+  even for the general case (`.is("listing_id", null)`). The actual
+  vouching logic — self-vouch prevented, real DB-backed count and avatar
+  stack (no placeholder numbers), lit/unlit toggle state, per-listing
+  scoping — is already correct code, already verified against a live
+  database schema by hand for the query shapes involved; **the fix is
+  running that one migration file**, nothing in the app needs to change.
+  Do that, then vouching should work immediately — I can't run it myself
+  (no direct SQL execution access to your project from here) or verify the
+  live "second account vouches, count updates, persists on reload" test
+  until it's applied.
+- **3-photo minimum, removed.** Back to requiring just one real photo or
+  video to publish, same as before that requirement existed — the
+  disabled-until-3-photos button, the "X of 3 minimum" counter, and the
+  inline blocked-reason message are all gone from `post-ad.html`. Nothing
+  else about the upload flow (camera/gallery buttons, video support, size
+  caps) changed.
+- **A note on the fourth item in this batch ("Section 3" in the priority
+  order).** The prompt's priority list and closing line both reference a
+  "Section 3" with a "no send capability" boundary to confirm — but no
+  actual Section 3 body ever arrived in the prompt (the numbered list goes
+  1, 2, then jumps to 4). The title mentioned an "Outreach Helper," so
+  something was almost certainly dropped when the prompt was assembled.
+  Skipped rather than guessed at, since building a whole feature — UI
+  location, what data it uses, who it's for, what "no send capability"
+  even needs to guard against — from a title alone risks building the
+  wrong thing entirely. Paste the actual Section 3 text and it's next.
 
 ## What's NOT built yet
 

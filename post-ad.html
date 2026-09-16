@@ -31,8 +31,7 @@
         <button type="button" class="btn btn-outline btn-sm" style="flex:1;" onclick="document.getElementById('f-photos-camera').click()">📷 Take a photo</button>
         <button type="button" class="btn btn-outline btn-sm" style="flex:1;" onclick="document.getElementById('f-photos-gallery').click()">🖼️ Choose from gallery</button>
       </div>
-      <div class="hint" id="photo-count-hint" style="font-weight:700;"></div>
-      <div class="hint">At least 3, up to 5 photos or short videos, real ones from your device — JPG, PNG or WebP (5MB max), or MP4/MOV (up to 60s, 25MB max).</div>
+      <div class="hint">Up to 5 photos or short videos, real ones from your device — JPG, PNG or WebP (5MB max), or MP4/MOV (up to 60s, 25MB max).</div>
       <p class="upload-progress" id="upload-progress"></p>
     </div>
 
@@ -85,8 +84,7 @@
       <label for="f-honest">I confirm this listing is accurate and I'm the rightful owner or seller of this item.</label>
     </div>
 
-    <p class="hint" id="publish-blocked-hint" style="color:var(--danger);text-align:center;margin-bottom:8px;font-weight:700;"></p>
-    <button type="submit" class="btn btn-fill btn-block" id="publish-btn" disabled>Publish listing</button>
+    <button type="submit" class="btn btn-fill btn-block">Publish listing</button>
     <div style="height:20px;"></div>
   </form>
 </div>
@@ -104,7 +102,6 @@
   let selectedCategory = null;
   let selectedPlace = null; // { locality, city, state, lat, lng } from Places Autocomplete
   let selectedPhotos = []; // { file, previewUrl, isVideo }
-  const MIN_PHOTOS = 3;
   const MAX_PHOTOS = 5;
   const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
   const MAX_VIDEO_BYTES = 25 * 1024 * 1024;
@@ -112,25 +109,6 @@
   const MIN_DESC_CHARS = 25;
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
   const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/quicktime"];
-
-  /* The publish button stays disabled — not just toast-on-submit like every
-     other required field here — because a photo-poor listing is the one
-     thing worth stopping before someone even tries, per the brief; the
-     count/blocked-reason hints make that visible before they hit Publish,
-     not just after. */
-  function updatePhotoRequirementUI() {
-    const count = selectedPhotos.length;
-    const met = count >= MIN_PHOTOS;
-    const countEl = document.getElementById("photo-count-hint");
-    if (countEl) countEl.textContent = met ? `${count} photo${count === 1 ? "" : "s"} added` : `${count} of ${MIN_PHOTOS} minimum`;
-    const blockedHint = document.getElementById("publish-blocked-hint");
-    if (blockedHint) {
-      blockedHint.textContent = `Add at least ${MIN_PHOTOS} photos to publish`;
-      blockedHint.hidden = met;
-    }
-    const publishBtn = document.getElementById("publish-btn");
-    if (publishBtn) publishBtn.disabled = !met;
-  }
 
   function renderPhotoRow() {
     const el = document.getElementById("img-upload-row");
@@ -143,7 +121,6 @@
       </div>
     `).join("");
     document.getElementById("add-photo-row").hidden = selectedPhotos.length >= MAX_PHOTOS;
-    updatePhotoRequirementUI();
   }
 
   function removePhoto(i) {
@@ -272,7 +249,7 @@
       const place = selectedPlace;
       if (!category) { toast("Please pick a category"); return; }
       if (!selectedCond) { toast("Please pick a condition"); return; }
-      if (selectedPhotos.length < MIN_PHOTOS) { toast(`Add at least ${MIN_PHOTOS} photos to publish`); return; }
+      if (selectedPhotos.length === 0) { toast("Add at least one real photo or video of the item"); return; }
 
       const submitBtn = e.target.querySelector("button[type=submit]");
       const progressEl = document.getElementById("upload-progress");
