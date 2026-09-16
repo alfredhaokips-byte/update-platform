@@ -109,12 +109,11 @@ Any static file server works, e.g.:
 python3 -m http.server 8934
 ```
 then open `http://localhost:8934`. Sign up for an account (email/password) —
-signup now ends on a "check your email" screen asking for a 6-digit code
-instead of the old click-a-link confirmation. **That needs one manual
-dashboard step before it'll work — see "Email OTP signup" below** — without
-it, Supabase still emails a working confirmation *link*, but the code you
-type into the app won't match anything and you'll see "Token has expired or
-is invalid."
+the account is created immediately, no email confirmation step. **Make sure
+"Confirm email" is switched OFF** in Supabase Dashboard → **Authentication →
+Providers → Email** (see "Email OTP verification, removed (temporarily)"
+below for why) — with it left on, a real confirmation is still required
+server-side even though the app no longer shows any UI for completing one.
 
 ## 4. Deploy (Vercel)
 
@@ -412,16 +411,16 @@ shows this same seller-level vouch.**
 
 ## Email OTP signup, welcome + newsletter emails, community edit/delete, free maps
 
-- **Email OTP signup.** Signup now ends on a "Check your email" screen
-  asking for a 6-digit code (`Auth.verifyOtp`/`Auth.resendOtp` in
-  `js/auth.js`) instead of Supabase's default click-a-link confirmation.
-  **Needs one manual dashboard step**: Supabase Dashboard →
-  **Authentication → Email Templates → Confirm signup** — the default
-  template links `{{ .ConfirmationURL }}`; change it to show `{{ .Token }}`
-  instead (Supabase's own docs for "Email OTP" have the exact template
-  snippet). Until that's switched, Supabase still emails a real confirmation
-  link, but the 6-digit box in the app has nothing valid to check against.
-- **Welcome email.** Right after a code is confirmed, the client calls the
+- **Email OTP signup.** Signup ended on a "Check your email" screen asking
+  for a 6-digit code (`Auth.verifyOtp`/`Auth.resendOtp` in `js/auth.js`)
+  instead of Supabase's default click-a-link confirmation. **Superseded —
+  made dormant since, see "Email OTP verification, removed (temporarily)"
+  below**: Resend needs a verified sending domain to reach real signups,
+  none was bought yet, so OTP codes never reached anyone but the Resend
+  account's own address.
+- **Welcome email.** Right after signup succeeds (originally right after an
+  OTP code was confirmed — moved up to fire right after account creation
+  now that the OTP step is dormant, see below), the client calls the
   `send-welcome-email` Edge Function (best-effort — a failed send never
   blocks signup). It looks up the *caller's own* email/name server-side from
   their JWT rather than trusting what the client sends, so it can't be used
@@ -763,6 +762,60 @@ Real, working contact details, not buried in `help.html`:
     the code both arrives and lands outside spam. If the manual SMTP step
     above hasn't been done yet, OTP delivery is still riding on Supabase's
     default sender and will still be unreliable.
+  - **Superseded for signup specifically** — turned out the real blocker
+    wasn't Supabase's sender at all, it was that Resend itself won't deliver
+    to real recipients without a verified domain, which no amount of SMTP
+    configuration fixes on its own. Signup OTP has since been made dormant
+    (see "Email OTP verification, removed (temporarily)" below) rather than
+    left broken. The custom-SMTP setup above is still worth doing — it
+    covers every other Supabase auth email — but a verified Resend domain is
+    the actual prerequisite before OTP itself comes back.
+
+## Minimum photos, description guidance, share, and OTP made dormant
+
+- **3-photo minimum, description guidance.** Unchanged from when they
+  shipped — see "Minimum photos, description guidance, and — separately —
+  an email deliverability fix" above.
+- **Share a listing.** A real share button on `listing.html` — both the
+  header's icon (previously a fake `toast('Link copied (demo)')` that did
+  nothing) and a new button next to Chat/Buy Now now call one real
+  `shareListing()`. Uses `navigator.share({ title, text, url })` where
+  supported (mobile — this is what actually puts WhatsApp/Messages/
+  Instagram etc. in the system share sheet, no per-platform work needed);
+  falls back to `navigator.clipboard.writeText()` with a "Link copied!"
+  toast everywhere else (mainly desktop browsers, which mostly don't
+  implement `navigator.share`). The fallback button's own label switches to
+  "🔗 Copy link" at render time when `navigator.share` isn't available, so
+  it never reads like a share button that silently does nothing. A
+  cancelled native share sheet (`AbortError`) is treated as a no-op, not a
+  failure — only a genuine error toasts.
+- **Email OTP verification, removed (temporarily).** Same call as phone
+  OTP earlier — don't leave a verification step live that can't actually
+  work. The real cause: Resend (the provider behind every email this app
+  sends) won't deliver to real recipients without a verified sending
+  domain, and none has been bought yet — so OTP codes only ever reached the
+  Resend account's own address, never a real signup's. Signup is back to
+  name/email/password/optional-locality → account created immediately, no
+  confirmation step (`Store.primeCache()` picks up `email_confirmed_at`
+  from the session right away, so the rest of the app's "confirmed email"
+  checks, like posting a listing, are satisfied immediately too — nothing
+  else needed changing for that).
+  - **Needs one manual dashboard step**: Supabase Dashboard →
+    **Authentication → Providers → Email** → switch **"Confirm email"**
+    back **OFF** — the same toggle used during local testing earlier in
+    this project. Without this, a real confirmation is still required
+    server-side even though there's no UI left to complete one.
+  - **Not deleted, made dormant.** The OTP screen's HTML and its JS
+    (`showOtpStep`, the `otp-form`/`resend-otp-btn` handlers) are commented
+    out in `signup.html`, not removed — along with `Auth.verifyOtp`/
+    `Auth.resendOtp` in `js/auth.js`, which are untouched and still correct.
+    Each commented block says exactly what to do to bring it back. **To
+    re-enable, once a domain is bought and verified in Resend:** switch
+    "Confirm email" back ON, uncomment both blocks in `signup.html`, and
+    change the signup-form handler back to calling `showOtpStep(email)`
+    instead of going straight to `Store.primeCache()`/`showCharStep()`.
+  - No leftover "check your email for a code" copy anywhere else in the
+    app — audited signup and the pages around it.
 
 ## What's NOT built yet
 
@@ -780,6 +833,9 @@ Per the phased briefs, everything below is intentionally deferred:
   above foundation is confirmed working)
 
 Also out of scope for now (flagged for awareness):
+- Email OTP signup confirmation — built, then made dormant (not deleted)
+  until a domain is bought and verified in Resend; see "Email OTP
+  verification, removed (temporarily)" above for the exact re-enable steps
 - Phone OTP (as sign-in, not verification) — tried once as a verification
   tier and removed, see "Phone OTP verification, removed" above; a real
   verification tier is still on the table for later, ID/selfie-based per

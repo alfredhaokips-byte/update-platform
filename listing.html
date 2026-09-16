@@ -82,6 +82,31 @@
     document.getElementById("lightbox-strip").querySelectorAll("video").forEach((v) => v.pause());
   }
 
+  /* Real device share sheet where supported (mobile — this is what actually
+     puts WhatsApp/Messages/Instagram etc. in the sheet, with zero
+     per-platform integration), a plain clipboard copy everywhere else
+     (mainly desktop browsers, which don't implement navigator.share). Both
+     paths need `listing` already loaded, so this is only ever wired to
+     buttons rendered after renderListing() has run. */
+  async function shareListing() {
+    const url = `${window.location.origin}${window.location.pathname}?id=${listing.id}`;
+    const text = `${listing.title} — ${formatPrice(listing.price)}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: listing.title, text, url });
+      } catch (err) {
+        if (err.name !== "AbortError") toast("Couldn't open the share sheet — try again");
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} · ${url}`);
+      toast("Link copied!");
+    } catch (err) {
+      toast("Couldn't copy the link — try selecting it manually");
+    }
+  }
+
   function requireLoginOr(action) {
     if (!Store.isLoggedIn()) {
       window.location.href = "login.html?redirect=" + encodeURIComponent(window.location.pathname.split("/").pop() + window.location.search);
@@ -107,9 +132,10 @@
     galleryUrls = listingGalleryUrls(listing);
     const saved = Store.isSaved(listing.id);
     const isMine = Store.isLoggedIn() && Store.getUser().id === listing.sellerId;
+    const canShare = typeof navigator.share === "function";
 
     root.innerHTML = `
-      ${backRowHtml(null, `<div class="row" style="gap:8px;"><a class="icon-btn" href="help.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}" title="Report this listing">⚑</a><a class="icon-btn" href="javascript:void(0)" onclick="toast('Link copied (demo)')">↗</a></div>`)}
+      ${backRowHtml(null, `<div class="row" style="gap:8px;"><a class="icon-btn" href="help.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}" title="Report this listing">⚑</a><button type="button" class="icon-btn" onclick="shareListing()" aria-label="Share" title="Share">↗</button></div>`)}
       <div class="detail-wrap">
         <div class="detail-imgs">
           ${galleryUrls.map((url, i) => `
@@ -173,10 +199,14 @@
 
         ${isMine ? `
           <p style="text-align:center;font-size:13px;color:var(--muted);padding:10px 0;">This is your own listing.</p>
+          <button class="btn btn-outline btn-block" style="margin-bottom:8px;" onclick="shareListing()">${canShare ? "↗ Share this listing" : "🔗 Copy link"}</button>
         ` : `
           <div class="cta-row">
             <button class="btn btn-outline" onclick="openModal('chat-modal')">💬 Chat</button>
             <button class="btn btn-fill" onclick="openModal('buy-modal')">Buy now</button>
+            ${canShare
+              ? `<button class="btn btn-outline" style="flex:0 0 46px;padding:0;" onclick="shareListing()" aria-label="Share" title="Share">↗</button>`
+              : `<button class="btn btn-outline" onclick="shareListing()">🔗 Copy link</button>`}
           </div>
         `}
         <button class="btn btn-outline btn-block" id="save-toggle-btn" style="margin-bottom:8px;" onclick="toggleSaveDetail()">${saved ? "♥ Saved" : "♡ Save listing"}</button>

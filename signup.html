@@ -44,9 +44,18 @@
     </p>
   </div>
 
-  <!-- Email OTP confirmation step. Needs the Supabase dashboard switched to
-       OTP-style email confirmation (a 6-digit code) instead of the default
-       magic-link — see README for the manual dashboard step. -->
+  <!-- Email OTP confirmation step — DORMANT, not deleted. Removed from the
+       live flow because Resend (the transactional email provider backing
+       every email this app sends) requires a verified sending domain to
+       reach real signups; no domain has been bought yet, so OTP codes only
+       ever reached the Resend account's own address, not real users. Needs,
+       to re-enable:
+         1. Buy + verify a domain in Resend (Resend → Domains).
+         2. Supabase Dashboard → Authentication → Providers → Email →
+            switch "Confirm email" back ON.
+         3. Uncomment this block and its matching JS below.
+       See README for the full writeup. -->
+  <!--
   <div class="form-wrap" style="padding-top:20px;" id="otp-step" hidden>
     <h3 style="margin-bottom:6px;">Check your email</h3>
     <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">We sent a 6-digit code to <b id="otp-email-echo"></b> — enter it below to confirm your account.</p>
@@ -61,8 +70,9 @@
     </form>
     <button type="button" id="resend-otp-btn" class="btn btn-outline btn-block" style="margin-top:10px;">Resend code</button>
   </div>
+  -->
 
-  <!-- Optional, always-skippable character step, shown after account creation. -->
+  <!-- Optional, always-skippable character step, shown right after account creation. -->
   <div class="form-wrap" style="padding-top:20px;" id="char-step" hidden>
     <h3 style="margin-bottom:6px;">One last thing — who's saying hello?</h3>
     <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Pick how you'd like to show up. This sets your profile character only — nothing else, and you can change it any time from Account.</p>
@@ -119,7 +129,15 @@
         });
         pendingEmail = email;
         pendingName = name;
-        showOtpStep(email);
+        await Store.primeCache(); // needed for Store.setAvatarType() on the next step
+
+        // Best-effort — a failed welcome email should never block signup.
+        try {
+          await sb.functions.invoke("send-welcome-email", { body: { email, name } });
+        } catch (mailErr) { /* non-critical */ }
+
+        document.getElementById("signup-step").hidden = true;
+        showCharStep();
       } catch (err) {
         errEl.textContent = err.message || "Couldn't create your account — try again.";
         errEl.hidden = false;
@@ -128,6 +146,12 @@
       }
     });
 
+    /* Email OTP confirmation — DORMANT, not deleted. See the matching HTML
+       comment above #otp-step for why (no verified Resend sending domain
+       yet) and the steps to re-enable. Re-enabling: uncomment this block,
+       uncomment #otp-step above, and change the signup-form handler above
+       to call showOtpStep(email) instead of going straight to
+       Store.primeCache()/showCharStep().
     function showOtpStep(email) {
       document.getElementById("signup-step").hidden = true;
       document.getElementById("otp-step").hidden = false;
@@ -149,7 +173,7 @@
         // Best-effort — a failed welcome email should never block signup.
         try {
           await sb.functions.invoke("send-welcome-email", { body: { email: pendingEmail, name: pendingName } });
-        } catch (mailErr) { /* non-critical */ }
+        } catch (mailErr) { /* non-critical * / }
 
         document.getElementById("otp-step").hidden = true;
         showCharStep();
@@ -173,6 +197,7 @@
         resendBtn.disabled = false;
       }
     });
+    */
 
     const CHARACTER_OPTIONS = [
       { type: "female", label: "Female" },
