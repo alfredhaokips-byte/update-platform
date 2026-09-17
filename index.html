@@ -11,6 +11,9 @@
 </script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
 <title>Marketplace — Buy & sell in your community</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -37,7 +40,7 @@
     box-shadow:var(--shadow);
   }
   #landing-root .brand{ display:flex; align-items:center; gap:9px; font-size:16px; font-weight:800; }
-  #landing-root .brand svg{ width:22px; height:22px; }
+  #landing-root .brand img{ display:block; width:auto; }
   #landing-root .nav-links{ display:flex; gap:24px; font-size:14px; font-weight:600; color:var(--muted); margin-right:auto; }
   #landing-root .btn-pill{ display:inline-flex; align-items:center; gap:8px; padding:11px 20px; border-radius:100px; font-size:13.5px; font-weight:700; border:none; }
   #landing-root .btn-sage{ background:var(--sage); color:#fff; }
@@ -141,8 +144,7 @@
   <header>
     <div class="nav-pill">
       <a href="index.html" class="brand">
-        <svg viewBox="0 0 120 120"><polyline points="8,105 8,25 42,60 76,25 76,105" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter"/><polyline points="44,105 44,25 78,60 112,25 112,105" fill="none" stroke="var(--marigold)" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter" opacity="0.92"/></svg>
-        Mohalla Market
+        <img src="img/logo-lockup.png" alt="Mohalla Market" height="30" />
       </a>
       <nav class="nav-links">
         <a href="browse.html">Browse</a>
@@ -272,8 +274,7 @@
       <div class="footer-grid">
         <div>
           <a href="index.html" class="brand">
-            <svg viewBox="0 0 120 120" width="20" height="20"><polyline points="8,105 8,25 42,60 76,25 76,105" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter"/><polyline points="44,105 44,25 78,60 112,25 112,105" fill="none" stroke="var(--marigold)" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter" opacity="0.92"/></svg>
-            Mohalla Market
+            <img src="img/logo-lockup.png" alt="Mohalla Market" height="26" />
           </a>
           <p>A sustainable, trust-first marketplace — built around a neighbourhood, not an algorithm.</p>
           <form id="newsletter-form" style="margin-top:18px;max-width:280px;">

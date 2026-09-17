@@ -33,12 +33,8 @@ const Auth = {
     return data;
   },
 
-  /* DORMANT — signup.html no longer calls these; the OTP step is commented
-     out there until a domain is bought and verified in Resend, since
-     without one OTP emails never reach real signups. Left in place, still
-     correct, for a quick re-enable once that's done — see signup.html and
-     README. `type: "signup"` is what tells Supabase this code is for
-     confirming a brand-new account, not a password-reset or sign-in code. */
+  /* `type: "signup"` is what tells Supabase this code is for confirming a
+     brand-new account, not a password-reset or sign-in code. */
   async verifyOtp({ email, token }) {
     requireSupabaseConfigured();
     const { data, error } = await sb.auth.verifyOtp({ email, token, type: "signup" });

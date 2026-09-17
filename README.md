@@ -60,9 +60,13 @@ exactly what's happening.
 16. Same again with `supabase/seller-type.sql` — adds
     `profiles.seller_type`/`shop_name`/`shop_description` (see "Business vs.
     individual sellers" below).
-17. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
+17. Same again with `supabase/messages-type.sql` — adds `messages.message_type`,
+    distinguishing a Buy Now tap from a regular chat message (see "Email
+    notifications for key activity" below). **Required** before sending any
+    message will work again — `js/data.js` now always sends this column.
+18. **Settings → API** → copy the **Project URL** and the **`anon` `public`**
     key (not `service_role`).
-18. Paste them into `js/supabase-client.js`:
+19. Paste them into `js/supabase-client.js`:
    ```js
    const SUPABASE_URL = "https://xxxxxxxx.supabase.co";
    const SUPABASE_ANON_KEY = "ey...";
@@ -999,6 +1003,79 @@ Real, working contact details, not buried in `help.html`:
     confirm it's well-formed. The real test — visiting `/sitemap.xml` and
     `/robots.txt` on the live domain — needs this pushed and deployed
     first.
+
+## New logo, email OTP restored, activity notifications via Gmail SMTP
+
+* New logo. The old header/footer mark (an inline SVG of two interlocking
+  chevrons + the literal text "Mohalla Market") only ever appeared in two
+  places — `index.html`'s signed-out landing header and footer; every other
+  page's header is just a back-arrow and a page title, no logo, and none of
+  them had a favicon at all before this. Both spots now use the real lockup
+  image (`img/logo-lockup.png`, an interlocking-M icon that doubles as the
+  "M" in "Marketplace") instead of the SVG+text. Favicon links
+  (`img/favicon-32.png`, `img/favicon-512.png`, `img/apple-touch-icon-180.png`
+  — a clean icon-only crop, no construction guides) were added to all 15
+  pages' `<head>`, not just the landing page.
+
+* Email OTP signup, live again. "Confirm email" is back on in Supabase and
+  Gmail SMTP (App Password) is confirmed delivering real codes, so the
+  dormant `#otp-step` in `signup.html` (see "Email OTP verification, removed
+  (temporarily)" above) is uncommented and live: create account → 6-digit
+  code screen → `Auth.verifyOtp()` → account complete. Added on top of what
+  was already built: a 30-second countdown on "Resend code" (was previously
+  just disable-until-request-completes, no visible timer), and a low-key
+  line under the code field — "Don't see it? Check your spam or promotions
+  folder — it can take a minute to arrive." The welcome email moved back to
+  firing after OTP verification succeeds (not right after signup) now that
+  the account isn't real until that step passes.
+* Activity emails — new message, new vouch, buying interest — now send via
+  Gmail SMTP, not Resend. Resend's free tier can't deliver to a real
+  recipient without a verified sending domain (the same limitation that
+  blocked OTP for a while); Gmail SMTP with the already-tested App Password
+  doesn't have that restriction, so every notification Edge Function was
+  switched onto it rather than leaving these three on infrastructure known
+  not to reach real users. `supabase/functions/_shared/send-gmail.ts` is the
+  one shared sender (via `denomailer`) every notification function now
+  calls — needs two new function secrets, not yet set:
+  ```
+  supabase secrets set GMAIL_USER=youraddress@gmail.com
+  supabase secrets set GMAIL_APP_PASSWORD=your_16_char_app_password
+  ```
+  The same App Password already generated for Supabase Auth's SMTP settings
+  works here too — it isn't tied to one consumer. Until these are set, the
+  functions log "not configured" and no-op (same graceful-skip pattern the
+  Resend key check always used), they don't error out or block the
+  underlying action.
+  * **New message** — `supabase/functions/notify-new-message` (already
+    existed for this, just re-pointed at Gmail SMTP instead of Resend; no
+    new webhook needed, the existing `messages` INSERT webhook covers it).
+  * **New vouch** — `supabase/functions/notify-new-vouch`, new. Needs a new
+    Database Webhook: Dashboard → Database → Webhooks → table `vouches`,
+    event **INSERT only** (a vouch toggle-off is a DELETE on the same table
+    and must never fire an email), function `notify-new-vouch`.
+  * **Buying interest ("Buy Now" tapped)** — folded into the same
+    `notify-new-message` function rather than a third webhook. Buy Now has
+    never had its own table — `sendBuyNow()` in `listing.html` just inserts
+    a `messages` row with canned text, same as any chat message — so giving
+    it a separate webhook would fire *two* emails off one tap (the generic
+    "new message" webhook, plus a dedicated one). Instead, `messages` grew a
+    `message_type` column (`'chat'` default, `'buy_interest'` for Buy Now —
+    `supabase/messages-type.sql`, **run this before deploying `js/data.js`**
+    or every message send breaks with a missing-column error), and
+    `notify-new-message` picks the "is interested in your listing" subject
+    line instead of "sent you a message" when it sees that flag.
+  * Both functions are deployed. Both are already wrapped in try/catch and
+    always return 200 to the webhook regardless of send outcome — a failed
+    email can't block or retry-storm the actual DB write, same pattern the
+    existing `notify-new-message`/`send-welcome-email` always used, and
+    since these are async Database Webhooks fired *after* the client's own
+    insert already succeeded, the client-side action was never at risk of
+    being blocked by a slow or failed send in the first place.
+  * `supabase/messages-type.sql` has been applied to the live database
+    (checked directly via `information_schema.columns`, not assumed) and
+    both functions are deployed. Still needed before any of the three can
+    actually send: the two `GMAIL_USER`/`GMAIL_APP_PASSWORD` secrets, and
+    the `vouches` INSERT webhook — neither of those can be done from here.
 
 ## What's NOT built yet
 

@@ -855,15 +855,18 @@ const Store = {
     await sb.from("messages").update({ read: true }).eq("thread_id", threadId).neq("sender_id", user.id);
   },
 
-  async sendMessage(threadId, text) {
+  /* `messageType` distinguishes a Buy Now tap ('buy_interest') from a normal
+     chat message ('chat') so the new-message notification email can pick a
+     different subject/template — see supabase/messages-type.sql. */
+  async sendMessage(threadId, text, messageType = "chat") {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in to message");
-    const { error } = await sb.from("messages").insert({ thread_id: threadId, sender_id: user.id, text });
+    const { error } = await sb.from("messages").insert({ thread_id: threadId, sender_id: user.id, text, message_type: messageType });
     if (error) throw error;
   },
 
   /* Finds or creates the (listing, me-as-buyer) thread, then sends the message. */
-  async startOrAppendThread(listing, text) {
+  async startOrAppendThread(listing, text, messageType = "chat") {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in to message a seller");
 
@@ -884,7 +887,7 @@ const Store = {
       thread = created;
     }
 
-    await this.sendMessage(thread.id, text);
+    await this.sendMessage(thread.id, text, messageType);
     return thread.id;
   },
 
