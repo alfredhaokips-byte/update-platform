@@ -55,8 +55,16 @@
     </p>
   </div>
 
-  <!-- Email OTP confirmation step. Gmail SMTP is wired up and "Confirm email"
-       is back on in Supabase, so this is live again. -->
+  <!-- Email OTP confirmation step — DORMANT, not deleted. Removed from the
+       live flow again: Gmail SMTP (App Password) looked like it fixed
+       delivery, but Supabase's own warning is that Gmail's SMTP isn't built
+       for transactional/automated email, and codes weren't reliably
+       arriving. Needs, to re-enable: a real transactional provider on a
+       verified domain, then Supabase Dashboard → Authentication → Providers
+       → Email → "Confirm email" back ON, then uncomment this block and its
+       matching JS below (and swap the signup-form handler back to calling
+       showOtpStep(email) instead of going straight to
+       Store.primeCache()/showCharStep()). See README.
   <div class="form-wrap" style="padding-top:20px;" id="otp-step" hidden>
     <h3 style="margin-bottom:6px;">Check your email</h3>
     <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">We sent a 6-digit code to <b id="otp-email-echo"></b> — enter it below to confirm your account.</p>
@@ -72,6 +80,7 @@
     <p style="font-size:12.5px;color:var(--muted);margin-top:12px;">Don't see it? Check your spam or promotions folder — it can take a minute to arrive.</p>
     <button type="button" id="resend-otp-btn" class="btn btn-outline btn-block" style="margin-top:10px;">Resend code</button>
   </div>
+  -->
 
   <!-- Optional, always-skippable character step, shown right after account creation. -->
   <div class="form-wrap" style="padding-top:20px;" id="char-step" hidden>
@@ -128,11 +137,15 @@
           password: document.getElementById("f-password").value,
           place: selectedPlace,
         });
-        pendingEmail = email;
-        pendingName = name;
+        await Store.primeCache(); // needed for Store.setAvatarType() on the next step
+
+        // Best-effort — a failed welcome email should never block signup.
+        try {
+          await sb.functions.invoke("send-welcome-email", { body: { email, name } });
+        } catch (mailErr) { /* non-critical */ }
 
         document.getElementById("signup-step").hidden = true;
-        showOtpStep(email);
+        showCharStep();
       } catch (err) {
         errEl.textContent = err.message || "Couldn't create your account — try again.";
         errEl.hidden = false;
@@ -141,6 +154,12 @@
       }
     });
 
+    /* Email OTP confirmation — DORMANT, not deleted. See the matching HTML
+       comment above #otp-step for why (Gmail SMTP isn't reliable for this
+       either — Supabase's own warning) and the steps to re-enable.
+       Re-enabling: uncomment this block, uncomment #otp-step above, and
+       change the signup-form handler above to call showOtpStep(email)
+       instead of going straight to Store.primeCache()/showCharStep().
     function showOtpStep(email) {
       document.getElementById("otp-step").hidden = false;
       document.getElementById("otp-email-echo").textContent = email;
@@ -162,7 +181,7 @@
         // Best-effort — a failed welcome email should never block signup.
         try {
           await sb.functions.invoke("send-welcome-email", { body: { email: pendingEmail, name: pendingName } });
-        } catch (mailErr) { /* non-critical */ }
+        } catch (mailErr) { /* non-critical * / }
 
         document.getElementById("otp-step").hidden = true;
         showCharStep();
@@ -207,6 +226,7 @@
         startResendCooldown();
       }
     });
+    */
 
     const CHARACTER_OPTIONS = [
       { type: "female", label: "Female" },

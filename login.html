@@ -28,7 +28,7 @@
     <span style="width:40px;"></span>
   </div>
 
-  <div class="form-wrap" style="padding-top:20px;">
+  <div class="form-wrap" style="padding-top:20px;" id="login-step">
     <form id="login-form">
       <div class="form-row">
         <label for="f-email">Email</label>
@@ -38,12 +38,39 @@
         <label for="f-password">Password</label>
         <input type="text" id="f-password" placeholder="••••••••" required autocomplete="current-password" style="-webkit-text-security:disc;text-security:disc;" />
       </div>
+      <p style="text-align:right;font-size:13px;margin:-8px 0 16px;">
+        <a href="#" id="forgot-password-link" style="color:var(--muted);font-weight:600;">Forgot password?</a>
+      </p>
       <p id="login-error" style="color:var(--danger);font-size:13px;margin-bottom:14px;" hidden></p>
       <button type="submit" class="btn btn-fill btn-block" id="login-btn">Sign in</button>
     </form>
     <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:18px;">
       New here? <a href="signup.html" style="color:var(--ink);font-weight:700;">Create an account</a>
     </p>
+  </div>
+
+  <!-- Forgot password — step 1: ask for the email to send a reset link to. -->
+  <div class="form-wrap" style="padding-top:20px;" id="forgot-step" hidden>
+    <h3 style="margin-bottom:6px;">Reset your password</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Enter your account email and we'll send you a link to reset your password.</p>
+    <form id="forgot-form">
+      <div class="form-row">
+        <label for="f-forgot-email">Email</label>
+        <input type="text" id="f-forgot-email" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+      <button type="submit" class="btn btn-fill btn-block" id="forgot-btn">Send reset link</button>
+    </form>
+    <button type="button" id="back-to-login-btn" class="btn btn-outline btn-block" style="margin-top:10px;">Back to sign in</button>
+  </div>
+
+  <!-- Forgot password — step 2: same neutral confirmation regardless of
+       whether the email actually has an account, so this can't be used to
+       find out which emails are registered. -->
+  <div class="form-wrap" style="padding-top:20px;" id="forgot-sent-step" hidden>
+    <h3 style="margin-bottom:6px;">Check your email</h3>
+    <p style="font-size:13px;color:var(--ink);margin-bottom:8px;">If an account exists for that email, a reset link has been sent.</p>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:18px;">Don't see it? Check your spam or promotions folder — it can take a minute to arrive.</p>
+    <a href="login.html" class="btn btn-outline btn-block">Back to sign in</a>
   </div>
 </div>
 
@@ -75,6 +102,33 @@
         btn.disabled = false;
         btn.textContent = "Sign in";
       }
+    });
+
+    document.getElementById("forgot-password-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("login-step").hidden = true;
+      document.getElementById("forgot-step").hidden = false;
+    });
+
+    document.getElementById("back-to-login-btn").addEventListener("click", () => {
+      document.getElementById("forgot-step").hidden = true;
+      document.getElementById("login-step").hidden = false;
+    });
+
+    document.getElementById("forgot-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("forgot-btn");
+      btn.disabled = true;
+      btn.textContent = "Sending...";
+      const email = document.getElementById("f-forgot-email").value.trim();
+      try {
+        await Auth.resetPasswordForEmail(email);
+      } catch (err) {
+        // Intentionally swallowed — the confirmation below is shown either
+        // way, so this can't be used to check which emails have accounts.
+      }
+      document.getElementById("forgot-step").hidden = true;
+      document.getElementById("forgot-sent-step").hidden = false;
     });
   });
 </script>

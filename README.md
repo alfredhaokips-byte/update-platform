@@ -1077,6 +1077,53 @@ Real, working contact details, not buried in `help.html`:
     actually send: the two `GMAIL_USER`/`GMAIL_APP_PASSWORD` secrets, and
     the `vouches` INSERT webhook — neither of those can be done from here.
 
+## Email OTP removed again, forgot-password flow added
+
+* Email OTP verification, dormant again. Gmail SMTP (App Password) looked
+  like it had fixed delivery, but Supabase's own warning is that Gmail's
+  SMTP isn't built for transactional/automated email — codes weren't
+  reliably arriving. Rather than leave a verification step live that
+  silently strands real signups, it's back to dormant (commented, not
+  deleted, in `signup.html`/`js/auth.js` — same pattern as the first time,
+  see "Email OTP verification, removed (temporarily)" above). Signup is
+  name/email/password/optional-locality → account created immediately, no
+  confirmation step. **Manual step needed, can't be done from here:**
+  Supabase Dashboard → Authentication → Providers → Email → switch
+  "Confirm email" back **off** — without this, signup still works from the
+  UI's perspective but the account silently never becomes usable server-side.
+* Forgot password. `login.html` gets a "Forgot password?" link below the
+  password field, an inline step (same hidden-`<div>` pattern as signup's
+  steps) asking for an email, and always shows the exact same neutral
+  confirmation — "If an account exists for that email, a reset link has been
+  sent." — whether or not that email has an account, so the flow can't be
+  used to check who's registered. `reset-password.html` is new: Supabase's
+  reset link lands there, and `js/auth.js` gained
+  `resetPasswordForEmail()`/`updatePassword()`.
+  * One real bug found and fixed while building this, not left in: the
+    first version gated the "enter a new password" form on
+    `sb.auth.getSession()` returning any session at all — which doesn't
+    distinguish a genuine password-recovery session from someone just
+    being separately logged in on that browser. Caught by testing it with
+    a browser that had an unrelated logged-in session and no reset link at
+    all — it let the password form through with zero real token involved.
+    Fixed by gating first on the URL itself actually carrying recovery
+    params (`type=recovery` in the hash, or a PKCE `code`), only then
+    waiting for Supabase's `PASSWORD_RECOVERY` auth event; no params at all
+    means "invalid link" immediately, never a fallback to "well, some
+    session exists."
+  * **Likely also needs a manual step**, not confirmed from here: Supabase
+    Dashboard → Authentication → URL Configuration → Redirect URLs needs
+    `https://marketplace-three-chi.vercel.app/reset-password.html` allow-listed,
+    or `resetPasswordForEmail()`'s `redirectTo` may be rejected/ignored.
+  * Same known limitation as OTP: the reset email itself rides on the same
+    unreliable Gmail SMTP, so it may not arrive. The flow's own logic (form
+    submission, the neutral-message security behavior, the actual password
+    update once a valid recovery session exists) is built and tested
+    end-to-end short of receiving a real email — that's the identified,
+    pre-existing delivery issue, not a new bug in this flow.
+  * Explicitly left untouched, per this batch's own scope: the activity
+    notification emails (messages/vouches/buy-interest) — those stay as-is.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:

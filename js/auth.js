@@ -33,7 +33,12 @@ const Auth = {
     return data;
   },
 
-  /* `type: "signup"` is what tells Supabase this code is for confirming a
+  /* DORMANT — signup.html no longer calls these; the OTP step is commented
+     out there again since Gmail SMTP turned out not to be reliable either
+     (Supabase's own warning: Gmail's SMTP isn't built for transactional
+     email). Left in place, still correct, for a quick re-enable once a real
+     transactional provider is set up — see signup.html and README.
+     `type: "signup"` is what tells Supabase this code is for confirming a
      brand-new account, not a password-reset or sign-in code. */
   async verifyOtp({ email, token }) {
     requireSupabaseConfigured();
@@ -58,6 +63,26 @@ const Auth = {
   async signOut() {
     requireSupabaseConfigured();
     await sb.auth.signOut();
+  },
+
+  /* `redirectTo` must be an absolute URL Supabase is configured to allow
+     (Dashboard → Authentication → URL Configuration → Redirect URLs) —
+     that's where the reset link in the email sends the user, landing them
+     on reset-password.html with a real recovery session already active. */
+  async resetPasswordForEmail(email) {
+    requireSupabaseConfigured();
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password.html`,
+    });
+    if (error) throw error;
+  },
+
+  /* Only works with an active recovery session — i.e. only right after
+     following a real reset-password link, which is what establishes one. */
+  async updatePassword(password) {
+    requireSupabaseConfigured();
+    const { error } = await sb.auth.updateUser({ password });
+    if (error) throw error;
   },
 
   /* Redirects to login.html (preserving where you were headed) if signed out.
