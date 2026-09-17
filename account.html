@@ -71,6 +71,7 @@
     <a href="help.html" class="menu-item"><span class="ic">🛡️</span>Safety &amp; help<span class="chev">›</span></a>
     <button class="menu-item" onclick="toast('r/DelhiMarketplace-style community guidelines — demo mode')"><span class="ic">📜</span>Community guidelines<span class="chev">›</span></button>
     <button class="menu-item" id="logout-btn" style="color:var(--danger);"><span class="ic">↪</span>Log out</button>
+    <button class="menu-item" id="delete-account-btn" style="color:var(--danger);"><span class="ic">🗑️</span>Delete account</button>
   </div>
   <div style="height:24px;"></div>
 </div>
@@ -84,6 +85,19 @@
     <h3>Who's saying hello?</h3>
     <p class="sub">Pick how you'd like to show up. This is purely cosmetic — your listings and trust record are the same either way, and you can change it any time.</p>
     <div class="char-grid" id="char-grid"></div>
+  </div>
+</div>
+
+<!-- Delete account: the menu tap only opens this; deleting needs a second,
+     explicit tap on the red button inside. -->
+<div class="modal-overlay" id="delete-modal" hidden>
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('delete-modal')">✕</button>
+    <h3>Delete your account?</h3>
+    <p class="sub">This can't be undone. Your profile, all your listings, your conversations, reviews and vouches will be permanently removed. You'll be able to sign up again with the same email afterwards.</p>
+    <p id="delete-error" style="color:var(--danger);font-size:13px;margin:10px 0;" hidden></p>
+    <button class="btn btn-block" id="confirm-delete-btn" style="background:var(--danger);color:#fff;margin-top:14px;">Yes, permanently delete my account</button>
+    <button class="btn btn-outline btn-block" style="margin-top:8px;" onclick="closeModal('delete-modal')">Cancel</button>
   </div>
 </div>
 
@@ -111,6 +125,7 @@
       `;
       document.getElementById("account-stats").innerHTML = "";
       document.getElementById("logout-btn").hidden = true;
+      document.getElementById("delete-account-btn").hidden = true;
       return;
     }
 
@@ -135,6 +150,30 @@
     document.getElementById("logout-btn").addEventListener("click", async () => {
       await Auth.signOut();
       window.location.href = "index.html";
+    });
+
+    document.getElementById("delete-account-btn").addEventListener("click", () => {
+      document.getElementById("delete-error").hidden = true;
+      openModal("delete-modal");
+    });
+
+    document.getElementById("confirm-delete-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("confirm-delete-btn");
+      const errEl = document.getElementById("delete-error");
+      errEl.hidden = true;
+      btn.disabled = true;
+      btn.textContent = "Deleting...";
+      try {
+        const { data, error } = await sb.functions.invoke("delete-account", { method: "POST" });
+        if (error || !data?.ok) throw new Error(data?.error || error?.message || "Couldn't delete account");
+        await Auth.signOut();
+        window.location.href = "index.html";
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = "Yes, permanently delete my account";
+      }
     });
 
     document.getElementById("edit-character-btn").addEventListener("click", () => {
