@@ -818,49 +818,68 @@ Real, working contact details, not buried in `help.html`:
 
 ## Instagram deployment, seller vouching fixed, 3-photo minimum removed
 
-- **Instagram Edge Function — code is correct, deployment is still a
-  manual step I cannot complete from here.** The function itself
-  (`supabase/functions/post-to-instagram`) was re-reviewed line by line
-  against Meta's documented Content Publishing flow and is unchanged —
-  it was already correct. What's genuinely true, and was flagged honestly
-  every time this came up before: **it has never been deployed**, because
-  deploying requires `supabase login`, an interactive browser OAuth flow
-  that only a human can complete — there's no token or session available
-  to this session, checked directly (`supabase projects list` returns
-  "Access token not provided"; `supabase status` shows `linked_project:
-  null`). This isn't new information, but it's worth restating precisely
-  since "described as built" and "actually deployed" are genuinely
-  different things here, and the gap is a real one. To finish this
-  yourself, from this project's directory:
-  ```
-  supabase login
-  supabase link --project-ref ecdsteardeybzfnnidym
-  supabase secrets set INSTAGRAM_ACCESS_TOKEN=your_long_lived_token
-  supabase secrets set INSTAGRAM_BUSINESS_ACCOUNT_ID=your_ig_business_account_id
-  supabase functions deploy post-to-instagram
-  ```
-  Then wire the Database Webhook (Dashboard → Database → Webhooks →
-  table `listings`, event **UPDATE only**, function `post-to-instagram` —
-  see the code comment at the top of the function file for why UPDATE, not
-  INSERT) if it isn't already, and confirm in the dashboard's own Edge
-  Functions list (not the template gallery) that the function shows up as
-  deployed before considering any of this done.
-  - **On the two secrets specifically**: I have no way to inspect
-    Supabase's secrets manager from here, so I can't confirm their current
-    state either way — but nothing in any of my own instructions ever said
-    to add `INSTAGRAM_ACCESS_TOKEN`/`INSTAGRAM_BUSINESS_ACCOUNT_ID` to
-    Vercel, only to Supabase (`supabase secrets set`, above). If they were
-    added to Vercel at some point, that's a separate system Edge Functions
-    can't read from — treat them as **not yet set in Supabase** unless
-    you've confirmed otherwise with `supabase secrets list` (after linking)
-    or the dashboard's Edge Functions → Secrets page.
-  - **Worth checking while you're in there**: the same "written but never
-    deployed" gap may apply to `notify-new-message`, `send-welcome-email`,
-    and `send-newsletter` too, if those were never deployed either — worth
-    confirming all four show up as real functions, not just this one.
-  - **Not tested end-to-end** — can't be, until the above is done. Per the
-    brief, this isn't done until a real listing's photo actually appears on
-    @mohallamarketplace.
+- **Instagram Edge Function — deployed, secrets set, and the actual reason
+  it never fired has been found and fixed.** The CLI is now logged in and
+  linked (done manually, as it has to be), which made direct inspection
+  possible instead of guessing from the dashboard. `supabase secrets list`
+  confirms `INSTAGRAM_ACCESS_TOKEN`/`INSTAGRAM_BUSINESS_ACCOUNT_ID` are set
+  in Supabase (not just, as previously worried, in Vercel). The Database
+  Webhook ("direct post to insta") *did* correspond to a real trigger — but
+  `select pg_get_triggerdef(...) from pg_trigger where tgname = 'direct
+  post to insta'` showed it was `AFTER INSERT`, not `AFTER UPDATE`. A
+  listing is created with `images: []` (`Store.addListing`) and its photos
+  are attached in a *separate* update once uploads finish
+  (`Store.updateListingImages`) — exactly the reason this function was
+  designed to fire on UPDATE in the first place (see the comment at the
+  top of `supabase/functions/post-to-instagram/index.ts`), but the webhook
+  itself had been wired to INSERT instead, so it fired once per listing,
+  immediately, always with zero photos, and the function correctly (if
+  invisibly) no-opped every single time with "nothing to do" — which is
+  indistinguishable from "never fires" by watching the dashboard's
+  invocation counter with any delay, but very distinguishable by querying
+  `net._http_response` directly, which showed exactly that: a real 200
+  response, content `"nothing to do"`, on every real signup's first save.
+  Fixed with `create or replace trigger "direct post to insta" after
+  update on public.listings for each row execute function
+  supabase_functions.http_request(...)` — same URL, same auth header, only
+  the event changed. Re-verified end-to-end afterward with a real insert +
+  update against the live database (not just the dashboard): the UPDATE
+  correctly fired the trigger, the function ran, and it correctly reached
+  and returned `"not a postable image"` for a deliberately-`.webp` test
+  URL — proving the whole trigger → webhook → function pipeline now works,
+  without ever risking a real public post while testing (a real `.jpg`
+  would have gone on to actually call the Graph API — see below). The
+  diagnostic test listing was deleted afterward.
+  - **Also found while in there**: `supabase/instagram-autopost.sql` —
+    the migration adding `listings.instagram_posted` and the `app_settings`
+    pause-toggle table — had *also* never been run, the same "written a
+    migration, nobody applied it" gap as the vouching bug below. Applied it
+    directly (`supabase db query --linked -f
+    supabase/instagram-autopost.sql`). Before this, the idempotency guard
+    and the Account pause toggle were both silently inert: the guard column
+    didn't exist (so nothing actually stopped a re-attempt, though nothing
+    had gotten far enough to need it yet), and the pause check's own query
+    would have failed and been treated as "not paused" rather than
+    blocking — a fail-open, not fail-closed, silent gap. Worth knowing even
+    though it wasn't yet the thing preventing posts.
+  - **One harmless inefficiency, not fixed, worth knowing about**: the
+    function's own idempotency write (`update listings set
+    instagram_posted = true`) is itself an UPDATE on the same row, so it
+    re-fires this same trigger — every real attempt causes two invocations,
+    the real one and a self-triggered echo that immediately no-ops
+    (`hadPhotoBefore` is true by the time it sees the row). Confirmed
+    exactly this pattern in `net._http_response` during testing. Doesn't
+    break anything and wasn't asked about, but worth knowing since Instagram
+    doubles as your invocation-count budget too.
+  - **Not yet confirmed with a real, live Instagram post.** Testing further
+    than "not a postable image" means using a real `.jpg` URL, which would
+    actually call the Graph API with real credentials and post publicly to
+    @mohallamarketplace — not something to do without asking first, and the
+    app's own pause toggle (Account → admin) couldn't be used as a safety
+    net for this test since writing to it directly was blocked by this
+    session's own safety controls. Say the word and I'll either flip the
+    pause toggle myself through the real app UI first, or run the real test
+    directly — your call.
 - **Seller vouching — root cause found, it's a missing migration, not a
   code bug.** Checked directly against the live database (not just the
   code): `select listing_id from vouches limit 1` fails with `column
