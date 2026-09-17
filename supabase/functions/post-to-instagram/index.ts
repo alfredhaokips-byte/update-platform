@@ -98,7 +98,11 @@ Deno.serve(async (req) => {
       // what the Graph API actually said, never throw, never touch the
       // listing row again.
       console.error(`Instagram container creation failed for listing ${listing.id}:`, JSON.stringify(containerData));
-      return new Response("container failed", { status: 200 });
+      // The actual Graph API error is worth having in the response body
+      // itself, not just in this function's own console logs — net._http_response
+      // is queryable directly (see README), console logs aren't easily
+      // reachable from outside the dashboard.
+      return new Response(`container failed: ${JSON.stringify(containerData)}`, { status: 200 });
     }
 
     const publishRes = await fetch(
@@ -112,7 +116,7 @@ Deno.serve(async (req) => {
     const publishData = await publishRes.json();
     if (!publishRes.ok) {
       console.error(`Instagram publish failed for listing ${listing.id}:`, JSON.stringify(publishData));
-      return new Response("publish failed", { status: 200 });
+      return new Response(`publish failed: ${JSON.stringify(publishData)}`, { status: 200 });
     }
 
     return new Response("posted", { status: 200 });
