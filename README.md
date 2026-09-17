@@ -943,6 +943,63 @@ Real, working contact details, not buried in `help.html`:
   even needs to guard against — from a title alone risks building the
   wrong thing entirely. Paste the actual Section 3 text and it's next.
 
+## SEO: sitemap.xml and robots.txt
+
+- **Listing URLs are `listing.html?id=<uuid>`** — a query string, not a path
+  (e.g. `/listing/<uuid>`). Nothing rewrites this today, so the sitemap
+  below and any future SEO work should assume this exact shape unless
+  that routing changes.
+- **`robots.txt`** — a plain static file at the project root (no dynamic
+  generation needed, its content doesn't depend on live data). Allows
+  everything by default, then disallows exactly the pages that actually
+  redirect to `login.html` for a signed-out visitor
+  (`Auth.requireAuth()`, checked directly rather than assumed):
+  `account.html`, `messages.html`, `my-ads.html`, `post-ad.html`,
+  `saved.html`, `verify.html`, `edit-profile.html`, `help.html` (this one's
+  gated too, despite being named like a public help page — checked, not
+  guessed). `login.html`/`signup.html` are deliberately left crawlable —
+  they're public and gate nothing, "authenticated-only" doesn't apply to
+  them even though they're part of the auth flow. Ends with `Sitemap:
+  https://marketplace-three-chi.vercel.app/sitemap.xml`.
+- **`sitemap.xml` is generated live, not a static file** — `api/sitemap.js`,
+  a zero-dependency Vercel serverless function (plain built-in `fetch`, no
+  `package.json` needed, matching this project's no-build-step approach)
+  that queries `listings` (`select=id,created_at`) straight from Supabase's
+  REST API on every request and builds the XML fresh. A listing posted or
+  deleted a minute ago is already correct in the sitemap with no redeploy.
+  Reached at `/sitemap.xml` via a rewrite in the new `vercel.json`
+  (`/sitemap.xml` → `/api/sitemap`) — Vercel's own `/api/*` functions only
+  ever answer under that prefix by default, so the rewrite is what makes
+  the clean URL work. Response is cached at Vercel's edge for up to an hour
+  (`stale-while-revalidate`) so a crawler can't hammer Supabase on every
+  fetch — still "live" in the sense the brief means (no manual
+  regeneration, no rebuild, reflects the database within the hour at the
+  very worst), just not literally uncached on every single hit.
+  - Includes: the homepage, `browse.html`, `community.html`, and one
+    `<url>` per row in `listings` with `<lastmod>` from that listing's own
+    `created_at`. Community's General/Feedback/Notice Board tabs are
+    **not** included as separate entries — checked `community.html`'s
+    `setSection()` and confirmed switching tabs never changes the URL at
+    all, so there's no distinct, crawlable address for each one to list
+    yet. If that's wanted, it's a real (small) feature addition — giving
+    each section its own `?section=` URL — not something to fake in the
+    sitemap alone.
+  - Uses the same public anon key already embedded in every page's own
+    `js/supabase-client.js` (falls back to it if `SUPABASE_URL`/
+    `SUPABASE_ANON_KEY` aren't set as Vercel env vars) — safe here for the
+    same reason it's safe client-side: `listings` is publicly readable
+    under RLS, nothing this endpoint touches is gated.
+  - **Not yet verified on the deployed site** — this can't be tested
+    against the local static-file server the way everything else in this
+    project has been, since `/api` serverless functions and `vercel.json`
+    rewrites are Vercel-runtime features with no local equivalent here.
+    Verified instead as far as possible from here: the exact Supabase REST
+    query the function makes was run directly via `curl` and returns the
+    right shape, and the resulting XML was built and parsed locally to
+    confirm it's well-formed. The real test — visiting `/sitemap.xml` and
+    `/robots.txt` on the live domain — needs this pushed and deployed
+    first.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:

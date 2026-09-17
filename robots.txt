@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /account.html
+Disallow: /messages.html
+Disallow: /my-ads.html
+Disallow: /post-ad.html
+Disallow: /saved.html
+Disallow: /verify.html
+Disallow: /edit-profile.html
+Disallow: /help.html
+
+Sitemap: https://marketplace-three-chi.vercel.app/sitemap.xml
