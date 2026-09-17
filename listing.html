@@ -66,7 +66,11 @@
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
-  const listingId = qs("id");
+  // Pull the UUID out of the param rather than using it raw: chat apps often
+  // glue trailing characters onto a shared link (a dash, a period, the rest
+  // of a sentence), and a malformed UUID makes the Supabase query throw,
+  // which used to leave this page blank.
+  const listingId = ((qs("id") || "").match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i) || [null])[0];
   let listing = null;
   let galleryUrls = [];
 
@@ -101,10 +105,11 @@
      buttons rendered after renderListing() has run. */
   async function shareListing() {
     const url = `${window.location.origin}${window.location.pathname}?id=${listing.id}`;
-    const text = `${listing.title} — ${formatPrice(listing.price)}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: listing.title, text, url });
+        // No `text`: several share targets append it straight after the URL,
+        // which is exactly how a link picks up trailing junk.
+        await navigator.share({ title: listing.title, url });
       } catch (err) {
         if (err.name !== "AbortError") toast("Couldn't open the share sheet — try again");
       }
@@ -132,7 +137,7 @@
 
   async function renderListing() {
     const root = document.getElementById("listing-root");
-    listing = await Store.getListingById(listingId);
+    listing = listingId ? await Store.getListingById(listingId) : null;
     if (!listing) {
       root.innerHTML = backRowHtml("Listing") + `<div class="empty-state"><div class="big">🙈</div><h3>Listing not found</h3><p>It may have been sold or removed.</p></div>`;
       return;
@@ -338,8 +343,15 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    await initPage(null);
-    await renderListing();
+    try {
+      await initPage(null);
+      await renderListing();
+    } catch (err) {
+      console.error(err);
+      if (!listing || !document.querySelector("#listing-root .detail-wrap")) {
+        document.getElementById("listing-root").innerHTML = backRowHtml("Listing") + `<div class="empty-state"><div class="big">⚠️</div><h3>Couldn't load this listing</h3><p>Check your connection and try again.</p><p style="font-size:11px;color:var(--muted);margin-top:8px;">${escapeHtml(err.message || String(err))}</p></div>`;
+      }
+    }
   });
 </script>
 </body>
