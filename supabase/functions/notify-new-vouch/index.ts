@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       `,
     });
 
-    return new Response(sent ? "sent" : "email send failed", { status: 200 }); // always 200 — don't retry-storm the webhook
+    return new Response(sent.ok ? "sent" : `email send failed: ${sent.error}`, { status: 200 }); // always 200 — don't retry-storm the webhook
   } catch (err) {
     console.error(err);
     return new Response("error", { status: 200 });

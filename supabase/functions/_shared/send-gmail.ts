@@ -18,33 +18,35 @@ import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 const GMAIL_USER = Deno.env.get("GMAIL_USER");
 const GMAIL_APP_PASSWORD = Deno.env.get("GMAIL_APP_PASSWORD");
 
-export async function sendGmailEmail({ to, subject, html }: { to: string; subject: string; html: string }): Promise<boolean> {
+// Returns the failure reason instead of just `false`, so callers can put it
+// in their HTTP response — that's what lands in net._http_response, the only
+// place a webhook's outcome is visible without dashboard log access.
+export async function sendGmailEmail({ to, subject, html }: { to: string; subject: string; html: string }): Promise<{ ok: boolean; error?: string }> {
   if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-    console.error("GMAIL_USER/GMAIL_APP_PASSWORD not set — skipping send");
-    return false;
+    return { ok: false, error: "GMAIL_USER/GMAIL_APP_PASSWORD not set" };
   }
 
-  const client = new SMTPClient({
-    connection: {
-      hostname: "smtp.gmail.com",
-      port: 465,
-      tls: true,
-      auth: { username: GMAIL_USER, password: GMAIL_APP_PASSWORD },
-    },
-  });
-
+  let client: SMTPClient | null = null;
   try {
+    client = new SMTPClient({
+      connection: {
+        hostname: "smtp.gmail.com",
+        port: 465,
+        tls: true,
+        auth: { username: GMAIL_USER, password: GMAIL_APP_PASSWORD },
+      },
+    });
     await client.send({
       from: `Mohalla Market <${GMAIL_USER}>`,
       to,
       subject,
       html,
     });
-    return true;
+    return { ok: true };
   } catch (err) {
     console.error("Gmail SMTP error:", err);
-    return false;
+    return { ok: false, error: err instanceof Error ? `${err.name}: ${err.message}` : String(err) };
   } finally {
-    try { await client.close(); } catch (_closeErr) { /* already closed/broken — nothing to do */ }
+    try { await client?.close(); } catch (_closeErr) { /* already closed/broken — nothing to do */ }
   }
 }

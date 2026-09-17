@@ -1190,6 +1190,51 @@ Gmail. Mail is demonstrably arriving anyway, so this is not the bug — but
 a From address the sending server isn't authorised for is a real spam-
 foldering risk, and `mohallamarketplace@gmail.com` would be the honest value.
 
+## Priority fixes: OTP template, blank shared links, account deletion, notification emails
+
+* **OTP still sends a link — dashboard template, not code.** The deployed
+  frontend (`signUp` then `verifyOtp({ email, token, type: "signup" })`) is
+  correct. Email template bodies aren't exposed by the config API or CLI, so
+  this can't be read or changed from here; the email you receive containing
+  a link is the direct evidence. Fix in Dashboard → Authentication → Emails →
+  Email Templates → "Confirm signup": replace `{{ .ConfirmationURL }}` with
+  `{{ .Token }}`. Correction to the section above: the "confirmed and signed
+  in in the same millisecond" timestamps are **not** proof someone clicked a
+  link — `mm-verify-test-20260917@example.com`, which has no real inbox, shows
+  the identical pattern. That inference is withdrawn.
+* **Blank page from a shared listing link — fixed.** Not RLS: `listings` has
+  a `SELECT` policy of `true` for all roles. Reproduced on production: any
+  character after the UUID in `?id=` (a dash, period or sentence a chat app
+  glues on) made Supabase reject the malformed UUID; the error was uncaught,
+  so nothing rendered but the bottom nav. `listing.html` now extracts the
+  UUID from the param, shows a visible error instead of a blank page if
+  rendering fails, and no longer passes `text` to `navigator.share` (some
+  share targets append it straight after the URL).
+* **Account deletion — added.** Account → Delete account → confirmation
+  modal → second explicit tap. `supabase/functions/delete-account` takes the
+  user from the caller's JWT, removes their storage files, then deletes the
+  Auth user. Hard delete: every FK already cascades from `auth.users` →
+  `profiles` → listings, threads (both sides), messages, reviews, vouches,
+  Q&A, saved items — the same cascade deleting a single listing already
+  causes. The email is free to sign up with again afterwards (verified).
+* **Message/vouch notification emails — root cause found, needs a secret
+  fix.** The webhooks fire and the functions run; the SMTP login fails with
+  Gmail `535 5.7.8 Username and Password not accepted`. The Edge Function
+  secret `GMAIL_USER` is `alfredhaokip37@gmail.com`, while the working
+  Supabase Auth SMTP login is `mohallamarketplace@gmail.com`. Functions now
+  include the real SMTP error in their response (visible in
+  `net._http_response`) instead of a bare "email send failed". Fix:
+  ```
+  supabase secrets set GMAIL_USER=mohallamarketplace@gmail.com GMAIL_APP_PASSWORD=<the app password saved in Auth SMTP settings>
+  ```
+* **Separately found, not fixed:** most accounts created since ~08:49 UTC on
+  2026-09-17 have no `profiles` row, though the trigger created one at signup
+  (it runs in the same transaction, and users have no delete policy on
+  `profiles`) — so those rows were removed with dashboard/service-role
+  access. Those users are treated as guests everywhere, can't post, and the
+  profile lookup returns a 406. Includes `alfredhaokip37@gmail.com` and
+  `wocowaj880@airychen.com`.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
