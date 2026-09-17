@@ -111,7 +111,11 @@
       return;
     }
     try {
-      await navigator.clipboard.writeText(`${text} · ${url}`);
+      // Bare URL only — pasting into a browser address bar (unlike a chat
+      // app) doesn't auto-linkify, so bundling the title/price text in front
+      // of it (as this used to) made the pasted content not navigate as a
+      // URL at all in that context.
+      await navigator.clipboard.writeText(url);
       toast("Link copied!");
     } catch (err) {
       toast("Couldn't copy the link — try selecting it manually");
