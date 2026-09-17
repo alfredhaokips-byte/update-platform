@@ -1,15 +1,5 @@
 /* Shared chrome: bottom nav, headers, toast, product cards. Runs on every page. */
 
-/* Vercel Web Analytics — a no-op on any host other than Vercel (the script
-   404s harmlessly), and only actually collects data once "Web Analytics" is
-   turned on for the project in the Vercel dashboard (one toggle, free tier). */
-(function loadVercelAnalytics() {
-  const s = document.createElement("script");
-  s.defer = true;
-  s.src = "/_vercel/insights/script.js";
-  document.head.appendChild(s);
-})();
-
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str == null ? "" : String(str);

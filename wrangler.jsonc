@@ -1,0 +1,52 @@
+{
+  // No wrangler.toml/jsonc existed anywhere for this project before this file —
+  // the live update-platform.alfredhaokips.workers.dev deployment was set up
+  // through Cloudflare's dashboard Git integration, which generated its own
+  // config server-side (not visible from this repo) and was serving static
+  // assets only, with no custom Worker script attached. That's confirmed as
+  // the reason /sitemap.xml was 404ing: there was no code running to handle
+  // it. This file gives the project a real, repo-tracked config so the next
+  // deploy picks up worker.js as the entry point instead.
+  //
+  // "name" is inferred from the live subdomain (update-platform.alfredhaokips.workers.dev)
+  // — if the dashboard's existing Worker is actually named something else,
+  // this needs to match that exactly or the deploy will create a second,
+  // separate Worker rather than updating the existing one. Not something I
+  // could verify without dashboard access.
+  "name": "update-platform",
+  "main": "worker.js",
+  // A conservative, well-established date rather than a guess at the newest
+  // one available — safe to bump later, but an invalid future date would
+  // just fail the deploy outright.
+  "compatibility_date": "2024-09-23",
+
+  // Static assets: the whole repo is the site root (every .html file lives
+  // at the top level, matching how this project has always been served —
+  // no separate "public" or "dist" folder, no build step). "binding": "ASSETS"
+  // is Cloudflare's documented default name, which worker.js's
+  // env.ASSETS.fetch(request) call assumes — if the dashboard's existing
+  // setup used a different binding name, this needs to match that instead.
+  // "html_handling": "none" disables Cloudflare's default behavior of
+  // 307-redirecting /foo.html to /foo. Discovered by testing locally
+  // (wrangler dev), not assumed: the default redirected every single
+  // .html link on the site to an extensionless URL, which this project
+  // never uses — every internal link, the sitemap this Worker generates,
+  // and every share link all use the literal .html?id=... shape (see
+  // README's SEO section, which documents this as the committed URL
+  // convention). "none" restores exact-match behavior instead.
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "html_handling": "none"
+  },
+
+  // Both values are already public (the same anon key is embedded in every
+  // page's own js/supabase-client.js — see that file's comment on why this
+  // is intentional, not a leak). Declaring them here means worker.js works
+  // with zero Cloudflare dashboard configuration; its fallback constants are
+  // identical to these anyway, so this is redundant-on-purpose, not load-bearing.
+  "vars": {
+    "SUPABASE_URL": "https://ecdsteardeybzfnnidym.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjZHN0ZWFyZGV5Ynpmbm5pZHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzQ4MjIsImV4cCI6MjEwNDk1MDgyMn0.UbEGXbtLxOyesowBr4bhDFm3ntgoXf--QbVgU21JCd8"
+  }
+}

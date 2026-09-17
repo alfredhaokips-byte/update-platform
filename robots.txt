@@ -9,4 +9,4 @@ Disallow: /verify.html
 Disallow: /edit-profile.html
 Disallow: /help.html
 
-Sitemap: https://marketplace-three-chi.vercel.app/sitemap.xml
+Sitemap: https://mohallamarketplace.in/sitemap.xml

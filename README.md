@@ -964,7 +964,7 @@ Real, working contact details, not buried in `help.html`:
   guessed). `login.html`/`signup.html` are deliberately left crawlable —
   they're public and gate nothing, "authenticated-only" doesn't apply to
   them even though they're part of the auth flow. Ends with `Sitemap:
-  https://marketplace-three-chi.vercel.app/sitemap.xml`.
+  https://mohallamarketplace.in/sitemap.xml`.
 - **`sitemap.xml` is generated live, not a static file** — `api/sitemap.js`,
   a zero-dependency Vercel serverless function (plain built-in `fetch`, no
   `package.json` needed, matching this project's no-build-step approach)
@@ -1113,7 +1113,7 @@ Real, working contact details, not buried in `help.html`:
     session exists."
   * **Likely also needs a manual step**, not confirmed from here: Supabase
     Dashboard → Authentication → URL Configuration → Redirect URLs needs
-    `https://marketplace-three-chi.vercel.app/reset-password.html` allow-listed,
+    `https://mohallamarketplace.in/reset-password.html` allow-listed,
     or `resetPasswordForEmail()`'s `redirectTo` may be rejected/ignored.
   * Same known limitation as OTP: the reset email itself rides on the same
     unreliable Gmail SMTP, so it may not arrive. The flow's own logic (form
@@ -1189,6 +1189,80 @@ One leftover worth tidying while in there: the SMTP sender is still
 Gmail. Mail is demonstrably arriving anyway, so this is not the bug — but
 a From address the sending server isn't authorised for is a real spam-
 foldering risk, and `mohallamarketplace@gmail.com` would be the honest value.
+
+## Hosting migration: Vercel → Cloudflare Workers
+
+Moved off Vercel. First attempt targeted Cloudflare Pages
+(`functions/sitemap.js` + `_redirects`) based on an initial audit, but the
+project was actually deployed on **Cloudflare Workers with Static Assets**
+via the dashboard's Git integration, not Pages — Pages Functions routing
+doesn't apply there at all, which is why `/sitemap.xml` 404ed on the live
+`update-platform.alfredhaokips.workers.dev` deployment. Reworked for the
+real platform:
+
+* No `wrangler.toml`/`wrangler.jsonc` existed anywhere for this project —
+  confirmed by searching the whole machine, not assumed. The dashboard Git
+  integration was serving static assets with zero custom code attached,
+  which is the actual root cause: there was nothing running to handle
+  `/sitemap.xml` at all. `wrangler.jsonc` is new, and defines the Worker
+  (`name`, `main`, `compatibility_date`, the `[assets]` binding, and
+  `[vars]` for `SUPABASE_URL`/`SUPABASE_ANON_KEY` — both already public, same
+  values shipped in `js/supabase-client.js`).
+* `worker.js` is the new entry point (`export default { fetch(request, env) }`).
+  It handles `/sitemap.xml` itself (identical Supabase query, XML building,
+  and `Cache-Control` header this project has used since the original Vercel
+  version) and passes every other request straight through to the static
+  assets binding.
+* `functions/sitemap.js` and `_redirects` (the Pages-specific leftovers) are
+  removed — they never ran under Workers and would only cause confusion
+  about which code path is live.
+* Two real bugs found by actually running `wrangler dev` locally and hitting
+  the routes, not assumed from documentation:
+  * Cloudflare's default `html_handling` 307-redirects every `/foo.html` to
+    `/foo`. This project's entire URL scheme is `.html?query` everywhere —
+    every internal link, this Worker's own sitemap, every share link (see
+    the SEO section above, which documents `.html?id=` as the committed
+    convention) — so left alone, every single page load on the site would
+    have picked up an extra redirect hop. Fixed with
+    `"html_handling": "none"` in the `[assets]` config.
+  * That fix has a side effect: `"none"` also disables Cloudflare's automatic
+    `/` → `/index.html` resolution, not just the `.html`-stripping redirect —
+    tested and confirmed the homepage 404s without a fix. None of
+    Cloudflare's four `html_handling` modes give both behaviors at once, so
+    `worker.js` now handles `pathname === "/"` explicitly, rewriting it to
+    fetch `/index.html` before falling through to the assets binding for
+    everything else.
+* `.assetsignore` is new, and isn't something the original instructions
+  asked for — added after finding a real issue while validating. Wrangler
+  does **not** respect `.gitignore` for static asset uploads (open upstream
+  issue, `cloudflare/workers-sdk#14500`), so with the assets directory set to
+  the repo root, a deploy would have publicly served `.git/` (the entire
+  repo history, reconstructable), `supabase/` (schema + Edge Function
+  source), and other repo-internal files directly at the live domain. Listed
+  explicitly here rather than trusted to work silently: tested by setting
+  `.assetsignore` to exclude literally everything (`*`) and the file count
+  `wrangler dev`/`--dry-run` reports didn't change at all — meaning either
+  the local dev/dry-run summary just doesn't reflect ignore-filtering while a
+  real deploy still respects it, or it doesn't work in this Wrangler version.
+  Not resolved from here; **needs verifying after a real deploy** — check
+  that `/.git/config` on the live domain 404s rather than returning raw file
+  contents.
+* `SITE_URL` updated to `https://mohallamarketplace.in` in `worker.js`,
+  `robots.txt`, and the three Supabase notification functions
+  (`send-welcome-email`, `notify-new-message`, `notify-new-vouch`) — but the
+  three Supabase function changes are deliberately **not deployed or
+  committed yet**, on request, since redeploying them would put the new
+  domain into real signup/notification emails before DNS is actually
+  pointed at Cloudflare.
+* Not verified end-to-end from here, and can't be: this session has no
+  Cloudflare account credentials (`wrangler login` needs interactive OAuth),
+  so nothing above was confirmed against a real deploy or the live
+  `*.workers.dev` URL — only against `wrangler dev` running locally, which
+  exercises the same Worker code and the same static-assets binding logic,
+  but isn't the same as production. Also unconfirmed: whether the Worker
+  name `"update-platform"` (inferred from the workers.dev subdomain) matches
+  what the dashboard's existing Worker is actually called — if it doesn't, a
+  deploy creates a second, separate Worker rather than updating the live one.
 
 ## Priority fixes: OTP template, blank shared links, account deletion, notification emails
 

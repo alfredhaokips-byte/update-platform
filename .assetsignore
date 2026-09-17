@@ -1,0 +1,15 @@
+# Cloudflare Workers Static Assets doesn't respect .gitignore for uploads
+# (confirmed: https://github.com/cloudflare/workers-sdk/issues/14500) — with
+# assets.directory set to "." in wrangler.jsonc, everything under the repo
+# root gets uploaded and publicly served unless excluded here explicitly.
+# Same .gitignore-style syntax.
+
+.git
+.gitignore
+.DS_Store
+.claude
+supabase
+wrangler.jsonc
+worker.js
+README.md
+.wrangler
