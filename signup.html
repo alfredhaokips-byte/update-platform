@@ -55,23 +55,25 @@
     </p>
   </div>
 
-  <!-- Email OTP confirmation step — DORMANT, not deleted. Removed from the
-       live flow again: Gmail SMTP (App Password) looked like it fixed
-       delivery, but Supabase's own warning is that Gmail's SMTP isn't built
-       for transactional/automated email, and codes weren't reliably
-       arriving. Needs, to re-enable: a real transactional provider on a
-       verified domain, then Supabase Dashboard → Authentication → Providers
-       → Email → "Confirm email" back ON, then uncomment this block and its
-       matching JS below (and swap the signup-form handler back to calling
-       showOtpStep(email) instead of going straight to
-       Store.primeCache()/showCharStep()). See README.
+  <!-- Email OTP confirmation step. Live again: the earlier "Gmail SMTP is
+       unreliable" conclusion looks wrong — password-reset mail goes through
+       the same SMTP connection and arrives fine. The real problem was
+       Supabase's Site URL still being the default localhost value (fixed in
+       the dashboard). NOTE: this screen only works if the "Confirm signup"
+       email template uses {{ .Token }} (a typeable code), not Supabase's
+       DEFAULT {{ .ConfirmationURL }} (a clickable link) — see README. -->
   <div class="form-wrap" style="padding-top:20px;" id="otp-step" hidden>
     <h3 style="margin-bottom:6px;">Check your email</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">We sent a 6-digit code to <b id="otp-email-echo"></b> — enter it below to confirm your account.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">We sent a code to <b id="otp-email-echo"></b> — enter it below to confirm your account.</p>
     <form id="otp-form">
       <div class="form-row">
+        <!-- maxlength is 8, not 6: the project's auth config has
+             otp_length = 8, so a hardcoded 6 silently truncated the real
+             code and made verification impossible. 8 accepts a 6-digit code
+             too, so this stays correct if that setting is lowered later —
+             which is also why the copy above doesn't name a digit count. -->
         <label for="f-otp">Code</label>
-        <input type="text" id="f-otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="123456" required
+        <input type="text" id="f-otp" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="Enter your code" required
           style="letter-spacing:0.3em;font-size:20px;text-align:center;font-weight:700;" />
       </div>
       <p id="otp-error" style="color:var(--danger);font-size:13px;margin-bottom:14px;" hidden></p>
@@ -80,7 +82,6 @@
     <p style="font-size:12.5px;color:var(--muted);margin-top:12px;">Don't see it? Check your spam or promotions folder — it can take a minute to arrive.</p>
     <button type="button" id="resend-otp-btn" class="btn btn-outline btn-block" style="margin-top:10px;">Resend code</button>
   </div>
-  -->
 
   <!-- Optional, always-skippable character step, shown right after account creation. -->
   <div class="form-wrap" style="padding-top:20px;" id="char-step" hidden>
@@ -137,15 +138,11 @@
           password: document.getElementById("f-password").value,
           place: selectedPlace,
         });
-        await Store.primeCache(); // needed for Store.setAvatarType() on the next step
-
-        // Best-effort — a failed welcome email should never block signup.
-        try {
-          await sb.functions.invoke("send-welcome-email", { body: { email, name } });
-        } catch (mailErr) { /* non-critical */ }
+        pendingEmail = email;
+        pendingName = name;
 
         document.getElementById("signup-step").hidden = true;
-        showCharStep();
+        showOtpStep(email);
       } catch (err) {
         errEl.textContent = err.message || "Couldn't create your account — try again.";
         errEl.hidden = false;
@@ -154,12 +151,6 @@
       }
     });
 
-    /* Email OTP confirmation — DORMANT, not deleted. See the matching HTML
-       comment above #otp-step for why (Gmail SMTP isn't reliable for this
-       either — Supabase's own warning) and the steps to re-enable.
-       Re-enabling: uncomment this block, uncomment #otp-step above, and
-       change the signup-form handler above to call showOtpStep(email)
-       instead of going straight to Store.primeCache()/showCharStep().
     function showOtpStep(email) {
       document.getElementById("otp-step").hidden = false;
       document.getElementById("otp-email-echo").textContent = email;
@@ -181,7 +172,7 @@
         // Best-effort — a failed welcome email should never block signup.
         try {
           await sb.functions.invoke("send-welcome-email", { body: { email: pendingEmail, name: pendingName } });
-        } catch (mailErr) { /* non-critical * / }
+        } catch (mailErr) { /* non-critical */ }
 
         document.getElementById("otp-step").hidden = true;
         showCharStep();
@@ -193,7 +184,10 @@
       }
     });
 
-    const RESEND_COOLDOWN_SECS = 30;
+    // Matches the project's auth max_frequency (1m0s). At the previous 30s,
+    // the button re-enabled while Supabase was still rate-limiting the
+    // address, so a resend at 30s just returned a "wait longer" error.
+    const RESEND_COOLDOWN_SECS = 60;
     let resendTimer = null;
 
     function startResendCooldown() {
@@ -226,7 +220,6 @@
         startResendCooldown();
       }
     });
-    */
 
     const CHARACTER_OPTIONS = [
       { type: "female", label: "Female" },

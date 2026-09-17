@@ -1124,6 +1124,72 @@ Real, working contact details, not buried in `help.html`:
   * Explicitly left untouched, per this batch's own scope: the activity
     notification emails (messages/vouches/buy-interest) — those stay as-is.
 
+## Email OTP restored — and the real root cause, with evidence
+
+The "Gmail SMTP isn't reliable for transactional email" conclusion in the
+section above was **wrong**, and is corrected here rather than quietly
+edited out. OTP email was arriving the whole time. Two real, unrelated
+problems were stacked on top of each other, and neither was deliverability:
+
+1. **Supabase's Site URL was still the default `localhost`** (since fixed in
+   the dashboard). The confirmation link in the email pointed at localhost,
+   so clicking it confirmed the account server-side but then dead-ended the
+   browser on a dead local address — indistinguishable, from the outside,
+   from "the email never worked."
+2. **The "Confirm signup" email template is still Supabase's default
+   `{{ .ConfirmationURL }}`** — a clickable link, not `{{ .Token }}`, the
+   typeable numeric code the OTP screen needs. So even a perfectly delivered
+   email contained nothing that could be entered into the code field.
+
+Evidence for both, from `auth.users` on the live database rather than
+assumption — the test signup from the earlier "no email ever arrives" report:
+
+```
+created_at          2026-09-17 09:54:04.390
+confirmation_sent_at 2026-09-17 09:54:04.425   <- Supabase dispatched it, 35ms later
+email_confirmed_at   2026-09-17 09:54:47.144   <- confirmed 43s later
+last_sign_in_at      2026-09-17 09:54:47.157   <- signed in the same millisecond
+```
+
+That account was confirmed and signed in at the same instant, 43 seconds
+after signup, with nobody ever typing a code (impossible at the time — see
+the otp_length bug below). Confirm-and-sign-in-in-one-step is the signature
+of someone clicking a `{{ .ConfirmationURL }}` link. So: the mail arrived,
+it contained a link, and the link worked — it just landed on localhost.
+
+Two further real bugs found by reading the project's actual remote auth
+config (`supabase config pull` into a throwaway project — read-only, nothing
+in this repo changed), not by guessing:
+
+* **`otp_length` is 8, but the code input had `maxlength="6"`.** A real code
+  was silently truncated to its first 6 characters, so verification could
+  never succeed even with a correct code in hand. The input now allows 8,
+  which still accepts a 6-digit code if that setting is ever lowered — which
+  is also why the copy no longer hardcodes a digit count.
+* **`max_frequency` is `1m0s`, but the resend cooldown was 30s.** The button
+  re-enabled while Supabase was still rate-limiting that address, so a
+  resend at 30s returned a "wait longer" error. Cooldown is now 60s.
+
+Detected state of the dashboard-only settings, for the record:
+`enable_confirmations = true` ("Confirm email" is ON),
+`site_url = https://marketplace-three-chi.vercel.app`,
+`additional_redirect_urls = ["https://marketplace-three-chi.vercel.app/**"]`
+(so the forgot-password `redirectTo` from the previous batch is covered —
+that open question is answered).
+
+**Still needed, and it's the one remaining blocker:** Dashboard →
+Authentication → Emails → Email Templates → "Confirm signup" → use
+`{{ .Token }}` in the body instead of `{{ .ConfirmationURL }}`. Email
+template bodies are not exposed through the config API or CLI, so this is
+the one thing here that couldn't be verified directly — it's inferred from
+the confirm-plus-signin timestamp signature above. Until it's changed, the
+signup email keeps containing a link and the OTP screen has nothing to type.
+One leftover worth tidying while in there: the SMTP sender is still
+`onboarding@resend.dev` from the Resend era while the connection itself is
+Gmail. Mail is demonstrably arriving anyway, so this is not the bug — but
+a From address the sending server isn't authorised for is a real spam-
+foldering risk, and `mohallamarketplace@gmail.com` would be the honest value.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:

@@ -33,11 +33,10 @@ const Auth = {
     return data;
   },
 
-  /* DORMANT — signup.html no longer calls these; the OTP step is commented
-     out there again since Gmail SMTP turned out not to be reliable either
-     (Supabase's own warning: Gmail's SMTP isn't built for transactional
-     email). Left in place, still correct, for a quick re-enable once a real
-     transactional provider is set up — see signup.html and README.
+  /* Live again — see signup.html. This verifies a typed 6-digit code, so it
+     depends on the "Confirm signup" email template using {{ .Token }} rather
+     than Supabase's default {{ .ConfirmationURL }}; with the default link
+     template the user gets nothing typeable and this can never be reached.
      `type: "signup"` is what tells Supabase this code is for confirming a
      brand-new account, not a password-reset or sign-in code. */
   async verifyOtp({ email, token }) {
