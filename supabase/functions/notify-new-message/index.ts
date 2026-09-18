@@ -17,7 +17,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendGmailEmail } from "../_shared/send-gmail.ts";
 
-const SITE_URL = "https://marketplace-three-chi.vercel.app";
+const SITE_URL = "https://mohallamarketplace.in";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
