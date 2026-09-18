@@ -1309,6 +1309,43 @@ real platform:
   profile lookup returns a 406. Includes `alfredhaokip37@gmail.com` and
   `wocowaj880@airychen.com`.
 
+## Signup "no email" dead end, dark mode removed, listing page redesign
+
+- **Signup with an already-registered email looked like it worked but sent
+  nothing.** With "Confirm email" on, Supabase deliberately returns a normal
+  success (a user object with `identities: []`, no error) for an address that
+  already has a confirmed account, and sends no email — so it can't be used
+  to probe which emails exist. Reproduced directly: `signUp()` on a confirmed
+  address returns no error and leaves `confirmation_sent_at` untouched, while
+  `signup.html` (unchanged by the redesign, as is `Auth.signUp`) treated every
+  response as "we sent a code". So testing signup with any address that
+  already has an account (e.g. the owner's own) is a silent no-email path —
+  while forgot-password to that same address works, which is why it looked
+  like only signup email was broken. The code screen now says an existing account
+  gets no code and links to sign-in (deliberately *not* an explicit "this
+  email is registered" error, which would defeat Supabase's anti-enumeration).
+  - A signup with a **new** address is confirmed to reach Supabase Auth and get
+    `confirmation_sent_at` stamped with no SMTP error, i.e. Auth handed the
+    mail to its SMTP. Whether it lands in an inbox depends on the Gmail SMTP
+    App Password set under Dashboard → Authentication → Emails, which can only
+    be checked there (Authentication → Logs) or in the recipient's inbox/spam.
+- **Dark mode removed entirely.** The floating sun/moon toggle (injected by
+  `js/common.js`, not page markup), its `mm-theme` localStorage persistence,
+  the dark palette and `.theme-toggle-fab` in `css/style.css`, the body
+  theme-switch transition, and the per-page "dark mode adaptation for doodles"
+  SVG colour remaps (identity no-ops without a dark palette) are gone. There
+  was no `prefers-color-scheme` support, so nothing passive remains; pages are
+  light-only regardless of OS setting or a stale `mm-theme` value.
+- **`listing.html` redesigned** to the new header/footer look, rendered from
+  the same real data as before (photos/video with thumbnail switcher and the
+  full-screen lightbox, price/meta, seller card with reviews/response rate/
+  trust badges, per-listing vouch with avatar stack + tally + toggle, listing
+  confidence, description, Community Q&A with votes/replies, Chat and Buy Now
+  modals, share/copy-link, save, report, similar listings). Kept from the old
+  page though the design had no slot for them: Report this listing, Q&A
+  voting/replies, and the malformed-shared-link UUID guard. Dropped from the
+  design (no real backing): the "ID pending" trust tag.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:

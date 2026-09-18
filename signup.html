@@ -116,14 +116,6 @@
   #signup-root .card{ padding:22px; }
 }
 
-/* dark mode adaptation for doodles */
-
-
-#signup-root svg [stroke="#1F3A2E"]{ stroke:var(--forest); }
-#signup-root svg [fill="#1F3A2E"]:not([fill-opacity="0"]){ fill:var(--forest); }
-#signup-root svg [stroke="#4A6B4A"]{ stroke:var(--moss); }
-#signup-root svg [fill="#4A6B4A"]:not([fill-opacity="0"]){ fill:var(--moss); }
-#signup-root svg [stroke="#5C5A4D"]{ stroke:var(--ink-soft); }
 </style>
 </head>
 <body>
@@ -292,6 +284,7 @@
         <button type="submit" class="btn btn-primary">Confirm</button>
       </form>
       <p style="font-size:0.78rem;color:var(--ink-soft);margin-top:10px;">Don't see it? Check your spam or promotions folder — it can take a minute to arrive.</p>
+      <p style="font-size:0.78rem;color:var(--ink-soft);margin-top:8px;">Already signed up with this email before? No code is sent for an existing account — <a href="login.html" style="text-decoration:underline;color:var(--forest);">sign in</a> instead (use “Forgot password” there if you need to).</p>
       <button type="button" class="btn-ghost-link" id="resend-otp-btn" style="width:100%;text-align:center;">Resend code</button>
     </div>
 
