@@ -9,23 +9,377 @@
   gtag('js', new Date());
   gtag('config', 'G-ZRDE5VY8FE');
 </script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
 <title>Listing — Marketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
+<style>
+#listing-root{
+  --paper:#F7F2E7; --paper-2:#F0E9D8; --forest:#1F3A2E; --moss:#4A6B4A; --sage:#8FAE86;
+  --sage-light:#DCE8D4; --marigold:#D9A441; --ink:#2A2A22; --ink-soft:#5C5A4D;
+}
+#listing-root *{box-sizing:border-box; margin:0; padding:0;}
+#listing-root{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.5; }
+#listing-root h1, #listing-root h2, #listing-root h3{ color:var(--forest); font-weight:700; letter-spacing:-0.02em; }
+#listing-root a{ color:inherit; text-decoration:none; }
+
+#listing-root .nav-bar{ background:var(--paper); }
+#listing-root nav{ display:flex; align-items:center; justify-content:space-between; padding:20px 24px; max-width:1080px; margin:0 auto; }
+#listing-root .logo{ display:flex; align-items:center; gap:2px; }
+#listing-root .logo-img{ height:44px; width:auto; display:block; }
+#listing-root .nav-links{ display:flex; gap:22px; font-size:0.94rem; color:var(--ink-soft); }
+#listing-root .nav-links a:hover, #listing-root .nav-links a.active{ color:var(--forest); }
+#listing-root .nav-cta{ background:var(--forest); color:var(--paper); padding:9px 18px; border-radius:10px; font-weight:600; font-size:0.9rem; }
+#listing-root .nav-cta:hover{ background:var(--moss); }
+
+/* breadcrumb */
+
+
+#listing-root .crumbs{ max-width:1080px; margin:0 auto; padding:24px 24px 0; font-size:0.85rem; color:var(--ink-soft); display:flex; gap:6px; align-items:center; }
+#listing-root .crumbs a:hover{ color:var(--forest); }
+#listing-root .crumbs .sep{ opacity:0.5; }
+
+#listing-root .layout{ max-width:1080px; margin:0 auto; padding:24px 24px 60px; display:grid; grid-template-columns:1.15fr 1fr; gap:40px; align-items:start; }
+
+/* Gallery */
+
+
+#listing-root .gallery{ position:sticky; top:24px; }
+#listing-root .main-image{
+  background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:20px;
+  aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+  padding:40px; overflow:hidden; position:relative;
+}
+#listing-root .main-image svg{ width:70%; height:70%; }
+#listing-root .gallery-badges{ position:absolute; top:16px; left:16px; display:flex; gap:8px; }
+#listing-root .pill{ background:var(--paper); border:1px solid rgba(31,58,46,0.12); border-radius:20px; padding:5px 12px; font-size:0.72rem; font-weight:600; color:var(--forest); display:inline-flex; align-items:center; gap:5px; }
+#listing-root .pill.sage{ background:var(--sage-light); color:var(--moss); border-color:transparent; }
+#listing-root .thumbs{ display:flex; gap:10px; margin-top:14px; }
+#listing-root .thumb{
+  flex:1; aspect-ratio:1/1; background:var(--paper-2);
+  border:1.5px solid rgba(31,58,46,0.1); border-radius:12px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  padding:14px; transition:border-color .15s ease;
+}
+#listing-root .thumb svg{ width:60%; height:60%; opacity:0.7; }
+#listing-root .thumb.active{ border-color:var(--forest); }
+#listing-root .thumb:hover{ border-color:var(--sage); }
+
+/* Details */
+
+
+#listing-root .title-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:6px; }
+#listing-root .title-row h1{ font-size:clamp(1.6rem,3vw,2rem); line-height:1.15; }
+#listing-root .condition-badge{
+  background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:20px;
+  padding:5px 14px; font-size:0.78rem; font-weight:600; color:var(--forest);
+  white-space:nowrap; flex-shrink:0;
+}
+#listing-root .price{ font-size:2rem; font-weight:700; color:var(--forest); margin:8px 0 12px; }
+#listing-root .meta{ color:var(--ink-soft); font-size:0.88rem; display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
+#listing-root .meta svg{ width:14px; height:14px; }
+#listing-root .category-chip{
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:24px;
+  padding:8px 16px; font-size:0.85rem; font-weight:600; color:var(--forest); margin-bottom:22px;
+}
+#listing-root .category-chip svg{ width:16px; height:16px; }
+
+/* Seller card */
+
+
+#listing-root .seller-card{
+  background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:16px;
+  padding:18px; margin-bottom:16px;
+}
+#listing-root .seller-head{ display:flex; align-items:center; gap:14px; }
+#listing-root .seller-avatar{
+  width:52px; height:52px; border-radius:50%; background:var(--sage-light);
+  color:var(--forest); display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:1.1rem; flex-shrink:0; border:1px solid rgba(31,58,46,0.1);
+}
+#listing-root .seller-info{ flex:1; min-width:0; }
+#listing-root .seller-info .name-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+#listing-root .seller-info strong{ color:var(--forest); font-size:1rem; font-weight:600; }
+#listing-root .seller-info .sub{ color:var(--ink-soft); font-size:0.82rem; margin-top:2px; }
+#listing-root .verify-badge{ font-size:0.68rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; padding:3px 8px; border-radius:16px; background:var(--paper); color:var(--ink-soft); border:1px solid rgba(31,58,46,0.12); }
+#listing-root .verify-badge.on{ background:var(--sage-light); color:var(--moss); border-color:transparent; }
+#listing-root .trust-tags{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+#listing-root .trust-tag{
+  display:inline-flex; align-items:center; gap:5px; font-size:0.76rem; font-weight:600;
+  padding:5px 11px; border-radius:16px; background:var(--sage-light); color:var(--moss);
+}
+#listing-root .trust-tag.off{ background:var(--paper); color:var(--ink-soft); border:1px solid rgba(31,58,46,0.12); }
+#listing-root .trust-tag svg{ width:11px; height:11px; }
+
+/* Vouch row */
+
+
+#listing-root .vouch-row{
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:14px 18px; background:var(--paper-2); border:1px solid rgba(31,58,46,0.1);
+  border-radius:14px; margin-bottom:16px;
+}
+#listing-root .vouch-text{ font-size:0.88rem; color:var(--ink-soft); }
+#listing-root .vouch-btn{
+  background:transparent; color:var(--marigold); border:1.5px solid var(--marigold);
+  padding:7px 16px; border-radius:20px; font-family:inherit; font-size:0.85rem;
+  font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+}
+#listing-root .vouch-btn:hover{ background:var(--marigold); color:var(--forest); }
+#listing-root .vouch-btn.on{ background:var(--marigold); color:var(--forest); }
+
+/* Confidence panel */
+
+
+#listing-root .confidence{
+  background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:16px;
+  padding:18px; margin-bottom:22px;
+}
+#listing-root .confidence h3{ font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; color:var(--moss); }
+#listing-root .confidence ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
+#listing-root .confidence li{ display:flex; align-items:center; gap:10px; font-size:0.9rem; color:var(--ink); }
+#listing-root .confidence li.pending{ color:var(--ink-soft); }
+#listing-root .check-circle{
+  width:20px; height:20px; border-radius:50%; background:var(--sage-light);
+  color:var(--moss); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+#listing-root .check-circle svg{ width:12px; height:12px; }
+#listing-root .confidence li.pending .check-circle{ background:var(--paper); border:1px solid rgba(31,58,46,0.15); color:var(--ink-soft); }
+
+/* Actions */
+
+
+#listing-root .actions{ display:grid; grid-template-columns:1fr 1fr auto; gap:10px; margin-bottom:12px; }
+#listing-root .btn{
+  padding:14px 20px; border-radius:12px; font-weight:600; font-size:0.95rem;
+  border:none; cursor:pointer; font-family:inherit; display:inline-flex;
+  align-items:center; justify-content:center; gap:8px; transition:transform .12s ease, opacity .12s ease;
+}
+#listing-root .btn:hover{ transform:translateY(-1px); }
+#listing-root .btn-primary{ background:var(--forest); color:var(--paper); }
+#listing-root .btn-primary:hover{ background:var(--moss); }
+#listing-root .btn-ghost{ background:transparent; color:var(--forest); border:1.5px solid var(--forest); }
+#listing-root .btn-ghost:hover{ background:var(--sage-light); }
+#listing-root .btn-icon{
+  width:52px; padding:0; background:transparent; border:1.5px solid var(--forest); color:var(--forest); border-radius:12px;
+}
+#listing-root .btn-icon:hover{ background:var(--sage-light); }
+#listing-root .btn-icon svg{ width:18px; height:18px; }
+#listing-root .save-listing-btn{
+  width:100%; padding:12px; background:transparent; color:var(--forest); border:1.5px solid rgba(31,58,46,0.2); border-radius:12px; font-weight:600; font-size:0.9rem;
+  font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px; margin-bottom:20px;
+}
+#listing-root .save-listing-btn:hover{ background:var(--paper-2); border-color:var(--forest); }
+#listing-root .save-listing-btn.saved{ color:var(--marigold); border-color:var(--marigold); }
+
+/* Description block */
+
+
+#listing-root .section-block{
+  max-width:1080px; margin:0 auto; padding:0 24px 40px;
+}
+#listing-root .section-block h2{ font-size:1.15rem; margin-bottom:12px; }
+#listing-root .description-card{
+  background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:16px;
+  padding:22px 24px; color:var(--ink); font-size:0.95rem; line-height:1.6;
+}
+#listing-root .description-card p{ margin-bottom:10px; }
+
+/* Q&A */
+
+
+#listing-root .qa-title{ display:flex; align-items:center; gap:8px; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; color:var(--moss); font-weight:600; }
+#listing-root .qa-title svg{ width:16px; height:16px; }
+#listing-root .qa-empty{ color:var(--ink-soft); font-size:0.92rem; margin-bottom:14px; }
+#listing-root .ask-form{ display:flex; gap:10px; }
+#listing-root .ask-form input{
+  flex:1; padding:12px 16px; border-radius:24px; border:1px solid rgba(31,58,46,0.15);
+  background:var(--paper-2); font-family:inherit; font-size:0.92rem; color:var(--ink); outline:none;
+}
+#listing-root .ask-form input:focus{ border-color:var(--sage); outline:2px solid var(--sage); outline-offset:1px; }
+#listing-root .ask-form button{
+  background:var(--forest); color:var(--paper); border:none; padding:12px 24px;
+  border-radius:24px; font-family:inherit; font-weight:600; font-size:0.9rem; cursor:pointer;
+}
+#listing-root .ask-form button:hover{ background:var(--moss); }
+
+#listing-root .qa-list{ display:flex; flex-direction:column; gap:14px; margin-top:18px; }
+#listing-root .qa-item{ background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:14px; padding:14px 16px; }
+#listing-root .qa-item .who{ display:flex; align-items:center; gap:8px; font-size:0.82rem; color:var(--ink-soft); margin-bottom:6px; }
+#listing-root .qa-item .who strong{ color:var(--forest); }
+#listing-root .qa-item .text{ font-size:0.94rem; color:var(--ink); }
+
+/* Related */
+
+
+#listing-root .related-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+#listing-root .related-card{ background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:16px; padding:16px; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease; }
+#listing-root .related-card:hover{ transform:translateY(-4px); box-shadow:0 12px 24px -12px rgba(31,58,46,0.25); }
+#listing-root .related-thumb{ background:var(--sage-light); border-radius:12px; aspect-ratio:4/3; margin-bottom:12px; display:flex; align-items:center; justify-content:center; padding:16px; }
+#listing-root .related-thumb svg{ width:60%; height:60%; }
+#listing-root .related-card h4{ font-size:0.95rem; color:var(--forest); margin-bottom:3px; font-weight:600; font-family:'Inter',sans-serif; }
+#listing-root .related-card .price-sm{ color:var(--marigold); font-weight:700; font-size:0.95rem; margin-bottom:4px; }
+#listing-root .related-card .meta-sm{ font-size:0.78rem; color:var(--ink-soft); }
+
+/* Footer */
+
+
+#listing-root footer{ padding:50px 24px 30px; background:var(--paper-2); }
+#listing-root .footer-inner{ max-width:1080px; margin:0 auto; }
+#listing-root .foot-top{ display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; border-bottom:1px solid rgba(31,58,46,0.15); padding-bottom:36px; margin-bottom:24px; }
+#listing-root .foot-brand p{ color:var(--ink-soft); max-width:32ch; margin-top:10px; font-size:0.92rem; }
+#listing-root .foot-cols{ display:flex; gap:56px; flex-wrap:wrap; }
+#listing-root .foot-col h5{ font-size:0.85rem; color:var(--forest); margin-bottom:12px; font-weight:700; }
+#listing-root .foot-col a{ display:block; font-size:0.88rem; color:var(--ink-soft); margin-bottom:8px; }
+#listing-root .foot-col a:hover{ color:var(--forest); }
+#listing-root .foot-bottom{ display:flex; justify-content:space-between; font-size:0.82rem; color:var(--ink-soft); flex-wrap:wrap; gap:10px; max-width:1080px; margin:0 auto; }
+
+@media (max-width:860px){
+  #listing-root .layout{ grid-template-columns:1fr; gap:24px; }
+  #listing-root .gallery{ position:static; }
+  #listing-root .related-grid{ grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:720px){
+  /* Top nav is the only site nav now that the bottom tab bar is gone, so it
+     stays visible (wrapped onto its own row) on mobile instead of hiding. */
+  #listing-root nav{ padding:14px 18px; flex-wrap:wrap; row-gap:10px; }
+  #listing-root .nav-links{ display:flex; order:3; flex-basis:100%; justify-content:center; gap:14px; font-size:0.82rem; flex-wrap:wrap; }
+  #listing-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
+  #listing-root .layout{ padding:16px 20px 100px; }
+  #listing-root .crumbs{ padding:16px 20px 0; }
+  #listing-root .section-block{ padding:0 20px 32px; }
+  #listing-root .main-image{ padding:24px; border-radius:16px; }
+  #listing-root .related-grid{ grid-template-columns:1fr; }
+  /* Sticky bottom bar on mobile */
+
+  #listing-root .actions{ position:fixed; bottom:0; left:0; right:0; background:var(--paper); border-top:1px solid rgba(31,58,46,0.12); padding:12px 20px; z-index:20; margin-bottom:0; gap:8px; }
+}
+
+
+/* ---- real photo/video gallery (design drew SVG illustrations here) ---- */
+#listing-root .main-image{ padding:0; }
+#listing-root #main-media{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+#listing-root .main-image img, #listing-root .main-image video{ width:100%; height:100%; object-fit:contain; display:block; }
+#listing-root .main-image img{ cursor:zoom-in; }
+#listing-root .gallery-badges{ z-index:2; }
+#listing-root .thumbs{ display:grid; grid-template-columns:repeat(4,1fr); }
+#listing-root .thumb{ padding:0; position:relative; overflow:hidden; }
+#listing-root .thumb img, #listing-root .thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
+#listing-root .thumb .video-badge{ width:26px; height:26px; }
+#listing-root .thumb .video-badge svg{ width:12px; height:12px; }
+
+/* ---- seller card is a link to their profile ---- */
+#listing-root a.seller-card{ display:block; }
+#listing-root a.seller-card:hover{ border-color:var(--sage); }
+#listing-root .seller-avatar{ overflow:hidden; }
+#listing-root .seller-avatar img, #listing-root .seller-avatar svg{ width:100%; height:100%; object-fit:cover; display:block; }
+#listing-root .seller-info .name-row{ margin-bottom:0; }
+#listing-root .trust-tag svg{ flex-shrink:0; }
+
+/* ---- vouch: avatar stack + tally ---- */
+#listing-root .vouch-left{ display:flex; align-items:center; gap:12px; min-width:0; }
+#listing-root .vouch-avatars .vouch-avatar-item{ border-color:var(--paper-2); }
+#listing-root .vouch-btn:disabled{ opacity:.6; cursor:default; }
+
+/* ---- own listing / secondary actions ---- */
+#listing-root .own-note{ text-align:center; font-size:0.88rem; color:var(--ink-soft); padding:4px 0 12px; }
+#listing-root .btn-wide{ width:100%; margin-bottom:12px; }
+#listing-root .safety{ font-size:0.78rem; color:var(--ink-soft); text-align:center; margin-bottom:8px; }
+#listing-root .report-link{ display:block; text-align:center; font-size:0.8rem; color:var(--ink-soft); text-decoration:underline; }
+#listing-root .report-link:hover{ color:var(--forest); }
+#listing-root .save-listing-btn svg{ flex-shrink:0; }
+
+/* ---- description ---- */
+#listing-root .description-card p:last-child{ margin-bottom:0; }
+
+/* ---- Q&A: votes + nested replies + seller flair ---- */
+#listing-root .qa-item{ display:flex; gap:12px; }
+#listing-root .qa-item.reply{ margin-left:28px; }
+#listing-root .qa-votes{ display:flex; flex-direction:column; align-items:center; gap:2px; font-size:0.82rem; color:var(--ink-soft); min-width:22px; }
+#listing-root .qa-votes button{ background:none; border:none; cursor:pointer; color:var(--ink-soft); font-size:0.7rem; line-height:1; padding:3px 6px; }
+#listing-root .qa-votes button:hover{ color:var(--forest); }
+#listing-root .qa-body{ flex:1; min-width:0; }
+#listing-root .qa-item .who .flair{ font-size:0.68rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; padding:2px 8px; border-radius:12px; background:var(--sage-light); color:var(--moss); }
+#listing-root .qa-item .text{ word-break:break-word; }
+#listing-root .qa-list{ margin-top:0; margin-bottom:14px; }
+
+/* ---- related listings use real photos ---- */
+#listing-root a.related-card{ display:block; }
+#listing-root .related-thumb{ padding:0; overflow:hidden; position:relative; }
+#listing-root .related-thumb img, #listing-root .related-thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
+#listing-root .related-empty{ grid-column:1/-1; color:var(--ink-soft); font-size:0.92rem; }
+
+/* ---- loading / not-found / error states ---- */
+#listing-root .state{ max-width:520px; margin:0 auto; padding:80px 24px 100px; text-align:center; color:var(--ink-soft); }
+#listing-root .state-icon{ font-size:2.4rem; margin-bottom:10px; }
+#listing-root .state h2{ font-size:1.5rem; margin-bottom:8px; }
+#listing-root .state .btn{ padding:12px 24px; border-radius:12px; }
+
+@media (max-width:720px){
+  /* the design put 100px of bar clearance mid-page (end of .layout); it belongs at the page end */
+  #listing-root .layout{ padding-bottom:24px; }
+  #listing-root.has-action-bar footer{ padding-bottom:96px; }
+  #listing-root .main-image{ padding:0; }
+  #listing-root .thumbs{ gap:8px; }
+  #listing-root .qa-item.reply{ margin-left:16px; }
+  #listing-root .state{ padding:56px 20px 80px; }
+}
+/* keep toasts clear of the fixed mobile action bar */
+@media (max-width:720px){ .toast{ bottom:84px; } }
+
+</style>
 </head>
 <body>
+<div id="listing-root">
 
-<div class="app-shell">
-  <div id="listing-root"></div>
+<div class="nav-bar">
+<nav>
+  <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+  <div class="nav-links">
+    <a href="browse.html">Browse</a>
+    <a href="community.html">Community</a>
+    <a href="messages.html">Messages</a>
+    <a href="help.html">Help</a>
+    <a href="account.html">Account</a>
+  </div>
+  <a class="nav-cta" href="post-ad.html">Sell something</a>
+</nav>
 </div>
 
-<div id="bottom-nav-root"></div>
+<!-- Everything between the header and footer is rendered from real data by
+     renderListing() below. -->
+<div id="listing-content">
+  <div class="state"><p>Loading listing&hellip;</p></div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+        <p>A sustainable, trust-first marketplace, built around a neighbourhood, not an algorithm.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col"><h5>Marketplace</h5><a href="browse.html">Browse listings</a><a href="post-ad.html">Sell something</a><a href="signup.html">Create account</a></div>
+        <div class="foot-col"><h5>Community</h5><a href="community.html">Notice board</a><a href="messages.html">Messages</a></div>
+        <div class="foot-col"><h5>Support</h5><a href="help.html">Help centre</a><a href="login.html">Sign in</a><a href="mailto:mohallamarketplace@gmail.com">Email us</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 MohallaMarketplace</span>
+    <span>Built for the neighbourhood, not the algorithm.</span>
+  </div>
+</footer>
+
+</div>
+<!-- /#listing-root -->
 
 <!-- Chat modal -->
 <div class="modal-overlay" id="chat-modal" hidden>
@@ -74,8 +428,24 @@
   let listing = null;
   let galleryUrls = [];
 
-  function listingConfidenceItem(isTrue, label) {
-    return `<div class="confidence-item ${isTrue ? "yes" : "no"}"><span class="mark">${isTrue ? "✓" : "–"}</span>${escapeHtml(label)}</div>`;
+  const ICON = {
+    pin: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14 C5 11 3 9 3 6 C3 3.5 5.2 1.5 8 1.5 C10.8 1.5 13 3.5 13 6 C13 9 11 11 8 14 Z"/><circle cx="8" cy="6" r="2"/></svg>`,
+    check: `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6 L5 9 L10 3"/></svg>`,
+    dash: `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6 L9 6"/></svg>`,
+    ring: `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="6" r="4"/></svg>`,
+    heart: `<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17 C5 13.5 2.5 11 2.5 7.5 C2.5 5.2 4.2 3.5 6.5 3.5 C8 3.5 10 4.5 10 5.5 C10 4.5 12 3.5 13.5 3.5 C15.8 3.5 17.5 5.2 17.5 7.5 C17.5 11 15 13.5 10 17 Z"/></svg>`,
+    chat: `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6 Q3 3 6 3 L14 3 Q17 3 17 6 L17 12 Q17 15 14 15 L9 15 L5 18 L6 15 Q3 15 3 12 Z"/></svg>`,
+    share: `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4 L15 14 M15 14 L10 14 M15 14 L19 10 M5 7 L5 17 L15 17"/></svg>`,
+    play: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+    qa: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4 Q2 2 4 2 L12 2 Q14 2 14 4 L14 9 Q14 11 12 11 L8 11 L5 14 L6 11 Q2 11 2 9 Z"/></svg>`,
+  };
+
+  function confidenceItem(isTrue, label) {
+    return `<li class="${isTrue ? "" : "pending"}"><span class="check-circle">${isTrue ? ICON.check : ICON.dash}</span>${escapeHtml(label)}</li>`;
+  }
+
+  function vouchTally(count) {
+    return count === 0 ? "No vouches yet for this item" : `${count} neighbour${count === 1 ? "" : "s"} vouched for this item`;
   }
 
   function openLightbox(index) {
@@ -118,8 +488,7 @@
     try {
       // Bare URL only — pasting into a browser address bar (unlike a chat
       // app) doesn't auto-linkify, so bundling the title/price text in front
-      // of it (as this used to) made the pasted content not navigate as a
-      // URL at all in that context.
+      // of it made the pasted content not navigate as a URL at all.
       await navigator.clipboard.writeText(url);
       toast("Link copied!");
     } catch (err) {
@@ -135,115 +504,194 @@
     return action();
   }
 
+  /* Gallery: one large tile + a thumbnail per real photo/video. */
+  function showMedia(i) {
+    const url = galleryUrls[i];
+    document.getElementById("main-media").innerHTML = isVideoUrl(url)
+      ? `<video src="${url}" controls playsinline></video><button type="button" class="detail-img-expand" onclick="openLightbox(${i})" aria-label="View full screen">⤢</button>`
+      : `<img src="${url}" alt="${escapeHtml(listing.title)}" title="View full screen" onclick="openLightbox(${i})" />`;
+    document.querySelectorAll("#listing-root .thumb").forEach((t, n) => t.classList.toggle("active", n === i));
+  }
+
+  function renderState(icon, title, body, extra) {
+    document.getElementById("listing-content").innerHTML = `
+      <div class="state">
+        <div class="state-icon">${icon}</div>
+        <h2>${title}</h2>
+        <p>${body}</p>
+        ${extra || ""}
+        <a class="btn btn-primary" href="browse.html" style="margin-top:20px;display:inline-flex;">Browse listings</a>
+      </div>`;
+  }
+
   async function renderListing() {
-    const root = document.getElementById("listing-root");
     listing = listingId ? await Store.getListingById(listingId) : null;
     if (!listing) {
-      root.innerHTML = backRowHtml("Listing") + `<div class="empty-state"><div class="big">🙈</div><h3>Listing not found</h3><p>It may have been sold or removed.</p></div>`;
+      renderState("🙈", "Listing not found", "It may have been sold or removed.");
       return;
     }
     const seller = getSellerById(listing.sellerId);
     const reviews = await Store.getReviews(listing.sellerId);
     const sellerStats = Store.reviewStats(reviews);
     const trust = await Store.getSellerTrustStats(listing.sellerId).catch(() => ({ responseRatePct: null }));
-    const vouchStats = await Store.getVouchStats(listing.sellerId, listing.id).catch(() => ({ count: 0 }));
+    const vouchStats = await Store.getVouchStats(listing.sellerId, listing.id).catch(() => ({ count: 0, vouched: false, sample: [] }));
     document.title = listing.title + " — Marketplace";
 
     galleryUrls = listingGalleryUrls(listing);
     const saved = Store.isSaved(listing.id);
     const isMine = Store.isLoggedIn() && Store.getUser().id === listing.sellerId;
     const canShare = typeof navigator.share === "function";
+    const shareLabel = canShare ? "Share" : "Copy link";
+    const posted = timeAgo(listing.createdAt).toLowerCase();
+    const descParas = (listing.desc || "").split(/\n{2,}/).map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("");
+    const voucherAvatars = (vouchStats.sample || []).map((v) => `<span class="vouch-avatar-item">${avatarHtml(v)}</span>`).join("");
+    const reportHref = `report.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}`;
 
-    root.innerHTML = `
-      ${backRowHtml(null, `<div class="row" style="gap:8px;"><a class="icon-btn" href="report.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}" title="Report this listing">⚑</a><button type="button" class="icon-btn" onclick="shareListing()" aria-label="Share" title="Share">↗</button></div>`)}
-      <div class="detail-wrap">
-        <div class="detail-imgs">
-          ${galleryUrls.map((url, i) => `
-            <div class="detail-img">
-              ${isVideoUrl(url)
-                ? `<video src="${url}" controls playsinline></video><button type="button" class="detail-img-expand" onclick="openLightbox(${i})" aria-label="View full screen">⤢</button>`
-                : `<img src="${url}" alt="${escapeHtml(listing.title)}" onclick="openLightbox(${i})" />`}
-            </div>
-          `).join("")}
-        </div>
-        <div class="row between detail-title-row">
-          <p class="detail-title">${escapeHtml(listing.title)}</p>
-          <span class="badge badge-new">${listing.condition}</span>
-        </div>
-        <p class="detail-price">${formatPrice(listing.price)}</p>
-        <p class="detail-meta">📍 ${listing.locality}, ${listing.city} · Posted ${timeAgo(listing.createdAt).toLowerCase()} · ${listing.views} views</p>
-        <a href="browse.html?cat=${encodeURIComponent(listing.category)}" class="cat-chip" style="display:inline-flex;margin-bottom:14px;">${CATEGORY_ICONS[listing.category] || ""}${escapeHtml(listing.category)}</a>
+    document.getElementById("listing-content").innerHTML = `
+      <div class="crumbs">
+        <a href="browse.html">Browse</a>
+        <span class="sep">›</span>
+        <a href="browse.html?cat=${encodeURIComponent(listing.category)}">${escapeHtml(listing.category)}</a>
+        <span class="sep">›</span>
+        <span>${escapeHtml(listing.title)}</span>
+      </div>
 
-        <a href="profile.html?seller=${seller.id}" class="seller-card row">
-          <div class="avatar">${avatarHtml(seller)}</div>
-          <div style="flex:1;">
-            <p class="seller-name">${escapeHtml(seller.name)} ${seller.isBusiness ? `<span class="shop-tag">Shop</span>` : ""}</p>
-            ${seller.isBusiness && seller.shopName ? `<p class="seller-sub" style="font-weight:700;">${escapeHtml(seller.shopName)}</p>` : ""}
-            ${seller.isBusiness && seller.shopDescription ? `<p class="seller-sub" style="font-style:italic;">${escapeHtml(seller.shopDescription)}</p>` : ""}
-            ${seller.statusText ? `<p class="seller-sub" style="font-style:italic;">${escapeHtml(seller.statusText)}</p>` : ""}
-            <p class="seller-sub">Member since ${seller.memberSince} · ${seller.deals} deal${seller.deals === 1 ? "" : "s"}${trust.responseRatePct !== null ? ` · ${trust.responseRatePct}% response rate` : ""}</p>
-            ${sellerStats.count > 0 ? `<p class="seller-sub" style="margin-top:2px;">${starsHtml(sellerStats.avg, 11)} <b style="color:var(--ink-mid);">${sellerStats.avg}</b> (${sellerStats.count} review${sellerStats.count === 1 ? "" : "s"})</p>` : ""}
-            <div class="trust-badges-row" style="margin-top:8px;">
-              <span class="trust-badge ${seller.emailVerified ? "yes" : "no"}">${seller.emailVerified ? "✓" : "○"} Email</span>
-              <span class="trust-badge ${seller.selfieVerified ? "yes" : "pending"}">${seller.selfieVerified ? "✓" : "○"} Selfie</span>
-            </div>
+      <div class="layout">
+        <!-- Left: gallery -->
+        <div class="gallery">
+          <div class="main-image">
+            <div class="gallery-badges"><span class="pill sage">Posted ${posted}</span></div>
+            <div id="main-media"></div>
           </div>
-          ${isSellerVerified(seller) ? `<span class="badge badge-verified">✓ Verified</span>` : `<span class="badge badge-new">Unverified</span>`}
-        </a>
-
-        <div class="row between" style="padding:0 0 16px;gap:10px;">
-          <span style="font-size:12px;color:var(--muted);">${vouchStats.count === 0 ? "No vouches yet for this item" : `${vouchStats.count} neighbour${vouchStats.count === 1 ? "" : "s"} vouched for this item`}</span>
-          ${!isMine ? `<button class="vouch-toggle-btn ${vouchStats.vouched ? "on" : ""}" id="listing-vouch-btn"><span class="vouch-icon">${VOUCH_ICON}</span>${vouchStats.vouched ? "Vouched" : "Vouch"}</button>` : ""}
+          ${galleryUrls.length > 1 ? `
+            <div class="thumbs">
+              ${galleryUrls.map((url, i) => `
+                <div class="thumb ${i === 0 ? "active" : ""}" onclick="showMedia(${i})" role="button" aria-label="Show ${isVideoUrl(url) ? "video" : "photo"} ${i + 1}">
+                  ${isVideoUrl(url)
+                    ? `<video src="${url}" muted playsinline preload="metadata"></video><span class="video-badge">${ICON.play}</span>`
+                    : `<img src="${url}" alt="" loading="lazy" />`}
+                </div>
+              `).join("")}
+            </div>` : ""}
         </div>
 
-        <div class="detail-info" style="margin-bottom:16px;">
-          <h3 style="font-size:13px;margin-bottom:2px;">Listing confidence</h3>
-          <div class="confidence-list">
-            ${listingConfidenceItem(listing.images && listing.images.length > 0 && listing.images.every(isPhotoUrl), "Real photos or video uploaded")}
-            ${listingConfidenceItem(!!listing.condition, "Condition disclosed (" + listing.condition + ")")}
-            ${listingConfidenceItem(listing.desc && listing.desc.trim().length >= 40, "Description complete")}
-            ${listingConfidenceItem(isSellerVerified(seller), "Seller verified")}
+        <!-- Right: details -->
+        <div class="details">
+          <div class="title-row">
+            <h1>${escapeHtml(listing.title)}</h1>
+            <span class="condition-badge">${escapeHtml(listing.condition)}</span>
           </div>
+          <div class="price">${formatPrice(listing.price)}</div>
+          <div class="meta">
+            ${ICON.pin}
+            <span>${escapeHtml(listing.locality)}, ${escapeHtml(listing.city)}</span>
+            <span>·</span>
+            <span>Posted ${posted}</span>
+            <span>·</span>
+            <span>${listing.views} view${listing.views === 1 ? "" : "s"}</span>
+          </div>
+          <a class="category-chip" href="browse.html?cat=${encodeURIComponent(listing.category)}">${CATEGORY_ICONS[listing.category] || ""}${escapeHtml(listing.category)}</a>
+
+          <!-- Seller card -->
+          <a class="seller-card" href="profile.html?seller=${seller.id}">
+            <div class="seller-head">
+              <div class="seller-avatar">${avatarHtml(seller)}</div>
+              <div class="seller-info">
+                <div class="name-row">
+                  <strong>${escapeHtml(seller.name)}</strong>
+                  ${seller.isBusiness ? `<span class="shop-tag">Shop</span>` : ""}
+                  <span class="verify-badge ${isSellerVerified(seller) ? "on" : ""}">${isSellerVerified(seller) ? "Verified" : "Unverified"}</span>
+                </div>
+                ${seller.isBusiness && seller.shopName ? `<div class="sub" style="font-weight:700;">${escapeHtml(seller.shopName)}</div>` : ""}
+                ${seller.isBusiness && seller.shopDescription ? `<div class="sub" style="font-style:italic;">${escapeHtml(seller.shopDescription)}</div>` : ""}
+                ${seller.statusText ? `<div class="sub" style="font-style:italic;">${escapeHtml(seller.statusText)}</div>` : ""}
+                <div class="sub">Member since ${seller.memberSince} · ${seller.deals} deal${seller.deals === 1 ? "" : "s"}${trust.responseRatePct !== null ? ` · ${trust.responseRatePct}% response rate` : ""}</div>
+                ${sellerStats.count > 0 ? `<div class="sub">${starsHtml(sellerStats.avg, 12)} <b>${sellerStats.avg}</b> (${sellerStats.count} review${sellerStats.count === 1 ? "" : "s"})</div>` : ""}
+              </div>
+            </div>
+            <div class="trust-tags">
+              <span class="trust-tag ${seller.emailVerified ? "" : "off"}">${seller.emailVerified ? ICON.check : ICON.ring} ${seller.emailVerified ? "Email confirmed" : "Email not confirmed"}</span>
+              <span class="trust-tag ${seller.selfieVerified ? "" : "off"}">${seller.selfieVerified ? ICON.check : ICON.ring} ${seller.selfieVerified ? "Selfie verified" : "Selfie pending"}</span>
+            </div>
+          </a>
+
+          <!-- Vouch row: avatar stack + tally + toggle -->
+          <div class="vouch-row">
+            <div class="vouch-left">
+              ${voucherAvatars ? `<div class="vouch-avatars">${voucherAvatars}</div>` : ""}
+              <span class="vouch-text" id="vouch-text">${vouchTally(vouchStats.count)}</span>
+            </div>
+            ${!isMine ? `<button type="button" class="vouch-btn ${vouchStats.vouched ? "on" : ""}" id="listing-vouch-btn">${ICON.heart}<span>${vouchStats.vouched ? "Vouched" : "Vouch"}</span></button>` : ""}
+          </div>
+
+          <!-- Listing confidence -->
+          <div class="confidence">
+            <h3>Listing confidence</h3>
+            <ul>
+              ${confidenceItem(listing.images && listing.images.length > 0 && listing.images.every(isPhotoUrl), "Real photos or video uploaded")}
+              ${confidenceItem(!!listing.condition, "Condition disclosed (" + listing.condition + ")")}
+              ${confidenceItem(listing.desc && listing.desc.trim().length >= 40, "Description complete")}
+              ${confidenceItem(isSellerVerified(seller), "Seller verified")}
+            </ul>
+          </div>
+
+          <!-- Actions -->
+          ${isMine ? `
+            <p class="own-note">This is your own listing.</p>
+            <button type="button" class="btn btn-ghost btn-wide" onclick="shareListing()">${ICON.share.replace("<svg", '<svg width="16" height="16"')} ${canShare ? "Share this listing" : "Copy link"}</button>
+          ` : `
+            <div class="actions">
+              <button type="button" class="btn btn-ghost" onclick="openModal('chat-modal')">${ICON.chat} Chat</button>
+              <button type="button" class="btn btn-primary" onclick="openModal('buy-modal')">Buy now</button>
+              <button type="button" class="btn btn-icon" onclick="shareListing()" aria-label="${shareLabel}" title="${shareLabel}">${ICON.share}</button>
+            </div>
+          `}
+          <button type="button" class="save-listing-btn ${saved ? "saved" : ""}" id="save-toggle-btn" onclick="toggleSaveDetail()">${ICON.heart}<span id="save-label">${saved ? "Saved" : "Save listing"}</span></button>
+
+          <p class="safety">🛡️ Meet in public, inspect before paying, avoid advance payments to unverified sellers.</p>
+          <a class="report-link" href="${reportHref}">⚑ Report this listing</a>
         </div>
+      </div>
 
-        <p class="detail-desc">${escapeHtml(listing.desc)}</p>
+      <!-- Description -->
+      <section class="section-block">
+        <h2>Description</h2>
+        <div class="description-card">${descParas}</div>
+      </section>
 
-        <div class="community-box">
-          <p class="community-title">💬 Community Q&amp;A</p>
-          <div class="thread" id="qa-thread"></div>
-          <form class="qa-form" id="qa-form">
-            <input type="text" id="qa-input" placeholder="Ask the seller or community a question..." autocomplete="off" />
-            <button type="submit" class="btn btn-fill btn-sm">Post</button>
+      <!-- Q&A -->
+      <section class="section-block">
+        <div class="qa-title">${ICON.qa} Community Q&amp;A</div>
+        <div id="qaWrap">
+          <div class="qa-list" id="qa-thread"></div>
+          <form class="ask-form" id="qa-form">
+            <input type="text" id="qa-input" placeholder="Ask the seller or community a question…" autocomplete="off">
+            <button type="submit">Post</button>
           </form>
         </div>
+      </section>
 
-        ${isMine ? `
-          <p style="text-align:center;font-size:13px;color:var(--muted);padding:10px 0;">This is your own listing.</p>
-          <button class="btn btn-outline btn-block" style="margin-bottom:8px;" onclick="shareListing()">${canShare ? "↗ Share this listing" : "🔗 Copy link"}</button>
-        ` : `
-          <div class="cta-row">
-            <button class="btn btn-outline" onclick="openModal('chat-modal')">💬 Chat</button>
-            <button class="btn btn-fill" onclick="openModal('buy-modal')">Buy now</button>
-            ${canShare
-              ? `<button class="btn btn-outline" style="flex:0 0 46px;padding:0;" onclick="shareListing()" aria-label="Share" title="Share">↗</button>`
-              : `<button class="btn btn-outline" onclick="shareListing()">🔗 Copy link</button>`}
-          </div>
-        `}
-        <button class="btn btn-outline btn-block" id="save-toggle-btn" style="margin-bottom:8px;" onclick="toggleSaveDetail()">${saved ? "♥ Saved" : "♡ Save listing"}</button>
-
-        <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:8px;">🛡️ Meet in public, inspect before paying, avoid advance payments to unverified sellers.</p>
-
-        <p class="section-title" style="padding:0;margin-top:18px;">More tagged "${escapeHtml(listing.category)}"</p>
-        <div class="product-grid" id="similar-grid" style="padding:0;margin-top:10px;"></div>
-      </div>
-      <div style="height:16px;"></div>
+      <!-- More in this category -->
+      <section class="section-block">
+        <h2>More tagged “${escapeHtml(listing.category)}”</h2>
+        <div class="related-grid" id="similar-grid"></div>
+      </section>
     `;
 
+    document.getElementById("listing-root").classList.toggle("has-action-bar", !isMine);
+    showMedia(0);
+
     const allListings = await Store.getListings();
-    const similar = allListings.filter((l) => l.category === listing.category && l.id !== listing.id).slice(0, 4);
+    const similar = allListings.filter((l) => l.category === listing.category && l.id !== listing.id).slice(0, 3);
     document.getElementById("similar-grid").innerHTML = similar.length
-      ? similar.map(listingCardHtml).join("")
-      : `<p style="grid-column:1/-1;color:var(--muted);font-size:13px;">No other listings in this category right now.</p>`;
+      ? similar.map((l) => `
+          <a class="related-card" href="listing.html?id=${l.id}">
+            <div class="related-thumb">${listingThumbHtml(l, 400, 300)}</div>
+            <h4>${escapeHtml(l.title)}</h4>
+            <div class="price-sm">${formatPrice(l.price)}</div>
+            <div class="meta-sm">${escapeHtml(l.locality)} · ${escapeHtml(l.condition)}</div>
+          </a>`).join("")
+      : `<p class="related-empty">No other listings in this category right now.</p>`;
 
     await renderQA();
 
@@ -253,10 +701,14 @@
       const text = input.value.trim();
       if (!text) return;
       await requireLoginOr(async () => {
-        await Store.postQuestion(listing.id, text);
-        input.value = "";
-        toast("Question posted");
-        await renderQA();
+        try {
+          await Store.postQuestion(listing.id, text);
+          input.value = "";
+          toast("Question posted");
+          await renderQA();
+        } catch (err) {
+          toast(err.message || "Couldn't post — try again");
+        }
       });
     });
 
@@ -268,10 +720,18 @@
           try {
             const nowVouched = await Store.toggleVouch(listing.sellerId, listing.id);
             vouchBtn.classList.toggle("on", nowVouched);
-            vouchBtn.innerHTML = `<span class="vouch-icon">${VOUCH_ICON}</span>${nowVouched ? "Vouched" : "Vouch"}`;
-            const countEl = vouchBtn.previousElementSibling;
+            vouchBtn.innerHTML = `${ICON.heart}<span>${nowVouched ? "Vouched" : "Vouch"}</span>`;
             const stats = await Store.getVouchStats(listing.sellerId, listing.id);
-            countEl.textContent = stats.count === 0 ? "No vouches yet for this item" : `${stats.count} neighbour${stats.count === 1 ? "" : "s"} vouched for this item`;
+            document.getElementById("vouch-text").textContent = vouchTally(stats.count);
+            const left = document.querySelector("#listing-root .vouch-left");
+            let stack = left.querySelector(".vouch-avatars");
+            const html = (stats.sample || []).map((v) => `<span class="vouch-avatar-item">${avatarHtml(v)}</span>`).join("");
+            if (html) {
+              if (!stack) { stack = document.createElement("div"); stack.className = "vouch-avatars"; left.prepend(stack); }
+              stack.innerHTML = html;
+            } else if (stack) {
+              stack.remove();
+            }
             toast(nowVouched ? "Thanks for vouching" : "Vouch removed");
           } catch (err) {
             toast(err.message || "Couldn't update — try again");
@@ -287,7 +747,7 @@
     const items = await Store.getQA(listing.id);
     const el = document.getElementById("qa-thread");
     if (items.length === 0) {
-      el.innerHTML = `<p style="font-size:12.5px;color:var(--muted);">No questions yet — be the first to ask.</p>`;
+      el.innerHTML = `<div class="qa-empty">No questions yet — be the first to ask.</div>`;
       return;
     }
     el.innerHTML = items.map((q) => qaItemHtml(q, false)).join("");
@@ -295,18 +755,18 @@
 
   function qaItemHtml(q, isReply) {
     const user = getSellerById(q.userId);
-    const flair = user && listing && user.id === listing.sellerId ? "seller" : "";
+    const isSeller = user && listing && user.id === listing.sellerId;
     const replies = (q.replies || []).map((r) => qaItemHtml(r, true)).join("");
     return `
-      <div class="thread-item" style="${isReply ? "margin-left:26px;" : ""}">
-        <div class="vote-col">
-          <button onclick="voteQA('${q.id}',1)" aria-label="Upvote">▲</button>
-          <span class="n">${q.votes}</span>
-          <button onclick="voteQA('${q.id}',-1)" aria-label="Downvote">▼</button>
+      <div class="qa-item ${isReply ? "reply" : ""}">
+        <div class="qa-votes">
+          <button type="button" onclick="voteQA('${q.id}',1)" aria-label="Upvote">▲</button>
+          <span>${q.votes}</span>
+          <button type="button" onclick="voteQA('${q.id}',-1)" aria-label="Downvote">▼</button>
         </div>
-        <div class="thread-body">
-          <p class="thread-user">${escapeHtml(user ? user.name : "Unknown")} ${flair ? `<span class="flair">· ${escapeHtml(flair)}</span>` : ""}</p>
-          <p class="thread-text">${escapeHtml(q.text)}</p>
+        <div class="qa-body">
+          <div class="who"><strong>${escapeHtml(user ? user.name : "Unknown")}</strong>${isSeller ? `<span class="flair">seller</span>` : ""}</div>
+          <div class="text">${escapeHtml(q.text)}</div>
         </div>
       </div>
       ${replies}
@@ -315,14 +775,19 @@
 
   async function voteQA(qId, delta) {
     await requireLoginOr(async () => {
-      await Store.voteQA(qId, delta);
-      await renderQA();
+      try {
+        await Store.voteQA(qId, delta);
+        await renderQA();
+      } catch (err) {
+        toast(err.message || "Couldn't vote — try again");
+      }
     });
   }
 
   async function toggleSaveDetail() {
     const isSaved = await Store.toggleSaved(listing.id);
-    document.getElementById("save-toggle-btn").textContent = isSaved ? "♥ Saved" : "♡ Save listing";
+    document.getElementById("save-label").textContent = isSaved ? "Saved" : "Save listing";
+    document.getElementById("save-toggle-btn").classList.toggle("saved", isSaved);
     toast(isSaved ? "Saved to your list" : "Removed from saved");
   }
 
@@ -348,8 +813,9 @@
       await renderListing();
     } catch (err) {
       console.error(err);
-      if (!listing || !document.querySelector("#listing-root .detail-wrap")) {
-        document.getElementById("listing-root").innerHTML = backRowHtml("Listing") + `<div class="empty-state"><div class="big">⚠️</div><h3>Couldn't load this listing</h3><p>Check your connection and try again.</p><p style="font-size:11px;color:var(--muted);margin-top:8px;">${escapeHtml(err.message || String(err))}</p></div>`;
+      if (!listing || !document.querySelector("#listing-content .layout")) {
+        renderState("⚠️", "Couldn't load this listing", "Check your connection and try again.",
+          `<p style="font-size:11px;color:var(--ink-soft);margin-top:8px;">${escapeHtml(err.message || String(err))}</p>`);
       }
     }
   });
