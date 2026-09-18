@@ -1346,6 +1346,60 @@ real platform:
   voting/replies, and the malformed-shared-link UUID guard. Dropped from the
   design (no real backing): the "ID pending" trust tag.
 
+## After-signup landing, locality lost at signup, and the delete-account modal
+
+- **"Wrong homepage after signup" — what it actually was.** Not caching
+  (`/`, `/index.html` and query variants serve identical, revalidated bytes)
+  and not session detection. A bare `…/#` is what supabase-js leaves after it
+  *successfully* reads a session out of an email-link redirect (it clears the
+  fragment with `location.hash = ""`), so it means the user came through the
+  emailed **link**, not the typed-code path (whose redirect is `index.html`).
+  "📍 Set your locality" is only rendered for a recognised signed-in user with
+  no saved locality. What they saw is the signed-in feed in `index.html`,
+  which was never part of the redesign (the new design covers the signed-out
+  landing only) — it's the pre-redesign feed under the new header.
+- **Real defects found on that path, fixed:**
+  - A locality picked at signup was silently discarded: with "Confirm email"
+    on there is no session yet, so `Auth.signUp`'s follow-up `profiles.update`
+    ran as anon and RLS (`auth.uid() = id`) matched zero rows, no error.
+  - The business-seller choice and the welcome email ran only in the
+    typed-code handler, so anyone confirming via the emailed link skipped them.
+  - Nothing told a link-confirmed user they were confirmed.
+  `Auth.signUp` now stores the choices on the account itself
+  (`user_metadata.signup_pending/_place/_seller`) and
+  `Store.applySignupExtras()` — called from `primeCache()` on the first
+  authenticated page load — applies them once, clears them, then sends the
+  welcome email, for **both** confirmation paths and even across devices.
+  `initPage()` shows "Email confirmed" when the page was reached from a
+  signup link (detected in `js/supabase-client.js` *before* supabase-js clears
+  the fragment). `signUp` also passes `emailRedirectTo` explicitly.
+- **Dashboard items this can't fix (found while investigating):**
+  1. Supabase **Site URL is still the old Vercel domain**
+     (`marketplace-three-chi.vercel.app`): a confirmation link with no usable
+     `redirect_to` falls back to it. Set it to the production domain under
+     Authentication → URL Configuration.
+  2. That **Vercel project is still live and still building from this repo**,
+     so a link that lands there stores the session on the *wrong origin* — the
+     user is "logged in" there and looks logged out on the real domain.
+     Disconnect or delete it (or redirect it).
+  3. The "Confirm signup" template still sends a link, not `{{ .Token }}`
+     (see "Priority fixes" above); the code screen asks for a typed code.
+     Both paths now work, but the template should match the screen.
+- **Noticed, not changed:** `Store.isLoggedIn()` is `!!profiles row`, so a valid
+  session with no `profiles` row is treated as a guest, and many existing
+  accounts have no such row (the on-signup trigger is present and works for
+  new accounts; who removed the others is unknown).
+- **Delete-account modal.** It was never adapted in the redesign: the modal
+  markup sat *inside* `#account-root`, whose `*{margin:0;padding:0}` reset
+  (higher specificity than `.modal`) zeroed its padding and heading margin
+  (heading ran under the ✕), and the shared `h3{font-family:Fraunces,…}` rule
+  fell back to Georgia because Fraunces isn't loaded on the redesigned pages.
+  The account modals now live outside the wrapper and `.modal` in
+  `css/style.css` is styled to match (Inter, paper/forest colours, heading
+  margin clear of the ✕); this also fixes the same serif fallback in the
+  character picker, chat, Buy Now and location-picker modals. Markup and logic
+  are unchanged.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:

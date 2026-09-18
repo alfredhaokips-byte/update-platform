@@ -15,6 +15,12 @@ if (!IS_SUPABASE_CONFIGURED) {
   );
 }
 
+/* An emailed confirmation link lands here with the session in the URL fragment
+   (#access_token=...&type=signup). supabase-js consumes it and then clears the
+   fragment, leaving a bare "/#" — so note it *before* the client is created,
+   for initPage() to acknowledge. */
+window.__cameFromEmailLink = /[#&]type=signup(&|$)/.test(window.location.hash) && /access_token=/.test(window.location.hash);
+
 const sb = IS_SUPABASE_CONFIGURED
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;

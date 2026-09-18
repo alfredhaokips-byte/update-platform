@@ -318,8 +318,6 @@
      Store.setSellerType) so it's wired to real data, not just visual. */
   let selectedPlace = null;
   let pendingEmail = null;
-  let pendingName = null;
-  let pendingSellerType = null; // { isBusiness, shopName, shopDescription } | null
 
   function showPanel(id) {
     document.querySelectorAll('#signup-root .panel').forEach((p) => p.classList.remove('active'));
@@ -357,10 +355,8 @@
       submitBtn.disabled = true;
       submitBtn.textContent = "Creating account...";
       try {
-        await Auth.signUp({ name, email, password, place: selectedPlace });
+        await Auth.signUp({ name, email, password, place: selectedPlace, sellerType });
         pendingEmail = email;
-        pendingName = name;
-        pendingSellerType = sellerType;
         showPanel("otp-step");
         document.getElementById("otp-email-echo").textContent = email;
         document.getElementById("f-otp").focus();
@@ -424,15 +420,10 @@
       btn.textContent = "Confirming...";
       try {
         await Auth.verifyOtp({ email: pendingEmail, token: document.getElementById("f-otp").value.trim() });
+        // primeCache() finishes the signup (locality, business seller type, welcome
+        // email) from the choices stored on the account -- the same routine the
+        // emailed-link path goes through, so both confirmations behave the same.
         await Store.primeCache();
-
-        if (pendingSellerType) {
-          try { await Store.setSellerType(pendingSellerType); } catch (err) { /* non-critical -- can be set later from Edit Profile */ }
-        }
-
-        try {
-          await sb.functions.invoke("send-welcome-email", { body: { email: pendingEmail, name: pendingName } });
-        } catch (mailErr) { /* non-critical */ }
 
         showCharStep();
       } catch (err) {

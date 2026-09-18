@@ -237,6 +237,8 @@ const Store = {
 
       const { data: savedRows } = await sb.from("saved_items").select("listing_id").eq("user_id", session.user.id);
       this._cache.savedIds = new Set((savedRows || []).map((r) => r.listing_id));
+
+      if (this._cache.profile) await this.applySignupExtras(session.user);
     } else {
       this._cache.profile = null;
       this._cache.savedIds = new Set();
@@ -610,6 +612,43 @@ const Store = {
      `isBusiness` toggles the "Shop" label, shopName/shopDescription are
      only meaningful (and only shown) when it's on. Clears both when
      switching back to individual so a stale shop name can't linger. */
+  /* Finishes a signup exactly once, on the first page load that has a session.
+     Auth.signUp() parks the locality / seller-type choices (and a
+     `signup_pending` marker) in the account's user_metadata because no session
+     exists yet to write the profile with — see the note there. Both ways of
+     confirming (typed code, or the emailed link) end up here via primeCache(),
+     so they behave identically: apply the choices, clear them, send the welcome
+     email. The marker is cleared *before* the email goes out so a failure can
+     only ever skip the email, never send it twice; and cleared at all so stale
+     choices can never overwrite later edits to the profile. Best-effort and
+     never blocks the page. */
+  async applySignupExtras(authUser) {
+    const meta = (authUser && authUser.user_metadata) || {};
+    if (!meta.signup_pending || this._applyingExtras) return;
+    this._applyingExtras = true;
+    try {
+      const profile = this._cache.profile;
+      const place = meta.signup_place;
+      if (place && place.locality) {
+        const patch = { locality: place.locality, city: place.city, state: place.state, lat: place.lat, lng: place.lng };
+        const { error } = await sb.from("profiles").update(patch).eq("id", authUser.id);
+        if (error) throw error; // leave the choices in place so the next page load retries
+        Object.assign(profile, patch);
+      }
+      if (meta.signup_seller && meta.signup_seller.isBusiness) {
+        await this.setSellerType(meta.signup_seller);
+      }
+      const { error: clearErr } = await sb.auth.updateUser({ data: { signup_pending: null, signup_place: null, signup_seller: null } });
+      if (!clearErr) {
+        await sb.functions.invoke("send-welcome-email", { body: { email: authUser.email, name: profile.name } });
+      }
+    } catch (err) {
+      /* non-critical — the user can set all of this later from Edit Profile / the location picker */
+    } finally {
+      this._applyingExtras = false;
+    }
+  },
+
   async setSellerType({ isBusiness, shopName, shopDescription }) {
     const user = this.getUser();
     if (!user) throw new Error("Must be signed in");

@@ -13,23 +13,30 @@ const Auth = {
      location search (see js/maps-client.js) — or null if the user skipped
      location entirely, which is allowed; they can set it later from the
      home page's location picker. */
-  async signUp({ email, password, name, place }) {
+  /* With "Confirm email" on there is no session until the email is confirmed,
+     so nothing can be written to `profiles` here (its RLS needs auth.uid() =
+     id — a write attempted at this point silently affects zero rows, which is
+     how a locality picked at signup used to vanish). The choices ride along on
+     the account itself as user_metadata instead, and Store.applySignupExtras()
+     applies them on the first authenticated page load — whether the user
+     confirms by typing the emailed code or by clicking the emailed link (which
+     lands on a fresh page load, possibly on another device).
+     `emailRedirectTo` states where a confirmation link should land instead of
+     leaving it to the request's Referer header; if the URL isn't allow-listed
+     in the dashboard, Supabase falls back to its Site URL, as before. */
+  async signUp({ email, password, name, place, sellerType }) {
     requireSupabaseConfigured();
+    const extras = { signup_pending: true };
+    if (place) {
+      extras.signup_place = { locality: place.locality, city: place.city, state: place.state, lat: place.lat, lng: place.lng };
+    }
+    if (sellerType) extras.signup_seller = sellerType;
     const { data, error } = await sb.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: { data: { name, ...extras }, emailRedirectTo: `${window.location.origin}/` },
     });
     if (error) throw error;
-
-    // The DB trigger creates the profile row; give it a beat, then fill in
-    // the fields the trigger can't know. Harmless if it races — the user
-    // can always change this later from the home page's location picker.
-    if (data.user && place) {
-      await sb.from("profiles").update({
-        locality: place.locality, city: place.city, state: place.state, lat: place.lat, lng: place.lng,
-      }).eq("id", data.user.id);
-    }
     return data;
   },
 

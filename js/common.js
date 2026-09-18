@@ -39,6 +39,11 @@ async function initPage(activeNavKey) {
   requireSupabaseConfigured();
   await Store.primeCache();
 
+  if (window.__cameFromEmailLink && Store.isLoggedIn()) {
+    window.__cameFromEmailLink = false;
+    toast("Email confirmed — welcome to Mohalla Market!");
+  }
+
   if (Store.isLoggedIn()) {
     try {
       const threads = await Store.getThreads();
