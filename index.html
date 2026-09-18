@@ -168,8 +168,11 @@
 #landing-root .foot-bottom{ display:flex; justify-content:space-between; font-size:0.82rem; color:var(--ink-soft); flex-wrap:wrap; gap:10px; }
 
 @media (max-width:720px){
-  #landing-root .nav-links{ display:none; }
-  #landing-root nav{ padding:14px 18px; }
+  /* Top nav is the only site nav now that the bottom tab bar is
+     gone, so it stays visible (wrapped onto its own row) on mobile
+     instead of hiding. */
+  #landing-root nav{ padding:14px 18px; flex-wrap:wrap; row-gap:10px; }
+  #landing-root .nav-links{ display:flex; order:3; flex-basis:100%; justify-content:center; gap:14px; font-size:0.82rem; flex-wrap:wrap; }
   #landing-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
   #landing-root .cards{ grid-template-columns:1fr; }
   #landing-root .pillar-panel.active{ grid-template-columns:1fr; }
@@ -196,7 +199,7 @@
 <body>
 
 <!-- ============ LANDING PAGE (signed-out visitors) ============ -->
-<div id="landing-root" hidden>
+<div id="landing-root">
 <div class="nav-bar">
 <nav>
   <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
@@ -205,10 +208,16 @@
     <a href="community.html">Community</a>
     <a href="messages.html">Messages</a>
     <a href="help.html">Help</a>
+    <a href="account.html">Account</a>
   </div>
   <a class="nav-cta" href="post-ad.html">Sell something</a>
 </nav>
 </div>
+
+<!-- Landing-only content (hero, trending, footer) -- hidden for
+     signed-in visitors, who get #feed-root below instead. The nav-bar
+     above stays outside this wrapper so it renders in both cases. -->
+<div id="landing-body" hidden>
 
 <section class="hero">
   <span class="sparkle" style="top:18%; left:6%;">✦</span>
@@ -536,6 +545,8 @@
   </div>
 </footer>
 </div>
+<!-- /#landing-body -->
+</div>
 <!-- /#landing-root -->
 
 <script>
@@ -601,8 +612,6 @@ counters.forEach(c=>io.observe(c));
 
   <div style="height:24px;"></div>
 </div>
-
-<div id="bottom-nav-root"></div>
 
 <!-- Location picker -->
 <div class="modal-overlay" id="loc-modal" hidden>
@@ -806,7 +815,7 @@ counters.forEach(c=>io.observe(c));
       document.getElementById("feed-root").hidden = false;
       await renderFeed();
     } else {
-      document.getElementById("landing-root").hidden = false;
+      document.getElementById("landing-body").hidden = false;
       await renderLanding();
 
       document.getElementById("newsletter-form").addEventListener("submit", async (e) => {

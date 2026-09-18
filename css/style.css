@@ -32,7 +32,11 @@
   --radius-sm: 10px;
   --shadow: 0 1px 2px rgba(29,33,22,.05), 0 6px 20px rgba(29,33,22,.06);
   --shadow-lg: 0 12px 32px rgba(29,33,22,.14);
-  --nav-h: 72px;
+  /* Was the bottom tab bar's height, reserved as clearance for body padding
+     and fixed-position elements (toast, FABs, sticky chat composer) above
+     it. The bar is gone now, so this is 0 — those elements' small "+Npx"
+     offsets become their own plain clearance from the viewport edge. */
+  --nav-h: 0px;
 }
 
 body[data-theme="dark"] {
@@ -209,25 +213,6 @@ input, select, textarea { font-family: inherit; }
 .verified { color: var(--verified-check); font-weight: 800; }
 .muted { color: var(--muted-2); }
 
-/* ---------- Bottom nav (mobile-app tab bar) ---------- */
-.bottom-nav {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
-  background: var(--elevated); border-top: 1px solid var(--border);
-  display: flex; justify-content: space-around; align-items: center;
-  padding: 9px 6px calc(env(safe-area-inset-bottom, 6px) + 9px);
-  max-width: 480px; margin: 0 auto;
-  box-shadow: 0 -2px 16px rgba(23,23,26,.05);
-}
-@media (min-width: 900px) { .bottom-nav { max-width: 620px; } }
-.nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-size: 10px; color: var(--muted-2); font-weight: 700; flex: 1; min-width: 0;
-  padding: 4px 2px; position: relative; background: none; border: none;
-}
-.nav-item.active { color: var(--ink); }
-.nav-icon { width: 21px; height: 21px; display: flex; align-items: center; justify-content: center; }
-.nav-icon svg { width: 100%; height: 100%; }
-.nav-item .dot { top: -1px; right: 26%; }
 
 /* ---------- Listing detail ---------- */
 .detail-wrap { padding: 0 18px; }

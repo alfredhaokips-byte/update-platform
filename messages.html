@@ -100,8 +100,11 @@
   #messages-root .back-btn{ display:inline-flex; }
 }
 @media (max-width:720px){
-  #messages-root .nav-links{ display:none; }
-  #messages-root nav{ padding:14px 18px; }
+  /* Top nav is the only site nav now that the bottom tab bar is
+     gone, so it stays visible (wrapped onto its own row) on mobile
+     instead of hiding. */
+  #messages-root nav{ padding:14px 18px; flex-wrap:wrap; row-gap:10px; }
+  #messages-root .nav-links{ display:flex; order:3; flex-basis:100%; justify-content:center; gap:14px; font-size:0.82rem; flex-wrap:wrap; }
   #messages-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
   #messages-root .head{ padding:28px 20px 16px; }
   #messages-root .messenger{ padding:0 20px 40px; }
@@ -132,6 +135,7 @@
     <a href="community.html">Community</a>
     <a href="messages.html" class="active">Messages</a>
     <a href="help.html">Help</a>
+    <a href="account.html">Account</a>
   </div>
   <a class="nav-cta" href="post-ad.html">Sell something</a>
 </nav>
@@ -184,8 +188,6 @@
 </footer>
 </div>
 <!-- /#messages-root -->
-
-<div id="bottom-nav-root"></div>
 
 <link rel="stylesheet" href="css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>

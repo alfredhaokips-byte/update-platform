@@ -101,8 +101,11 @@
 
 @media (max-width:860px){ #community-root .head{ grid-template-columns:1fr; } #community-root .head-doodle{ max-width:320px; margin:0 auto; } }
 @media (max-width:720px){
-  #community-root .nav-links{ display:none; }
-  #community-root nav{ padding:14px 18px; }
+  /* Top nav is the only site nav now that the bottom tab bar is
+     gone, so it stays visible (wrapped onto its own row) on mobile
+     instead of hiding. */
+  #community-root nav{ padding:14px 18px; flex-wrap:wrap; row-gap:10px; }
+  #community-root .nav-links{ display:flex; order:3; flex-basis:100%; justify-content:center; gap:14px; font-size:0.82rem; flex-wrap:wrap; }
   #community-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
   #community-root .head{ padding:32px 20px 20px; }
   #community-root .tabs-bar{ padding:0 20px 16px; flex-direction:column; align-items:stretch; }
@@ -127,6 +130,7 @@
     <a href="community.html" class="active">Community</a>
     <a href="messages.html">Messages</a>
     <a href="help.html">Help</a>
+    <a href="account.html">Account</a>
   </div>
   <a class="nav-cta" href="post-ad.html">Sell something</a>
 </nav>
@@ -242,8 +246,6 @@
 </footer>
 </div>
 <!-- /#community-root -->
-
-<div id="bottom-nav-root"></div>
 
 <link rel="stylesheet" href="css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>

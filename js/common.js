@@ -60,46 +60,10 @@ function mountThemeToggle() {
 }
 mountThemeToggle();
 
-/* ---------- Bottom tab bar ---------- */
-/* One consistent line-icon set (24x24 viewBox, 1.8 stroke, round caps/joins)
-   for the bottom nav — plain Unicode glyphs (⌂ ➕ 👤 ...) rendered at
-   inconsistent optical sizes/weights depending on the system font, which is
-   exactly what made the envelope icon look out of place next to the rest. */
-const NAV_ICONS = {
-  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>`,
-  community: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-  messages: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`,
-  sell: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
-  account: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>`,
-};
-
-/* "My ads" was dropped — it's redundant with the identical entry already on
-   the Account page, and five well-spaced items beat six cramped ones. */
-const NAV_ITEMS = [
-  { key: "home", icon: NAV_ICONS.home, label: "Home", href: "index.html" },
-  { key: "community", icon: NAV_ICONS.community, label: "Community", href: "community.html" },
-  { key: "sell", icon: NAV_ICONS.sell, label: "Sell", href: "post-ad.html" },
-  { key: "messages", icon: NAV_ICONS.messages, label: "Messages", href: "messages.html" },
-  { key: "account", icon: NAV_ICONS.account, label: "Account", href: "account.html" },
-];
-
-function bottomNavHtml(activeKey) {
-  return `
-    <div class="bottom-nav">
-      ${NAV_ITEMS.map((item) => `
-        <a class="nav-item ${item.key === activeKey ? "active" : ""}" href="${item.href}">
-          <span class="nav-icon">${item.icon}</span>${item.label}
-          ${item.key === "messages" ? `<span class="dot" id="nav-msg-dot" hidden></span>` : ""}
-        </a>
-      `).join("")}
-    </div>
-  `;
-}
-
-function mountBottomNav(activeKey) {
-  const root = document.getElementById("bottom-nav-root");
-  if (root) root.innerHTML = bottomNavHtml(activeKey);
-}
+/* Bottom tab bar removed site-wide — navigation now happens only through
+   each page's top header (logo, Browse/Community/Messages/Help/Account,
+   "Sell something"). #bottom-nav-root divs are left in every page's markup
+   harmlessly unfilled rather than edited out of each file individually. */
 
 /* Call once near the top of every page's init, before rendering anything
    that depends on Store.getUser()/isSaved(). Signed-out visitors still get
@@ -109,7 +73,6 @@ function mountBottomNav(activeKey) {
 async function initPage(activeNavKey) {
   requireSupabaseConfigured();
   await Store.primeCache();
-  mountBottomNav(activeNavKey);
 
   if (Store.isLoggedIn()) {
     try {
@@ -117,8 +80,6 @@ async function initPage(activeNavKey) {
       const unread = threads.reduce((sum, t) => sum + t.unread, 0);
       const dot = document.getElementById("msg-dot"); // a page's own header bell, where present
       if (dot) dot.hidden = unread === 0;
-      const navDot = document.getElementById("nav-msg-dot"); // the bottom-nav Messages tab badge
-      if (navDot) navDot.hidden = unread === 0;
       startNotificationPoller(unread);
     } catch (e) { /* non-critical — leave the dot hidden on failure */ }
   }
