@@ -351,29 +351,6 @@
 
   </div>
   <!-- /#signed-in-state -->
-
-  <!-- Ported from the old account.html design as-is: this design has no
-       equivalent screens for these two flows. -->
-  <div class="modal-overlay" id="char-modal" hidden>
-    <div class="modal">
-      <button class="close-x" onclick="closeModal('char-modal')">&#10005;</button>
-      <h3>Who's saying hello?</h3>
-      <p class="sub">Pick how you'd like to show up. This is purely cosmetic -- your listings and trust record are the same either way, and you can change it any time.</p>
-      <div class="char-grid" id="char-grid"></div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="delete-modal" hidden>
-    <div class="modal">
-      <button class="close-x" onclick="closeModal('delete-modal')">&#10005;</button>
-      <h3>Delete your account?</h3>
-      <p class="sub">This can't be undone. Your profile, all your listings, your conversations, reviews and vouches will be permanently removed. You'll be able to sign up again with the same email afterwards.</p>
-      <p id="delete-error" style="color:var(--danger);font-size:13px;margin:10px 0;" hidden></p>
-      <button class="btn btn-block" id="confirm-delete-btn" style="background:var(--danger);color:#fff;margin-top:14px;">Yes, permanently delete my account</button>
-      <button class="btn btn-outline btn-block" style="margin-top:8px;" onclick="closeModal('delete-modal')">Cancel</button>
-    </div>
-  </div>
-
 </div>
 
 <footer>
@@ -397,6 +374,29 @@
 </footer>
 </div>
 <!-- /#account-root -->
+
+<!-- Ported from the old account.html design: this design has no equivalent screens for
+     these two flows. Kept OUTSIDE #account-root on purpose -- inside it, the design's
+     "#account-root *{padding:0;margin:0}" reset wipes the shared .modal spacing. -->
+<div class="modal-overlay" id="char-modal" hidden>
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('char-modal')">&#10005;</button>
+    <h3>Who's saying hello?</h3>
+    <p class="sub">Pick how you'd like to show up. This is purely cosmetic -- your listings and trust record are the same either way, and you can change it any time.</p>
+    <div class="char-grid" id="char-grid"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="delete-modal" hidden>
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('delete-modal')">&#10005;</button>
+    <h3>Delete your account?</h3>
+    <p class="sub">This can't be undone. Your profile, all your listings, your conversations, reviews and vouches will be permanently removed. You'll be able to sign up again with the same email afterwards.</p>
+    <p id="delete-error" style="color:var(--danger);font-size:13px;margin:10px 0;" hidden></p>
+    <button class="btn btn-block" id="confirm-delete-btn" style="background:var(--danger);color:#fff;margin-top:14px;">Yes, permanently delete my account</button>
+    <button class="btn btn-outline btn-block" style="margin-top:8px;" onclick="closeModal('delete-modal')">Cancel</button>
+  </div>
+</div>
 
 <div id="bottom-nav-root"></div>
 
