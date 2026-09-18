@@ -9,70 +9,242 @@
   gtag('js', new Date());
   gtag('config', 'G-ZRDE5VY8FE');
 </script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
 <title>Sign in — Marketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+#login-root{
+  --paper:#F7F2E7; --paper-2:#F0E9D8; --forest:#1F3A2E; --moss:#4A6B4A; --sage:#8FAE86;
+  --sage-light:#DCE8D4; --marigold:#D9A441; --ink:#2A2A22; --ink-soft:#5C5A4D;
+}
+
+
+#login-root *{box-sizing:border-box; margin:0; padding:0;}
+#login-root{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.5; min-height:100vh; display:flex; flex-direction:column; }
+#login-root h1, #login-root h2, #login-root h3{ color:var(--forest); font-weight:700; letter-spacing:-0.02em; }
+#login-root a{ color:inherit; text-decoration:none; }
+
+#login-root .nav-bar{ background:var(--paper); border-bottom:1px solid rgba(31,58,46,0.1); }
+#login-root nav{ display:flex; align-items:center; justify-content:space-between; padding:20px 24px; max-width:1080px; margin:0 auto; }
+#login-root .logo{ display:flex; align-items:center; gap:2px; }
+#login-root .logo-svg{ height:38px; width:auto; display:block; }
+#login-root .logo-img{ height:44px; width:auto; display:block; }
+@media (max-width:520px){ #login-root .logo-svg{ height:32px; } #login-root .logo-img{ height:36px; } }
+#login-root .nav-links{ display:flex; gap:28px; font-size:0.94rem; color:var(--ink-soft); }
+#login-root .nav-links a:hover{ color:var(--forest); }
+
+#login-root .main{ flex:1; display:grid; grid-template-columns:1fr 1fr; max-width:1080px; margin:0 auto; padding:60px 24px; gap:60px; align-items:center; }
+
+#login-root .illus svg{ width:100%; max-width:420px; height:auto; }
+#login-root .illus h2{ font-size:clamp(1.6rem,3vw,2rem); margin-top:24px; max-width:18ch; }
+#login-root .illus p{ color:var(--ink-soft); margin-top:10px; max-width:38ch; }
+
+#login-root .card{ background:var(--paper-2); border:1px solid rgba(31,58,46,0.12); border-radius:20px; padding:32px; }
+#login-root .tabs{ display:flex; gap:6px; background:var(--paper); padding:4px; border-radius:10px; margin-bottom:24px; }
+#login-root .tab{ flex:1; padding:10px; border:none; background:transparent; font-family:inherit; font-size:0.92rem; font-weight:600; color:var(--ink-soft); border-radius:8px; cursor:pointer; transition:background .15s ease, color .15s ease; }
+#login-root .tab.active{ background:var(--forest); color:var(--paper); }
+
+#login-root .panel{ display:none; flex-direction:column; gap:16px; }
+#login-root .panel.active{ display:flex; }
+#login-root .field label{ display:block; font-size:0.84rem; font-weight:600; color:var(--forest); margin-bottom:6px; }
+#login-root .field input, #login-root .field select{
+  width:100%; font-family:inherit; font-size:0.96rem; padding:12px 14px; border-radius:10px;
+  border:1px solid rgba(31,58,46,0.18); background:var(--paper); color:var(--ink);
+}
+#login-root .field input:focus, #login-root .field select:focus{ outline:2px solid var(--sage); outline-offset:1px; border-color:var(--sage); }
+#login-root .field select{ cursor:pointer; }
+#login-root .back-link{ display:inline-flex; font-size:0.85rem; color:var(--moss); font-weight:600; margin-bottom:6px; cursor:pointer; }
+#login-root .back-link:hover{ color:var(--forest); }
+#login-root .field .hint{ font-size:0.78rem; color:var(--ink-soft); margin-top:6px; }
+#login-root .row{ display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; }
+#login-root .row a{ color:var(--moss); font-weight:600; }
+#login-root .row a:hover{ color:var(--forest); }
+#login-root .btn{ padding:13px 26px; border-radius:10px; font-weight:600; font-size:0.95rem; cursor:pointer; border:none; font-family:inherit; transition:transform .15s ease, opacity .15s ease; }
+#login-root .btn:hover{ transform:translateY(-2px); opacity:0.92; }
+#login-root .btn-primary{ background:var(--forest); color:var(--paper); width:100%; }
+
+#login-root .divider{ display:flex; align-items:center; gap:12px; font-size:0.78rem; color:var(--ink-soft); margin:8px 0; }
+#login-root .divider::before, #login-root .divider::after{ content:""; flex:1; height:1px; background:rgba(31,58,46,0.15); }
+#login-root .oauth{ display:flex; gap:10px; }
+#login-root .oauth button{ flex:1; padding:11px; border-radius:10px; border:1px solid rgba(31,58,46,0.18); background:var(--paper); font-family:inherit; font-size:0.88rem; font-weight:600; color:var(--forest); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+#login-root .oauth button:hover{ background:var(--sage-light); }
+
+#login-root .trust-note{ font-size:0.78rem; color:var(--ink-soft); text-align:center; margin-top:14px; }
+
+/* type selection & done panels */
+
+
+#login-root .type-head{ margin-bottom:8px; }
+#login-root .type-title{ font-size:1.35rem; color:var(--forest); margin-bottom:6px; }
+#login-root .type-sub{ color:var(--ink-soft); font-size:0.92rem; }
+#login-root .acct-option{
+  display:flex; align-items:center; gap:14px; text-align:left;
+  background:var(--paper); border:1.5px solid rgba(31,58,46,0.15); border-radius:14px;
+  padding:16px; font-family:inherit; cursor:pointer; transition:background .15s ease, border-color .15s ease, transform .15s ease;
+}
+#login-root .acct-option:hover{ background:var(--sage-light); border-color:var(--moss); transform:translateY(-2px); }
+#login-root .acct-option:focus-visible{ outline:2px solid var(--sage); outline-offset:2px; }
+#login-root .acct-icon{
+  width:44px; height:44px; border-radius:10px; background:var(--sage-light); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+#login-root .acct-icon svg{ width:24px; height:24px; }
+#login-root .acct-body{ flex:1; }
+#login-root .acct-body strong{ display:block; font-size:0.98rem; color:var(--forest); margin-bottom:2px; }
+#login-root .acct-body span{ font-size:0.84rem; color:var(--ink-soft); line-height:1.4; }
+#login-root .acct-chev{ color:var(--marigold); font-size:1.1rem; }
+
+#login-root .done-scene{ text-align:center; margin-bottom:12px; }
+#login-root .done-scene svg{ width:100%; max-width:260px; height:auto; }
+#login-root .btn-ghost-link{ display:block; text-align:center; margin-top:12px; color:var(--moss); font-size:0.9rem; font-weight:600; }
+#login-root .btn-ghost-link:hover{ color:var(--forest); }
+
+#login-root footer{ padding:30px 24px; background:var(--paper-2); color:var(--ink-soft); font-size:0.82rem; text-align:center; border-top:1px solid rgba(31,58,46,0.1); }
+
+@media (max-width:860px){ #login-root .main{ grid-template-columns:1fr; gap:28px; padding:32px 20px; } #login-root .illus{ text-align:center; } #login-root .illus svg{ margin:0 auto; } #login-root .illus p{ margin-left:auto; margin-right:auto; } }
+@media (max-width:720px){
+  #login-root .nav-links{ display:none; }
+  #login-root nav{ padding:14px 18px; }
+  #login-root .card{ padding:22px; }
+}
+
+/* dark mode adaptation for doodles */
+
+
+#login-root svg [stroke="#1F3A2E"]{ stroke:var(--forest); }
+#login-root svg [fill="#1F3A2E"]:not([fill-opacity="0"]){ fill:var(--forest); }
+#login-root svg [stroke="#4A6B4A"]{ stroke:var(--moss); }
+#login-root svg [fill="#4A6B4A"]:not([fill-opacity="0"]){ fill:var(--moss); }
+#login-root svg [stroke="#5C5A4D"]{ stroke:var(--ink-soft); }
+</style>
 </head>
 <body>
 
-<div class="app-shell">
-  <div class="back-row row between">
-    <a href="index.html" class="icon-btn" aria-label="Back">←</a>
-    <span class="header-title">Sign in</span>
-    <span style="width:40px;"></span>
+<div id="login-root">
+<div class="nav-bar">
+<nav>
+  <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+  <div class="nav-links">
+    <a href="browse.html">Browse</a>
+    <a href="community.html">Community</a>
+    <a href="messages.html">Messages</a>
+    <a href="help.html">Help</a>
+  </div>
+  <span></span>
+</nav>
+</div>
+
+<div class="main">
+  <div class="illus">
+    <svg viewBox="0 0 420 340" fill="none" stroke="#4A6B4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- bunting -->
+      <path d="M20 40 Q210 15 400 40" stroke-width="1.2"/>
+      <path d="M60 43 l7 12 l7 -10" stroke-width="1"/>
+      <path d="M120 33 l7 12 l7 -10" stroke-width="1"/>
+      <path d="M200 28 l7 12 l7 -10" stroke-width="1"/>
+      <path d="M280 33 l7 12 l7 -10" stroke-width="1"/>
+      <path d="M340 40 l7 12 l7 -10" stroke-width="1"/>
+      <!-- stall in background -->
+      <path d="M110 105 L110 85 L220 85 L220 105"/>
+      <path d="M110 105 L220 105"/>
+      <path d="M125 85 L125 105 M140 85 L140 105 M155 85 L155 105 M170 85 L170 105 M185 85 L185 105 M200 85 L200 105" stroke-width="0.8"/>
+      <path d="M110 105 L110 175 L220 175 L220 105" stroke-width="0.9"/>
+      <path d="M110 160 L220 160" stroke-width="0.8"/>
+      <!-- goods -->
+      <rect x="118" y="163" width="10" height="12"/><rect x="132" y="165" width="10" height="10"/>
+      <rect x="146" y="163" width="10" height="12"/><rect x="180" y="163" width="10" height="12"/>
+      <rect x="194" y="165" width="10" height="10"/><rect x="208" y="163" width="10" height="12"/>
+      <!-- vendor behind stall -->
+      <circle cx="165" cy="125" r="8"/>
+      <path d="M165 133 C158 135 154 145 155 160 L175 160 C176 145 172 135 165 133Z"/>
+      <!-- neighbour welcoming, left, waving -->
+      <circle cx="55" cy="150" r="14"/>
+      <path d="M50 146 q5 -3 10 0" stroke-width="0.8"/>
+      <path d="M55 164 C42 168 36 182 38 200 L72 200 C74 182 68 168 55 164Z"/>
+      <path d="M38 180 L55 180 L72 180" stroke-width="0.7"/>
+      <path d="M38 200 L34 240 L46 240 L50 200 M72 200 L76 240 L64 240 L60 200" stroke-width="1"/>
+      <!-- waving arm raised -->
+      <path d="M40 174 L22 155 Q16 148 20 140 Q26 134 34 140 Q40 146 40 155" stroke-width="1.2"/>
+      <!-- neighbour with a plant, right -->
+      <circle cx="325" cy="150" r="14"/>
+      <path d="M320 146 q5 -3 10 0" stroke-width="0.8"/>
+      <path d="M325 164 C312 168 306 182 308 200 L342 200 C344 182 338 168 325 164Z"/>
+      <path d="M308 200 L304 240 L316 240 L320 200 M342 200 L346 240 L334 240 L330 200" stroke-width="1"/>
+      <!-- plant being held -->
+      <path d="M338 178 L360 178 L356 200 L342 200 Z" stroke-width="1"/>
+      <path d="M344 178 C344 166 347 158 349 154 C351 158 354 166 354 178Z" stroke-width="1"/>
+      <path d="M349 165 q-6 -2 -10 3 M354 162 q6 -3 10 2" stroke-width="0.9"/>
+      <path d="M338 190 L338 178" stroke-width="0.8"/>
+      <!-- small dog between them -->
+      <path d="M175 215 Q182 208 195 210 Q205 210 210 220 L210 230 L202 230 L201 224 L191 224 L190 230 L182 230 Z" stroke-width="1"/>
+      <path d="M212 220 Q220 216 216 228" stroke-width="0.9"/>
+      <circle cx="204" cy="216" r="0.8" fill="#4A6B4A"/>
+      <!-- flower pots front left/right -->
+      <path d="M4 250 L28 250 L24 275 L8 275 Z" stroke-width="1"/>
+      <path d="M10 250 C10 240 13 230 15 224 C17 230 20 240 20 250Z"/>
+      <path d="M22 250 C22 242 24 234 26 230 C28 234 30 242 30 250Z" stroke-width="0.9"/>
+      <path d="M392 250 L416 250 L412 275 L396 275 Z" stroke-width="1"/>
+      <path d="M398 250 C398 240 401 230 403 224 C405 230 408 240 408 250Z"/>
+      <!-- ground -->
+      <path d="M0 260 Q210 250 420 260" stroke-width="1.1"/>
+      <!-- sun -->
+      <circle cx="380" cy="55" r="14"/>
+      <path d="M380 30 L380 38 M380 72 L380 80 M355 55 L363 55 M397 55 L405 55 M362 37 L367 42 M393 68 L398 73 M362 73 L367 68 M393 42 L398 37" stroke-width="1.1"/>
+    </svg>
+    <h2>Welcome to the mohalla</h2>
+    <p>One account for buying, selling, chatting, and your reviews. We verify every neighbour before they can post.</p>
   </div>
 
-  <div class="form-wrap" style="padding-top:20px;" id="login-step">
-    <form id="login-form">
-      <div class="form-row">
-        <label for="f-email">Email</label>
-        <input type="text" id="f-email" placeholder="you@example.com" required autocomplete="email" />
-      </div>
-      <div class="form-row">
-        <label for="f-password">Password</label>
-        <input type="text" id="f-password" placeholder="••••••••" required autocomplete="current-password" style="-webkit-text-security:disc;text-security:disc;" />
-      </div>
-      <p style="text-align:right;font-size:13px;margin:-8px 0 16px;">
-        <a href="#" id="forgot-password-link" style="color:var(--muted);font-weight:600;">Forgot password?</a>
-      </p>
-      <p id="login-error" style="color:var(--danger);font-size:13px;margin-bottom:14px;" hidden></p>
-      <button type="submit" class="btn btn-fill btn-block" id="login-btn">Sign in</button>
-    </form>
-    <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:18px;">
-      New here? <a href="signup.html" style="color:var(--ink);font-weight:700;">Create an account</a>
-    </p>
-  </div>
+<div class="card">
+    <div class="tabs">
+      <button class="tab active" type="button">Sign in</button>
+      <a class="tab" href="signup.html" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">Create account</a>
+    </div>
 
-  <!-- Forgot password — step 1: ask for the email to send a reset link to. -->
-  <div class="form-wrap" style="padding-top:20px;" id="forgot-step" hidden>
-    <h3 style="margin-bottom:6px;">Reset your password</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Enter your account email and we'll send you a link to reset your password.</p>
-    <form id="forgot-form">
-      <div class="form-row">
-        <label for="f-forgot-email">Email</label>
-        <input type="text" id="f-forgot-email" placeholder="you@example.com" required autocomplete="email" />
-      </div>
-      <button type="submit" class="btn btn-fill btn-block" id="forgot-btn">Send reset link</button>
-    </form>
-    <button type="button" id="back-to-login-btn" class="btn btn-outline btn-block" style="margin-top:10px;">Back to sign in</button>
-  </div>
+    <div class="panel active" id="login-step">
+      <form id="login-form">
+        <div class="field"><label for="f-email">Email</label><input type="text" id="f-email" placeholder="you@example.com" required autocomplete="email"></div>
+        <div class="field"><label for="f-password">Password</label><input type="password" id="f-password" placeholder="Your password" required autocomplete="current-password"></div>
+        <div class="row">
+          <a href="#" id="forgot-password-link">Forgot password?</a>
+        </div>
+        <p id="login-error" style="color:#b3413a;font-size:0.85rem;margin-bottom:10px;" hidden></p>
+        <button type="submit" class="btn btn-primary" id="login-btn">Sign in</button>
+      </form>
+    </div>
 
-  <!-- Forgot password — step 2: same neutral confirmation regardless of
-       whether the email actually has an account, so this can't be used to
-       find out which emails are registered. -->
-  <div class="form-wrap" style="padding-top:20px;" id="forgot-sent-step" hidden>
-    <h3 style="margin-bottom:6px;">Check your email</h3>
-    <p style="font-size:13px;color:var(--ink);margin-bottom:8px;">If an account exists for that email, a reset link has been sent.</p>
-    <p style="font-size:12.5px;color:var(--muted);margin-bottom:18px;">Don't see it? Check your spam or promotions folder — it can take a minute to arrive.</p>
-    <a href="login.html" class="btn btn-outline btn-block">Back to sign in</a>
+    <!-- Forgot password -- present on the old login page, no equivalent in
+         this design's "Sign in" panel at all (its own "Forgot password?"
+         link went nowhere), so the real 2-step flow is ported in below,
+         reusing the old app-shell visual style since there's no new design
+         to match it to. -->
+    <div class="panel" id="forgot-step" style="text-align:left;">
+      <h3 style="margin-bottom:6px;">Reset your password</h3>
+      <p style="font-size:0.85rem;color:var(--ink-soft);margin-bottom:16px;">Enter your account email and we'll send you a link to reset your password.</p>
+      <form id="forgot-form">
+        <div class="field"><label for="f-forgot-email">Email</label><input type="text" id="f-forgot-email" placeholder="you@example.com" required autocomplete="email"></div>
+        <button type="submit" class="btn btn-primary" id="forgot-btn">Send reset link</button>
+      </form>
+      <button type="button" class="btn-ghost-link" id="back-to-login-btn" style="width:100%;text-align:center;margin-top:8px;">Back to sign in</button>
+    </div>
+
+    <div class="panel" id="forgot-sent-step" style="text-align:left;">
+      <h3 style="margin-bottom:6px;">Check your email</h3>
+      <p style="font-size:0.85rem;color:var(--ink);margin-bottom:6px;">If an account exists for that email, a reset link has been sent.</p>
+      <p style="font-size:0.8rem;color:var(--ink-soft);margin-bottom:16px;">Don't see it? Check your spam or promotions folder — it can take a minute to arrive.</p>
+      <a href="login.html" class="btn btn-primary" style="text-align:center;display:block;">Back to sign in</a>
+    </div>
   </div>
 </div>
+
+<footer>© 2026 MohallaMarketplace · Built for the neighbourhood, not the algorithm.</footer>
+</div>
+<!-- /#login-root -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
@@ -80,8 +252,14 @@
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
+  /* Real functionality below -- ported from the previous login.html. The
+     "Create account" tab now navigates to signup.html instead of switching
+     panels in place (the real app keeps these as two separate pages/URLs);
+     the fake Google/Phone OTP buttons from the design were removed since
+     neither has a real backend here. */
   document.addEventListener("DOMContentLoaded", () => {
     requireSupabaseConfigured();
+
     document.getElementById("login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const errEl = document.getElementById("login-error");
@@ -106,13 +284,13 @@
 
     document.getElementById("forgot-password-link").addEventListener("click", (e) => {
       e.preventDefault();
-      document.getElementById("login-step").hidden = true;
-      document.getElementById("forgot-step").hidden = false;
+      document.getElementById("login-step").classList.remove("active");
+      document.getElementById("forgot-step").classList.add("active");
     });
 
     document.getElementById("back-to-login-btn").addEventListener("click", () => {
-      document.getElementById("forgot-step").hidden = true;
-      document.getElementById("login-step").hidden = false;
+      document.getElementById("forgot-step").classList.remove("active");
+      document.getElementById("login-step").classList.add("active");
     });
 
     document.getElementById("forgot-form").addEventListener("submit", async (e) => {
@@ -124,11 +302,11 @@
       try {
         await Auth.resetPasswordForEmail(email);
       } catch (err) {
-        // Intentionally swallowed — the confirmation below is shown either
+        // Intentionally swallowed -- the confirmation below is shown either
         // way, so this can't be used to check which emails have accounts.
       }
-      document.getElementById("forgot-step").hidden = true;
-      document.getElementById("forgot-sent-step").hidden = false;
+      document.getElementById("forgot-step").classList.remove("active");
+      document.getElementById("forgot-sent-step").classList.add("active");
     });
   });
 </script>

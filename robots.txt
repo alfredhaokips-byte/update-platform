@@ -7,6 +7,6 @@ Disallow: /post-ad.html
 Disallow: /saved.html
 Disallow: /verify.html
 Disallow: /edit-profile.html
-Disallow: /help.html
+Disallow: /report.html
 
 Sitemap: https://mohallamarketplace.in/sitemap.xml

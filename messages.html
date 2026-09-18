@@ -9,161 +9,346 @@
   gtag('js', new Date());
   gtag('config', 'G-ZRDE5VY8FE');
 </script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
 <title>Chats — Marketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+#messages-root{
+  --paper:#F7F2E7; --paper-2:#F0E9D8; --forest:#1F3A2E; --moss:#4A6B4A; --sage:#8FAE86;
+  --sage-light:#DCE8D4; --marigold:#D9A441; --ink:#2A2A22; --ink-soft:#5C5A4D;
+}
+#messages-root *{box-sizing:border-box; margin:0; padding:0;}
+#messages-root{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.5; }
+#messages-root h1, #messages-root h2, #messages-root h3{ color:var(--forest); font-weight:700; letter-spacing:-0.02em; }
+#messages-root a{ color:inherit; text-decoration:none; }
+
+#messages-root .nav-bar{ background:var(--paper); }
+#messages-root nav{ display:flex; align-items:center; justify-content:space-between; padding:20px 24px; max-width:1080px; margin:0 auto; }
+#messages-root .logo{ display:flex; align-items:center; gap:2px; }
+#messages-root .logo-img{ height:44px; width:auto; display:block; }
+#messages-root .nav-links{ display:flex; gap:28px; font-size:0.94rem; color:var(--ink-soft); }
+#messages-root .nav-links a:hover, #messages-root .nav-links a.active{ color:var(--forest); }
+#messages-root .nav-cta{ background:var(--forest); color:var(--paper); padding:9px 18px; border-radius:10px; font-weight:600; font-size:0.9rem; }
+#messages-root .nav-cta:hover{ background:var(--moss); }
+
+#messages-root .head{ max-width:1080px; margin:0 auto; padding:44px 24px 24px; }
+#messages-root .head h1{ font-size:clamp(1.9rem,4vw,2.6rem); }
+#messages-root .head p{ color:var(--ink-soft); margin-top:8px; max-width:52ch; }
+
+#messages-root .messenger{ max-width:1080px; margin:0 auto; padding:0 24px 60px; display:grid; grid-template-columns:320px 1fr; gap:20px; height:640px; }
+#messages-root .thread-list{ background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; }
+#messages-root .thread-list-head{ padding:14px 16px; border-bottom:1px solid rgba(31,58,46,0.1); font-size:0.82rem; color:var(--moss); font-weight:600; letter-spacing:0.03em; text-transform:uppercase; }
+#messages-root .threads{ flex:1; overflow-y:auto; }
+#messages-root .thread-item{ display:flex; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(31,58,46,0.08); cursor:pointer; transition:background .12s ease; align-items:flex-start; }
+#messages-root .thread-item:hover{ background:var(--sage-light); }
+#messages-root .thread-item.active{ background:var(--sage-light); }
+#messages-root .thread-item .avatar{ width:36px; height:36px; border-radius:50%; background:var(--paper); color:var(--forest); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0; border:1px solid rgba(31,58,46,0.1); }
+#messages-root .thread-item.active .avatar{ background:var(--paper-2); }
+#messages-root .thread-meta{ flex:1; min-width:0; }
+#messages-root .thread-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+#messages-root .thread-top strong{ color:var(--forest); font-size:0.9rem; font-weight:600; }
+#messages-root .thread-top .time{ font-size:0.72rem; color:var(--ink-soft); flex-shrink:0; }
+#messages-root .thread-listing{ font-size:0.72rem; color:var(--moss); font-weight:600; }
+#messages-root .thread-preview{ font-size:0.82rem; color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#messages-root .unread-dot{ width:8px; height:8px; border-radius:50%; background:var(--marigold); margin-left:auto; flex-shrink:0; margin-top:8px; }
+
+#messages-root .chat{ background:var(--paper-2); border:1px solid rgba(31,58,46,0.1); border-radius:16px; display:flex; flex-direction:column; overflow:hidden; }
+#messages-root .chat-head{ padding:14px 18px; border-bottom:1px solid rgba(31,58,46,0.1); display:flex; gap:12px; align-items:center; }
+#messages-root .chat-head .avatar{ width:40px; height:40px; border-radius:50%; background:var(--sage-light); color:var(--forest); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; }
+#messages-root .chat-head-info{ flex:1; }
+#messages-root .chat-head-info strong{ display:block; color:var(--forest); font-size:0.95rem; font-weight:600; }
+#messages-root .chat-head-info span{ font-size:0.78rem; color:var(--ink-soft); }
+#messages-root .chat-head-info .verified{ color:var(--moss); font-weight:600; }
+#messages-root .chat-listing{ background:var(--paper); border:1px solid rgba(31,58,46,0.1); border-radius:10px; padding:10px 12px; margin:12px 18px 6px; display:flex; gap:12px; align-items:center; }
+#messages-root .chat-listing-thumb{ width:44px; height:44px; border-radius:8px; background:var(--sage-light); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+#messages-root .chat-listing-info{ flex:1; min-width:0; }
+#messages-root .chat-listing-info strong{ display:block; font-size:0.88rem; color:var(--forest); font-weight:600; }
+#messages-root .chat-listing-info span{ font-size:0.78rem; color:var(--marigold); font-weight:700; }
+
+#messages-root .messages{ flex:1; overflow-y:auto; padding:14px 18px; display:flex; flex-direction:column; gap:8px; }
+#messages-root .msg{ max-width:75%; padding:10px 14px; border-radius:14px; font-size:0.9rem; line-height:1.45; word-wrap:break-word; }
+#messages-root .msg.them{ background:var(--paper); border:1px solid rgba(31,58,46,0.1); color:var(--ink); align-self:flex-start; border-bottom-left-radius:4px; }
+#messages-root .msg.me{ background:var(--forest); color:var(--paper); align-self:flex-end; border-bottom-right-radius:4px; }
+#messages-root .msg-time{ font-size:0.68rem; color:var(--ink-soft); align-self:center; margin:6px 0; }
+
+#messages-root .composer{ padding:12px 14px; border-top:1px solid rgba(31,58,46,0.1); background:var(--paper-2); display:flex; gap:10px; align-items:center; }
+#messages-root .composer input{ flex:1; padding:11px 16px; border-radius:24px; border:1px solid rgba(31,58,46,0.15); background:var(--paper); font-family:inherit; font-size:0.92rem; color:var(--ink); outline:none; }
+#messages-root .composer input:focus{ border-color:var(--sage); outline:2px solid var(--sage); outline-offset:1px; }
+#messages-root .composer button{ background:var(--forest); color:var(--paper); border:none; width:42px; height:42px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+#messages-root .composer button:hover{ background:var(--moss); }
+
+#messages-root .empty-chat{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; color:var(--ink-soft); text-align:center; }
+#messages-root .empty-chat svg{ width:80px; height:80px; margin-bottom:16px; opacity:0.7; }
+#messages-root .empty-chat strong{ color:var(--forest); font-size:1.1rem; font-weight:600; margin-bottom:6px; display:block; }
+
+/* Mobile: single column, list first then chat overlay */
+
+
+#messages-root .back-btn{ display:none; background:none; border:none; color:var(--forest); font-family:inherit; font-size:0.9rem; cursor:pointer; padding:0; margin-right:4px; }
+
+@media (max-width:860px){
+  #messages-root .messenger{ grid-template-columns:1fr; height:auto; }
+  #messages-root .thread-list{ height:auto; max-height:none; }
+  #messages-root .chat{ display:none; height:calc(100vh - 60px); position:fixed; inset:0; z-index:100; border-radius:0; border:none; background:var(--paper); }
+  #messages-root .messenger.chat-open .thread-list{ display:none; }
+  #messages-root .messenger.chat-open .chat{ display:flex; }
+  #messages-root .back-btn{ display:inline-flex; }
+}
+@media (max-width:720px){
+  #messages-root .nav-links{ display:none; }
+  #messages-root nav{ padding:14px 18px; }
+  #messages-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
+  #messages-root .head{ padding:28px 20px 16px; }
+  #messages-root .messenger{ padding:0 20px 40px; }
+}
+
+#messages-root footer{ padding:50px 24px 30px; background:var(--paper-2); }
+#messages-root .footer-inner{ max-width:1080px; margin:0 auto; }
+#messages-root .foot-top{ display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; border-bottom:1px solid rgba(31,58,46,0.15); padding-bottom:36px; margin-bottom:24px; }
+#messages-root .foot-brand p{ color:var(--ink-soft); max-width:32ch; margin-top:10px; font-size:0.92rem; }
+#messages-root .foot-cols{ display:flex; gap:56px; flex-wrap:wrap; }
+#messages-root .foot-col h5{ font-size:0.85rem; color:var(--forest); margin-bottom:12px; font-weight:700; }
+#messages-root .foot-col a{ display:block; font-size:0.88rem; color:var(--ink-soft); margin-bottom:8px; }
+#messages-root .foot-col a:hover{ color:var(--forest); }
+#messages-root .foot-bottom{ display:flex; justify-content:space-between; font-size:0.82rem; color:var(--ink-soft); flex-wrap:wrap; gap:10px; max-width:1080px; margin:0 auto; }
+
+#messages-root svg [stroke="#1F3A2E"]{ stroke:var(--forest); }
+#messages-root svg [fill="#1F3A2E"]:not([fill-opacity="0"]){ fill:var(--forest); }
+</style>
 </head>
 <body>
 
-<div class="app-shell">
-  <div id="page-root"></div>
+<div id="messages-root">
+<div class="nav-bar">
+<nav>
+  <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+  <div class="nav-links">
+    <a href="browse.html">Browse</a>
+    <a href="community.html">Community</a>
+    <a href="messages.html" class="active">Messages</a>
+    <a href="help.html">Help</a>
+  </div>
+  <a class="nav-cta" href="post-ad.html">Sell something</a>
+</nav>
 </div>
+
+<div class="head">
+  <h1>Messages</h1>
+  <p>Talk to buyers and sellers about listings. Every chat is between two verified neighbours.</p>
+</div>
+
+<div class="messenger" id="messenger">
+  <aside class="thread-list">
+    <div class="thread-list-head" id="thread-list-head">Inbox</div>
+    <!-- Search + Buying/Selling filter -- real, working features on the old
+         page with no equivalent in this design at all, added back rather
+         than dropped. -->
+    <div style="padding:10px 14px;border-bottom:1px solid rgba(31,58,46,0.1);">
+      <input type="text" id="chat-search" placeholder="Search chats" style="width:100%;font-family:inherit;font-size:0.85rem;padding:8px 10px;border-radius:8px;border:1px solid rgba(31,58,46,0.18);background:var(--paper);color:var(--ink);" />
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button type="button" class="tab active" data-filter="all" style="flex:1;padding:6px;font-size:0.78rem;border-radius:8px;background:var(--forest);color:var(--paper);border:none;font-family:inherit;cursor:pointer;">All</button>
+        <button type="button" class="tab" data-filter="buying" style="flex:1;padding:6px;font-size:0.78rem;border-radius:8px;background:transparent;color:var(--ink-soft);border:1px solid rgba(31,58,46,0.15);font-family:inherit;cursor:pointer;">Buying</button>
+        <button type="button" class="tab" data-filter="selling" style="flex:1;padding:6px;font-size:0.78rem;border-radius:8px;background:transparent;color:var(--ink-soft);border:1px solid rgba(31,58,46,0.15);font-family:inherit;cursor:pointer;">Selling</button>
+      </div>
+    </div>
+    <div class="threads" id="threads"></div>
+  </aside>
+  <section class="chat" id="chat">
+    <!-- populated by JS -->
+  </section>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+        <p>A sustainable, trust-first marketplace, built around a neighbourhood, not an algorithm.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col"><h5>Marketplace</h5><a href="browse.html">Browse listings</a><a href="post-ad.html">Sell something</a><a href="signup.html">Create account</a></div>
+        <div class="foot-col"><h5>Community</h5><a href="community.html">Notice board</a><a href="messages.html">Messages</a></div>
+        <div class="foot-col"><h5>Support</h5><a href="help.html">Help centre</a><a href="login.html">Sign in</a><a href="mailto:mohallamarketplace@gmail.com">Email us</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 MohallaMarketplace</span>
+    <span>Built for the neighbourhood, not the algorithm.</span>
+  </div>
+</footer>
+</div>
+<!-- /#messages-root -->
 
 <div id="bottom-nav-root"></div>
 
+<link rel="stylesheet" href="css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
+  /* Real functionality below -- ported from the previous messages.html.
+     This design's chat used a hardcoded THREADS array and a setTimeout
+     fake auto-reply on send -- that fake-reply simulator is deliberately
+     NOT ported: it was already tried and removed from this project once
+     before (see README) as actively misleading with real other users.
+     Search and the Buying/Selling filter (real features, no equivalent in
+     this design) were added back above; the report-conversation button
+     now correctly points at report.html, not this design's dead help.html
+     link. */
   let activeTab = "all";
   let activeThreadId = null;
   let allThreads = [];
   let allListingsById = new Map();
+  const messenger = document.getElementById("messenger");
 
-  async function refreshThreads() {
-    allThreads = await Store.getThreads();
-  }
-
-  function renderList() {
-    mountBottomNav("messages");
-    const root = document.getElementById("page-root");
+  function filteredThreads() {
     let threads = allThreads;
     if (activeTab !== "all") threads = threads.filter((t) => t.tag === activeTab);
+    const q = (document.getElementById("chat-search").value || "").toLowerCase();
+    if (q) threads = threads.filter((t) => {
+      const seller = getSellerById(t.sellerId);
+      const listing = allListingsById.get(t.listingId);
+      return (seller && seller.name.toLowerCase().includes(q)) || (listing && listing.title.toLowerCase().includes(q));
+    });
+    return threads;
+  }
 
-    root.innerHTML = `
-      <div class="page-top" style="padding-top:18px;">
-        <div class="row between">
-          <p class="chats-title">Chats</p>
-          <a href="account.html" class="icon-btn">🔔<span class="dot"></span></a>
-        </div>
-        <div class="search-bar" style="margin-bottom:0;">🔍 <input type="text" id="chat-search" placeholder="Search chats" /></div>
-      </div>
-      <div class="chat-tabs">
-        <button class="pill-btn ${activeTab === "all" ? "active" : ""}" onclick="setTab('all')">All</button>
-        <button class="pill-btn ${activeTab === "buying" ? "active" : ""}" onclick="setTab('buying')">Buying</button>
-        <button class="pill-btn ${activeTab === "selling" ? "active" : ""}" onclick="setTab('selling')">Selling</button>
-      </div>
-      <div class="chat-list" id="chat-list"></div>
-    `;
+  function renderThreads() {
+    const el = document.getElementById("threads");
+    const threads = filteredThreads();
+    document.getElementById("thread-list-head").textContent = `Inbox · ${allThreads.length}`;
 
-    const listEl = document.getElementById("chat-list");
     if (threads.length === 0) {
-      listEl.innerHTML = `<div class="empty-state"><div class="big">📭</div><h3>No conversations yet</h3><p>Message a seller from any listing.</p></div>`;
+      el.innerHTML = `<div class="empty-chat" style="padding:30px 16px;"><strong>No conversations</strong><span>Message a seller from any listing.</span></div>`;
       return;
     }
-    listEl.innerHTML = threads.map((t) => {
+    el.innerHTML = threads.map((t) => {
       const listing = allListingsById.get(t.listingId);
       const seller = getSellerById(t.sellerId);
       const last = t.messages[t.messages.length - 1];
       if (!seller) return "";
       return `
-        <button class="chat-item" onclick="openThread('${t.id}')">
+        <div class="thread-item ${t.id === activeThreadId ? "active" : ""}" data-id="${t.id}">
           <div class="avatar">${avatarHtml(seller)}</div>
-          <div class="chat-info">
-            <div class="chat-top">
-              <p class="chat-name">${escapeHtml(seller.name)} <span class="chat-tag ${t.tag === "buying" ? "tag-buying" : "tag-selling"}">${t.tag === "buying" ? "Buying" : "Selling"}</span></p>
-              <span class="chat-time">${last ? last.time : ""}</span>
+          <div class="thread-meta">
+            <div class="thread-top">
+              <strong>${escapeHtml(seller.name)}</strong>
+              <span class="time">${last ? last.time : ""}</span>
             </div>
-            <p class="chat-msg">${listing ? escapeHtml(listing.title) + " — " : ""}${escapeHtml(last ? last.text : "")}</p>
+            <div class="thread-listing">${listing ? escapeHtml(listing.title) : ""}</div>
+            <div class="thread-preview">${last && last.from === "me" ? "You: " : ""}${escapeHtml(last ? last.text : "")}</div>
           </div>
-          ${t.unread ? `<div class="unread">${t.unread}</div>` : ""}
-        </button>
+          ${t.unread ? '<div class="unread-dot"></div>' : ""}
+        </div>
       `;
     }).join("");
-
-    document.getElementById("chat-search").addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase();
-      document.querySelectorAll(".chat-item").forEach((el) => {
-        el.style.display = el.textContent.toLowerCase().includes(q) ? "" : "none";
+    el.querySelectorAll("[data-id]").forEach((item) => {
+      item.addEventListener("click", () => {
+        activeThreadId = item.dataset.id;
+        const t = allThreads.find((x) => x.id === activeThreadId);
+        if (t && t.unread) { t.unread = 0; Store.markThreadRead(activeThreadId); }
+        messenger.classList.add("chat-open");
+        renderThreads();
+        renderChat();
       });
     });
   }
 
-  function setTab(tab) { activeTab = tab; renderList(); }
+  document.querySelectorAll('[data-filter]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll('[data-filter]').forEach((b) => {
+        b.classList.toggle("active", b === btn);
+        b.style.background = b === btn ? "var(--forest)" : "transparent";
+        b.style.color = b === btn ? "var(--paper)" : "var(--ink-soft)";
+      });
+      activeTab = btn.dataset.filter;
+      renderThreads();
+    });
+  });
+  document.getElementById("chat-search").addEventListener("input", renderThreads);
 
-  async function openThread(id) {
-    activeThreadId = id;
-    const thread = allThreads.find((t) => t.id === id);
-
-    const root = document.getElementById("page-root");
-    if (!thread) { root.innerHTML = backRowHtml("Chat") + `<div class="empty-state">Conversation not found</div>`; return; }
-
-    if (thread.unread) { thread.unread = 0; Store.markThreadRead(id); }
-
-    const listing = allListingsById.get(thread.listingId);
-    const seller = getSellerById(thread.sellerId);
-
-    root.innerHTML = `
-      ${backRowHtml(null, `<a class="icon-btn" href="help.html?type=${encodeURIComponent("Abusive or unsafe behavior")}&seller=${thread.sellerId}&listing=${thread.listingId}" title="Report this conversation">⋯</a>`)}
-      <div class="row" style="padding:0 18px 14px;gap:10px;">
+  function renderChat() {
+    const t = allThreads.find((x) => x.id === activeThreadId);
+    const chat = document.getElementById("chat");
+    if (!t) {
+      chat.innerHTML = `<div class="empty-chat">
+        <svg viewBox="0 0 80 80" fill="none" stroke="#4A6B4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 20 L60 20 Q66 20 66 26 L66 50 Q66 56 60 56 L44 56 L36 64 L38 56 L14 56 Q8 56 8 50 L8 26 Q8 20 14 20 Z"/></svg>
+        <strong>Pick a conversation</strong>
+        <span>Or start a new one from a listing.</span>
+      </div>`;
+      return;
+    }
+    const listing = allListingsById.get(t.listingId);
+    const seller = getSellerById(t.sellerId);
+    chat.innerHTML = `
+      <div class="chat-head">
+        <button class="back-btn" id="backBtn" aria-label="Back">←</button>
         <div class="avatar">${avatarHtml(seller)}</div>
-        <div>
-          <p class="seller-name">${escapeHtml(seller.name)} ${isSellerVerified(seller) ? "✓" : ""}</p>
-          <a href="listing.html?id=${listing ? listing.id : ""}" style="font-size:12px;color:var(--ink-soft);">${listing ? escapeHtml(listing.title) + " · " + formatPrice(listing.price) : "Listing removed"}</a>
+        <div class="chat-head-info">
+          <strong>${escapeHtml(seller.name)}${seller.isBusiness ? ' <span style="color:var(--marigold); font-size:0.75rem; font-weight:600;">· BUSINESS</span>' : ""}</strong>
+          <span>${isSellerVerified(seller) ? '<span class="verified">Verified</span>' : "Unverified"}</span>
         </div>
+        <a class="icon-btn" href="report.html?type=${encodeURIComponent("Abusive or unsafe behavior")}&seller=${t.sellerId}&listing=${t.listingId}" title="Report this conversation" style="margin-left:auto;">⋯</a>
       </div>
-      <div class="chat-thread-body" id="chat-body"></div>
-      <div class="chat-quick">
-        <button onclick="quickSend('Is this still available?')">Is this still available?</button>
-        <button onclick="quickSend('Can you share more photos?')">Can you share more photos?</button>
-        <button onclick="quickSend('What is your best price?')">What's your best price?</button>
+      <a class="chat-listing" href="listing.html?id=${listing ? listing.id : ""}" style="text-decoration:none;">
+        <div class="chat-listing-thumb">${listing ? listingThumbHtml(listing, 80, 80) : ""}</div>
+        <div class="chat-listing-info">
+          <strong>${listing ? escapeHtml(listing.title) : "Listing removed"}</strong>
+          ${listing ? `<span>${formatPrice(listing.price)}</span>` : ""}
+        </div>
+      </a>
+      <div class="messages" id="msgs"></div>
+      <div style="display:flex;gap:8px;padding:8px 14px;flex-wrap:wrap;">
+        <button type="button" class="quick-reply-btn" data-quick="Is this still available?" style="font-size:0.78rem;padding:6px 10px;border-radius:16px;border:1px solid rgba(31,58,46,0.18);background:var(--paper);color:var(--forest);cursor:pointer;font-family:inherit;">Is this still available?</button>
+        <button type="button" class="quick-reply-btn" data-quick="Can you share more photos?" style="font-size:0.78rem;padding:6px 10px;border-radius:16px;border:1px solid rgba(31,58,46,0.18);background:var(--paper);color:var(--forest);cursor:pointer;font-family:inherit;">Can you share more photos?</button>
+        <button type="button" class="quick-reply-btn" data-quick="What's your best price?" style="font-size:0.78rem;padding:6px 10px;border-radius:16px;border:1px solid rgba(31,58,46,0.18);background:var(--paper);color:var(--forest);cursor:pointer;font-family:inherit;">What's your best price?</button>
       </div>
-      <form class="chat-input-row" id="chat-form">
-        <input type="text" id="chat-text" placeholder="Type a message..." autocomplete="off" />
-        <button type="submit" class="btn btn-fill btn-sm">Send</button>
-      </form>
+      <div class="composer">
+        <input type="text" id="msgInput" placeholder="Type a message" autocomplete="off">
+        <button id="sendBtn" aria-label="Send">↑</button>
+      </div>
     `;
-    renderChatBody(thread);
-    mountBottomNav("messages");
+    renderMessages();
+    document.getElementById("backBtn").addEventListener("click", () => messenger.classList.remove("chat-open"));
 
-    document.getElementById("chat-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const input = document.getElementById("chat-text");
-      if (!input.value.trim()) return;
-      sendInThread(input.value.trim());
-      input.value = "";
+    const input = document.getElementById("msgInput");
+    async function send(text) {
+      const body = (text || input.value).trim();
+      if (!body) return;
+      try {
+        await Store.sendMessage(activeThreadId, body);
+        t.messages.push({ from: "me", text: body, time: new Date().toLocaleString("en-IN", { hour: "numeric", minute: "2-digit" }) });
+        input.value = "";
+        renderMessages();
+        renderThreads();
+      } catch (err) {
+        toast(err.message || "Couldn't send — try again");
+      }
+    }
+    document.getElementById("sendBtn").addEventListener("click", () => send());
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+    document.querySelectorAll(".quick-reply-btn").forEach((btn) => {
+      btn.addEventListener("click", () => send(btn.dataset.quick));
     });
   }
 
-  function renderChatBody(thread) {
-    const body = document.getElementById("chat-body");
-    if (!body) return;
-    body.innerHTML = thread.messages.length
-      ? thread.messages.map((m) => `<div class="bubble ${m.from === "me" ? "me" : "them"}">${escapeHtml(m.text)}<span class="time">${m.time}</span></div>`).join("")
-      : `<p style="text-align:center;color:var(--muted);font-size:12.5px;padding:20px;">Say hello — replies show up here once the other person answers.</p>`;
-    body.scrollTop = body.scrollHeight;
-  }
-
-  function quickSend(text) { sendInThread(text); }
-
-  async function sendInThread(text) {
-    const thread = allThreads.find((t) => t.id === activeThreadId);
-    if (!thread) return;
-    try {
-      await Store.sendMessage(activeThreadId, text);
-      thread.messages.push({ from: "me", text, time: new Date().toLocaleString("en-IN", { hour: "numeric", minute: "2-digit" }) });
-      renderChatBody(thread);
-    } catch (err) {
-      toast(err.message || "Couldn't send — try again");
-    }
+  function renderMessages() {
+    const t = allThreads.find((x) => x.id === activeThreadId);
+    const el = document.getElementById("msgs");
+    if (!el || !t) return;
+    el.innerHTML = t.messages.map((m, i) => {
+      const showTime = i === 0 || m.time !== t.messages[i - 1].time;
+      return (showTime ? `<div class="msg-time">${escapeHtml(m.time)}</div>` : "") + `<div class="msg ${m.from}">${escapeHtml(m.text)}</div>`;
+    }).join("");
+    el.scrollTop = el.scrollHeight;
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -173,10 +358,14 @@
 
     const listings = await Store.getListings();
     allListingsById = new Map(listings.map((l) => [l.id, l]));
-    await refreshThreads();
+    allThreads = await Store.getThreads();
 
-    if (qs("open") && allThreads.find((t) => t.id === qs("open"))) openThread(qs("open"));
-    else renderList();
+    if (qs("open") && allThreads.find((t) => t.id === qs("open"))) {
+      activeThreadId = qs("open");
+      messenger.classList.add("chat-open");
+    }
+    renderThreads();
+    renderChat();
   });
 </script>
 </body>

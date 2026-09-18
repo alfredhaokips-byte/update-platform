@@ -9,121 +9,342 @@
   gtag('js', new Date());
   gtag('config', 'G-ZRDE5VY8FE');
 </script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
-<title>Browse — Marketplace</title>
+<title>Browse: MohallaMarketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+#browse-root{
+  --paper:#F7F2E7; --paper-2:#F0E9D8; --forest:#1F3A2E; --moss:#4A6B4A; --sage:#8FAE86;
+  --sage-light:#DCE8D4; --marigold:#D9A441; --ink:#2A2A22; --ink-soft:#5C5A4D;
+}
+
+
+#browse-root *{box-sizing:border-box; margin:0; padding:0;}
+#browse-root{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.5; }
+#browse-root h1, #browse-root h2, #browse-root h3{ font-family:'Inter',sans-serif; color:var(--forest); font-weight:700; letter-spacing:-0.02em; }
+#browse-root a{ color:inherit; text-decoration:none; }
+#browse-root .wrap{ max-width:1080px; margin:0 auto; padding:0 24px; }
+
+#browse-root .nav-bar{ background:var(--paper); border-bottom:1px solid rgba(31,58,46,0.1); }
+#browse-root nav{ display:flex; align-items:center; justify-content:space-between; padding:20px 24px; max-width:1080px; margin:0 auto; }
+#browse-root .logo{ display:flex; align-items:center; gap:2px; }
+#browse-root .logo-svg{ height:38px; width:auto; display:block; }
+#browse-root .logo-img{ height:44px; width:auto; display:block; }
+@media (max-width:520px){ #browse-root .logo-svg{ height:32px; } #browse-root .logo-img{ height:36px; } }
+#browse-root .nav-links{ display:flex; gap:28px; font-size:0.94rem; color:var(--ink-soft); }
+#browse-root .nav-links a:hover, #browse-root .nav-links a.active{ color:var(--forest); }
+#browse-root .nav-cta{ background:var(--forest); color:var(--paper); padding:9px 18px; border-radius:10px; font-weight:600; font-size:0.9rem; }
+
+#browse-root .page-head{ padding:44px 24px 28px; max-width:1080px; margin:0 auto; display:grid; grid-template-columns:1.3fr 1fr; gap:36px; align-items:center; }
+#browse-root .page-head h1{ font-size:clamp(1.9rem,4vw,2.6rem); }
+#browse-root .page-head p{ color:var(--ink-soft); margin-top:8px; max-width:52ch; }
+#browse-root .head-doodle svg{ width:100%; height:auto; }
+@media (max-width:720px){ #browse-root .page-head{ grid-template-columns:1fr; } #browse-root .head-doodle{ max-width:320px; margin:0 auto; } }
+
+#browse-root .filter-bar{ max-width:1080px; margin:0 auto 8px; padding:0 24px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+#browse-root .search-box{ flex:1 1 240px; display:flex; align-items:center; gap:8px; background:var(--paper-2); border:1px solid rgba(31,58,46,0.15); border-radius:12px; padding:11px 16px; }
+#browse-root .search-box input{ border:none; background:none; outline:none; font-family:inherit; font-size:0.94rem; color:var(--ink); width:100%; }
+#browse-root .search-box input::placeholder{ color:var(--ink-soft); }
+#browse-root select{ font-family:inherit; font-size:0.88rem; padding:10px 14px; border-radius:12px; border:1px solid rgba(31,58,46,0.15); background:var(--paper-2); color:var(--ink); cursor:pointer; }
+#browse-root select:focus, #browse-root .search-box:focus-within{ outline:2px solid var(--sage); outline-offset:1px; }
+
+#browse-root .chips{ max-width:1080px; margin:16px auto 8px; padding:0 24px; display:flex; gap:10px; flex-wrap:wrap; }
+@media (max-width:720px){ #browse-root .chips{ flex-wrap:nowrap; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; } #browse-root .chips::-webkit-scrollbar{ display:none; } #browse-root .chip{ white-space:nowrap; flex-shrink:0; } }
+#browse-root .chip{ padding:8px 16px; border-radius:24px; font-size:0.86rem; font-weight:600; background:var(--paper-2); border:1.5px solid var(--sage); color:var(--moss); cursor:pointer; }
+#browse-root .chip.active{ background:var(--forest); border-color:var(--forest); color:var(--paper); }
+
+#browse-root .results-row{ max-width:1080px; margin:24px auto 0; padding:0 24px; display:flex; justify-content:space-between; align-items:baseline; font-size:0.88rem; color:var(--ink-soft); }
+
+#browse-root .grid{ max-width:1080px; margin:0 auto; padding:20px 24px 80px; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+#browse-root .card{ background:var(--paper-2); border-radius:20px; padding:20px; border:1px solid rgba(31,58,46,0.09); transition:transform .25s ease, box-shadow .25s ease; cursor:pointer; }
+#browse-root .card:hover{ transform:translateY(-6px); box-shadow:0 18px 30px -14px rgba(31,58,46,0.28); }
+#browse-root .card-thumb{ background:var(--sage-light); border-radius:14px; aspect-ratio:4/3; margin-bottom:14px; display:flex; align-items:center; justify-content:center; padding:18px; position:relative; overflow:hidden; }
+#browse-root .card-thumb svg{ width:78%; height:78%; }
+/* Real listing photos fill the thumb edge-to-edge, unlike the decorative
+   placeholder icons above -- added for real data, not in the original design. */
+#browse-root .card-thumb.has-photo{ padding:0; }
+#browse-root .card-thumb img, #browse-root .card-thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
+#browse-root .card-save{ position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(247,242,231,0.92); border:none; font-size:14px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); cursor:pointer; }
+#browse-root .card-save.active{ color:var(--marigold); }
+#browse-root .card h4{ font-size:1.02rem; color:var(--forest); margin-bottom:4px; font-weight:600; }
+#browse-root .card .price{ font-weight:700; color:var(--marigold); font-size:1rem; margin-bottom:6px; }
+#browse-root .card .meta{ font-size:0.8rem; color:var(--ink-soft); }
+#browse-root .empty{ display:none; text-align:center; padding:60px 24px; color:var(--ink-soft); }
+#browse-root .empty.show{ display:block; }
+#browse-root .empty strong{ display:block; color:var(--forest); font-size:1.2rem; margin-bottom:8px; font-family:'Inter',sans-serif; }
+
+#browse-root footer{ padding:50px 24px 30px; background:var(--paper-2); }
+#browse-root .footer-inner{ max-width:1080px; margin:0 auto; }
+#browse-root .foot-top{ display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; border-bottom:1px solid rgba(31,58,46,0.15); padding-bottom:36px; margin-bottom:24px; }
+
+#browse-root .foot-brand p{ color:var(--ink-soft); max-width:32ch; margin-top:10px; font-size:0.92rem; }
+#browse-root .foot-bottom{ display:flex; justify-content:space-between; font-size:0.82rem; color:var(--ink-soft); flex-wrap:wrap; gap:10px; max-width:1080px; margin:0 auto; }
+
+@media (max-width:720px){
+  #browse-root .nav-links{ display:none; }
+  #browse-root nav{ padding:14px 18px; }
+  #browse-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
+  #browse-root .grid{ grid-template-columns:1fr; padding:20px 20px 60px; }
+  #browse-root .filter-bar{ padding:0 20px; }
+  #browse-root .page-head{ padding:32px 20px 20px; }
+  #browse-root .results-row{ padding:0 20px; }
+}
+@media (min-width:721px) and (max-width:900px){
+  #browse-root .grid{ grid-template-columns:repeat(2,1fr); }
+}
+
+/* dark mode adaptation for doodles */
+
+
+#browse-root svg [stroke="#1F3A2E"]{ stroke:var(--forest); }
+#browse-root svg [fill="#1F3A2E"]:not([fill-opacity="0"]){ fill:var(--forest); }
+#browse-root svg [stroke="#4A6B4A"]{ stroke:var(--moss); }
+#browse-root svg [fill="#4A6B4A"]:not([fill-opacity="0"]){ fill:var(--moss); }
+#browse-root svg [stroke="#5C5A4D"]{ stroke:var(--ink-soft); }
+</style>
 </head>
 <body>
 
-<div class="app-shell">
-  <div class="back-row row between">
-    <a href="index.html" class="icon-btn" aria-label="Back">←</a>
-    <span class="header-title" id="browse-title">Browse</span>
-    <span style="width:40px;"></span>
+<div id="browse-root">
+<div class="nav-bar">
+<nav>
+  <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+  <div class="nav-links">
+    <a href="browse.html" class="active">Browse</a>
+    <a href="community.html">Community</a>
+    <a href="messages.html">Messages</a>
+    <a href="help.html">Help</a>
   </div>
+  <a class="nav-cta" href="post-ad.html">Sell something</a>
+</nav>
+</div>
 
-  <div class="page-top" style="padding-top:10px;">
-    <div class="row search-row">
-      <form class="search-bar" id="search-form" style="cursor:default;">
-        <span>🔍</span>
-        <input type="text" id="search-input" placeholder="What are you looking for?" />
-      </form>
+<div class="page-head">
+  <div class="head-copy">
+    <h1>Browse your mohalla</h1>
+    <p>Real listings from neighbours nearby. Filter by what you need, or just see what people are letting go of this week.</p>
+  </div>
+  <div class="head-doodle">
+    <svg viewBox="0 0 320 200" fill="none" stroke="#1F3A2E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- bunting -->
+      <path d="M10 20 Q160 5 310 20" stroke-width="1"/>
+      <path d="M50 22 l5 9 l5 -7" stroke-width="0.8"/>
+      <path d="M100 18 l5 9 l5 -7" stroke-width="0.8"/>
+      <path d="M160 15 l5 9 l5 -7" stroke-width="0.8"/>
+      <path d="M220 18 l5 9 l5 -7" stroke-width="0.8"/>
+      <path d="M270 22 l5 9 l5 -7" stroke-width="0.8"/>
+      <!-- LEFT stall -->
+      <path d="M20 65 L20 50 L110 50 L110 65"/>
+      <path d="M20 65 L110 65"/>
+      <path d="M35 50 L35 65 M50 50 L50 65 M65 50 L65 65 M80 50 L80 65 M95 50 L95 65" stroke-width="0.8"/>
+      <path d="M20 65 L20 130 L110 130 L110 65" stroke-width="0.9"/>
+      <path d="M20 115 L110 115" stroke-width="0.8"/>
+      <!-- seller -->
+      <circle cx="65" cy="85" r="7"/>
+      <path d="M65 92 C58 94 55 102 56 115 L74 115 C75 102 72 94 65 92Z"/>
+      <!-- boxes on counter -->
+      <rect x="28" y="118" width="8" height="10"/><rect x="40" y="120" width="8" height="8"/><rect x="52" y="118" width="8" height="10"/>
+      <rect x="72" y="118" width="8" height="10"/><rect x="84" y="120" width="8" height="8"/><rect x="96" y="118" width="8" height="10"/>
+      <!-- plant beside -->
+      <path d="M115 130 L124 130 L122 146 L117 146 Z" stroke-width="0.8"/>
+      <path d="M117 130 C117 122 119 118 120 116 C121 118 123 122 123 130Z" stroke-width="0.8"/>
+      <!-- Right stall (awning) -->
+      <path d="M200 70 L215 55 L295 55 L310 70"/>
+      <path d="M200 70 L310 70"/>
+      <path d="M212 55 L219 70 M235 55 L237 70 M255 55 L255 70 M275 55 L273 70 M295 55 L295 70" stroke-width="0.9"/>
+      <path d="M200 70 L200 130 L310 130 L310 70" stroke-width="0.9"/>
+      <path d="M200 115 L310 115" stroke-width="0.8"/>
+      <circle cx="255" cy="90" r="7"/>
+      <path d="M255 97 C248 99 245 107 246 115 L264 115 C265 107 262 99 255 97Z"/>
+      <!-- fruit bowls -->
+      <path d="M212 115 Q220 124 228 115 Z" stroke-width="0.8"/>
+      <circle cx="217" cy="112" r="1.2"/><circle cx="221" cy="110" r="1.2"/><circle cx="225" cy="112" r="1.2"/>
+      <path d="M235 115 Q245 125 255 115 Z" stroke-width="0.8"/>
+      <circle cx="240" cy="112" r="1.2"/><circle cx="245" cy="110" r="1.2"/><circle cx="250" cy="112" r="1.2"/>
+      <path d="M275 115 Q285 125 295 115 Z" stroke-width="0.8"/>
+      <circle cx="280" cy="112" r="1.2"/><circle cx="285" cy="110" r="1.2"/><circle cx="290" cy="112" r="1.2"/>
+      <!-- middle: two people walking -->
+      <circle cx="145" cy="115" r="7"/>
+      <path d="M145 122 C138 124 135 132 136 145 L154 145 C155 132 152 124 145 122Z"/>
+      <path d="M136 145 L133 165 L141 165 L143 145 M154 145 L157 165 L149 165 L147 145" stroke-width="0.7"/>
+      <circle cx="170" cy="112" r="7"/>
+      <path d="M170 119 C163 121 160 129 161 145 L179 145 C180 129 177 121 170 119Z"/>
+      <path d="M161 145 L158 165 L166 165 L168 145 M179 145 L182 165 L174 165 L172 145" stroke-width="0.7"/>
+      <!-- small dog -->
+      <path d="M130 158 Q135 154 142 156 Q147 156 149 162 L149 168 L145 168 L144 165 L140 165 L139 168 L134 168 Z" stroke-width="0.8"/>
+      <circle cx="146" cy="159" r="0.5" fill="#1F3A2E"/>
+      <!-- ground -->
+      <path d="M0 185 Q160 175 320 185" stroke-width="1"/>
+      <!-- plants scattered -->
+      <path d="M6 175 C6 168 8 164 9 162 C10 164 12 168 12 175Z" stroke-width="0.8"/>
+      <path d="M314 175 C314 168 316 164 317 162 C318 164 320 168 320 175Z" stroke-width="0.8"/>
+    </svg>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="#5C5A4D" stroke-width="1.4"/><path d="M11 11 L14.5 14.5" stroke="#5C5A4D" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <input id="search" type="text" placeholder="What are you looking for?">
+  </div>
+  <select id="locality">
+    <option value="">All localities</option>
+    <option>Sector 12</option>
+    <option>Green Park</option>
+    <option>Model Town</option>
+  </select>
+  <select id="condition">
+    <option value="">Any condition</option>
+    <option>Like new</option>
+    <option>Good</option>
+    <option>Well used</option>
+  </select>
+  <select id="sort">
+    <option value="newest">Newest first</option>
+    <option value="low">Price: low to high</option>
+    <option value="high">Price: high to low</option>
+  </select>
+</div>
+
+<div class="chips">
+  <span class="chip active" data-cat="all">All categories</span>
+  <span class="chip" data-cat="thrift">Thrift shops</span>
+  <span class="chip" data-cat="handcrafted">Handcrafted</span>
+  <span class="chip" data-cat="electronics">Electronics</span>
+  <span class="chip" data-cat="decor">Home decor</span>
+  <span class="chip" data-cat="artisans">Artisans</span>
+  <span class="chip" data-cat="books">Books & study</span>
+  <span class="chip" data-cat="kids">Kids & baby</span>
+  <span class="chip" data-cat="rides">Bikes & rides</span>
+</div>
+
+<div class="results-row"><span id="count">6 listings near you</span></div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty"><strong>No listings match</strong>Try a different category, locality, or search term.</div>
+
+<footer>
+  <div class="footer-inner">
+  <div class="foot-top">
+    <div class="foot-brand">
+      <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+      <p>A sustainable, trust-first marketplace, built around a neighbourhood, not an algorithm.</p>
     </div>
   </div>
-
-  <div class="filter-row">
-    <select id="f-cat"><option value="">All categories</option></select>
-    <select id="f-loc"><option value="">All localities</option></select>
-    <select id="f-cond"><option value="">Any condition</option></select>
-    <select id="f-sort">
-      <option value="new">Newest first</option>
-      <option value="low">Price: low to high</option>
-      <option value="high">Price: high to low</option>
-    </select>
+  <div class="foot-bottom">
+    <span>© 2026 MohallaMarketplace</span>
+    <span>Built for the neighbourhood, not the algorithm.</span>
   </div>
-  <p class="result-count" id="result-count"></p>
-
-  <div class="product-grid" id="results-grid"></div>
-  <div class="empty-state" id="empty-state" hidden>
-    <div class="big">🔍</div>
-    <h3>No listings match</h3>
-    <p>Try a different category, locality, or search term.</p>
   </div>
-
-  <div style="height:24px;"></div>
+</footer>
 </div>
+<!-- /#browse-root -->
 
 <div id="bottom-nav-root"></div>
 
+<link rel="stylesheet" href="css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
+  /* Real functionality below -- ported from the previous browse.html,
+     retargeting this design's ids/classes (search/locality/condition/sort
+     match 1:1; category moved from a <select> to chip buttons, so it's
+     rebuilt from real CATEGORIES instead of the design's own fake
+     "Thrift shops / Home decor / Artisans / Kids & baby / Bikes & rides"
+     labels, which don't exist as real listing categories -- see
+     integration notes for why). */
   let allListings = [];
 
-  function fillSelect(id, items, current) {
-    const el = document.getElementById(id);
-    items.forEach(({ value, label }) => {
-      const opt = document.createElement("option");
-      opt.value = value; opt.textContent = label;
-      if (value === current) opt.selected = true;
-      el.appendChild(opt);
-    });
+  function newBrowseCardHtml(listing) {
+    const saved = Store.isSaved(listing.id);
+    return `
+      <a href="listing.html?id=${listing.id}" class="card">
+        <div class="card-thumb has-photo">
+          ${listingThumbHtml(listing, 400, 300)}
+          <button type="button" class="card-save ${saved ? "active" : ""}" title="Save" onclick="handleSaveClick(event,'${listing.id}')">${saved ? "♥" : "♡"}</button>
+        </div>
+        <h4>${escapeHtml(listing.title)}</h4><div class="price">${formatPrice(listing.price)}</div><div class="meta">${escapeHtml(listing.locality)} · ${escapeHtml(listing.condition)}</div>
+      </a>
+    `;
   }
 
   function render() {
-    const q = (document.getElementById("search-input").value || "").trim().toLowerCase();
-    const cat = document.getElementById("f-cat").value;
-    const loc = document.getElementById("f-loc").value;
-    const cond = document.getElementById("f-cond").value;
-    const sort = document.getElementById("f-sort").value;
+    const q = document.getElementById("search").value.toLowerCase().trim();
+    const loc = document.getElementById("locality").value;
+    const cond = document.getElementById("condition").value;
+    const sort = document.getElementById("sort").value;
+    const cat = document.querySelector(".chip.active").dataset.cat;
 
-    let listings = allListings.filter((l) => {
+    let items = allListings.filter((l) => {
       if (q && !l.title.toLowerCase().includes(q) && !l.desc.toLowerCase().includes(q)) return false;
-      if (cat && l.category !== cat) return false;
       if (loc && l.locality !== loc) return false;
       if (cond && l.condition !== cond) return false;
+      if (cat !== "all" && l.category !== cat) return false;
       return true;
     });
 
-    if (sort === "low") listings.sort((a, b) => a.price - b.price);
-    else if (sort === "high") listings.sort((a, b) => b.price - a.price);
-    else listings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    if (sort === "low") items.sort((a, b) => a.price - b.price);
+    else if (sort === "high") items.sort((a, b) => b.price - a.price);
+    else items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    const grid = document.getElementById("results-grid");
-    const empty = document.getElementById("empty-state");
-    document.getElementById("result-count").textContent = listings.length + " result" + (listings.length === 1 ? "" : "s");
+    const grid = document.getElementById("grid");
+    const empty = document.getElementById("empty");
+    document.getElementById("count").textContent = items.length + (items.length === 1 ? " listing near you" : " listings near you");
 
-    if (listings.length === 0) { grid.innerHTML = ""; empty.hidden = false; }
-    else { empty.hidden = true; grid.innerHTML = listings.map(listingCardHtml).join(""); }
-
-    document.getElementById("browse-title").textContent = cat ? cat : "Browse";
+    if (items.length === 0) {
+      grid.innerHTML = "";
+      empty.classList.add("show");
+      return;
+    }
+    empty.classList.remove("show");
+    grid.innerHTML = items.map(newBrowseCardHtml).join("");
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage("home");
     allListings = await Store.getListings();
 
-    // Localities are now free-form (geocoded, not a fixed dropdown) — so
-    // the filter offers whatever localities real listings actually have.
-    const localities = Array.from(new Set(allListings.map(l => l.locality).filter(Boolean))).sort();
+    // Localities are free-form (geocoded, not a fixed dropdown) -- offer
+    // whatever localities real listings actually have, same as before.
+    const localities = Array.from(new Set(allListings.map((l) => l.locality).filter(Boolean))).sort();
+    const localitySelect = document.getElementById("locality");
+    localitySelect.innerHTML = `<option value="">All localities</option>` +
+      localities.map((l) => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join("");
+    if (qs("loc")) localitySelect.value = qs("loc");
 
-    fillSelect("f-cat", CATEGORIES.map(c => ({ value: c, label: c })), qs("cat"));
-    fillSelect("f-loc", localities.map(l => ({ value: l, label: l })), qs("loc"));
-    fillSelect("f-cond", CONDITIONS.map(c => ({ value: c, label: c })), "");
-    if (qs("q")) document.getElementById("search-input").value = qs("q");
+    const conditionSelect = document.getElementById("condition");
+    conditionSelect.innerHTML = `<option value="">Any condition</option>` +
+      CONDITIONS.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
 
-    ["f-cat", "f-loc", "f-cond", "f-sort"].forEach((id) => document.getElementById(id).addEventListener("change", render));
-    document.getElementById("search-input").addEventListener("input", render);
-    document.getElementById("search-form").addEventListener("submit", (e) => e.preventDefault());
+    // Real categories, replacing this design's placeholder chip labels.
+    const chipsEl = document.querySelector(".chips");
+    chipsEl.innerHTML = `<span class="chip active" data-cat="all">All categories</span>` +
+      CATEGORIES.map((c) => `<span class="chip" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</span>`).join("");
+    if (qs("cat") && CATEGORIES.includes(qs("cat"))) {
+      chipsEl.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c.dataset.cat === qs("cat")));
+    }
+    chipsEl.querySelectorAll(".chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        chipsEl.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        render();
+      });
+    });
+
+    if (qs("q")) document.getElementById("search").value = qs("q");
+
+    document.getElementById("search").addEventListener("input", render);
+    document.getElementById("locality").addEventListener("change", render);
+    document.getElementById("condition").addEventListener("change", render);
+    document.getElementById("sort").addEventListener("change", render);
 
     render();
   });

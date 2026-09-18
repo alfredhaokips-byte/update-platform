@@ -9,99 +9,291 @@
   gtag('js', new Date());
   gtag('config', 'G-ZRDE5VY8FE');
 </script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
-<title>Sell — Marketplace</title>
+<title>Sell something: MohallaMarketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+#sell-root{
+  --paper:#F7F2E7; --paper-2:#F0E9D8; --forest:#1F3A2E; --moss:#4A6B4A; --sage:#8FAE86;
+  --sage-light:#DCE8D4; --marigold:#D9A441; --ink:#2A2A22; --ink-soft:#5C5A4D;
+}
+
+
+#sell-root *{box-sizing:border-box; margin:0; padding:0;}
+#sell-root{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.5; }
+#sell-root h1, #sell-root h2, #sell-root h3{ color:var(--forest); font-weight:700; letter-spacing:-0.02em; }
+#sell-root a{ color:inherit; text-decoration:none; }
+
+#sell-root .nav-bar{ background:var(--paper); border-bottom:1px solid rgba(31,58,46,0.1); }
+#sell-root nav{ display:flex; align-items:center; justify-content:space-between; padding:20px 24px; max-width:1080px; margin:0 auto; }
+#sell-root .logo{ display:flex; align-items:center; gap:2px; }
+#sell-root .logo-svg{ height:38px; width:auto; display:block; }
+#sell-root .logo-img{ height:44px; width:auto; display:block; }
+@media (max-width:520px){ #sell-root .logo-svg{ height:32px; } #sell-root .logo-img{ height:36px; } }
+#sell-root .nav-links{ display:flex; gap:28px; font-size:0.94rem; color:var(--ink-soft); }
+#sell-root .nav-links a:hover, #sell-root .nav-links a.active{ color:var(--forest); }
+#sell-root .nav-cta{ background:var(--forest); color:var(--paper); padding:9px 18px; border-radius:10px; font-weight:600; font-size:0.9rem; }
+
+#sell-root .layout{ max-width:1080px; margin:0 auto; padding:44px 24px 80px; display:grid; grid-template-columns:1.4fr 1fr; gap:48px; align-items:start; }
+#sell-root .head h1{ font-size:clamp(1.9rem,4vw,2.6rem); }
+#sell-root .head p{ color:var(--ink-soft); margin-top:8px; max-width:52ch; }
+
+#sell-root form{ margin-top:28px; display:flex; flex-direction:column; gap:22px; }
+#sell-root .field label{ display:block; font-size:0.88rem; font-weight:600; color:var(--forest); margin-bottom:8px; }
+#sell-root .field .hint{ font-size:0.8rem; color:var(--ink-soft); margin-top:6px; }
+#sell-root .field input, #sell-root .field textarea, #sell-root .field select{
+  width:100%; font-family:inherit; font-size:0.96rem; padding:12px 14px; border-radius:10px;
+  border:1px solid rgba(31,58,46,0.18); background:var(--paper-2); color:var(--ink);
+}
+#sell-root .field input:focus, #sell-root .field textarea:focus, #sell-root .field select:focus{ outline:2px solid var(--sage); outline-offset:1px; border-color:var(--sage); }
+#sell-root .field textarea{ min-height:110px; resize:vertical; }
+#sell-root .row2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+#sell-root .upload{
+  border:2px dashed var(--sage); border-radius:14px; background:var(--paper-2); padding:28px; text-align:center;
+  cursor:pointer; transition:background .15s ease, border-color .15s ease;
+}
+#sell-root .upload:hover, #sell-root .upload.dragover{ background:var(--sage-light); border-color:var(--moss); }
+#sell-root .upload svg{ margin-bottom:10px; }
+#sell-root .upload strong{ display:block; color:var(--forest); font-size:0.95rem; font-weight:600; }
+#sell-root .upload span{ font-size:0.82rem; color:var(--ink-soft); }
+#sell-root .upload input{ display:none; }
+#sell-root .thumbs{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+#sell-root .thumb{ width:72px; height:72px; border-radius:10px; background:var(--sage-light); border:1px solid rgba(31,58,46,0.15); background-size:cover; background-position:center; position:relative; }
+#sell-root .thumb button{ position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; border:none; background:var(--forest); color:var(--paper); font-size:0.75rem; cursor:pointer; line-height:1; }
+
+#sell-root .actions{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+#sell-root .btn{ padding:13px 26px; border-radius:10px; font-weight:600; font-size:0.95rem; display:inline-flex; align-items:center; gap:8px; cursor:pointer; border:none; font-family:inherit; transition:transform .15s ease, opacity .15s ease; }
+#sell-root .btn:hover{ transform:translateY(-2px); opacity:0.92; }
+#sell-root .btn-primary{ background:var(--forest); color:var(--paper); }
+#sell-root .btn-ghost{ background:transparent; color:var(--forest); border:1.5px solid var(--forest); }
+
+/* preview panel */
+
+
+#sell-root .preview-doodle{ margin-bottom:16px; padding:12px; background:var(--paper); border-radius:12px; }
+#sell-root .preview-doodle svg{ width:100%; height:auto; }
+#sell-root .preview{ position:sticky; top:24px; background:var(--paper-2); border:1px solid rgba(31,58,46,0.12); border-radius:20px; padding:22px; }
+#sell-root .preview h3{ font-size:0.85rem; color:var(--moss); text-transform:none; letter-spacing:0; font-weight:600; margin-bottom:14px; }
+#sell-root .preview-card{ background:var(--paper); border-radius:14px; padding:16px; border:1px solid rgba(31,58,46,0.09); }
+#sell-root .preview-thumb{ background:var(--sage-light); border-radius:12px; aspect-ratio:4/3; margin-bottom:12px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:0.85rem; background-size:cover; background-position:center; }
+#sell-root .preview-title{ font-weight:600; color:var(--forest); font-size:1rem; margin-bottom:4px; word-break:break-word; }
+#sell-root .preview-price{ color:var(--marigold); font-weight:700; font-size:0.98rem; margin-bottom:6px; }
+#sell-root .preview-meta{ font-size:0.8rem; color:var(--ink-soft); }
+#sell-root .trust-band{ margin-top:16px; padding:14px; border-radius:12px; background:var(--sage-light); font-size:0.82rem; color:var(--moss); line-height:1.5; }
+#sell-root .trust-band strong{ color:var(--forest); display:block; margin-bottom:4px; font-weight:600; }
+
+/* success */
+
+
+#sell-root .success{ display:none; text-align:center; padding:48px 24px; background:var(--paper-2); border-radius:20px; margin-top:24px; border:1px solid rgba(31,58,46,0.12); }
+#sell-root .success.show{ display:block; }
+#sell-root .success h2{ font-size:1.5rem; margin:16px 0 8px; }
+#sell-root .success p{ color:var(--ink-soft); max-width:38ch; margin:0 auto 20px; }
+#sell-root .success svg{ width:56px; height:56px; }
+
+#sell-root footer{ padding:50px 24px 30px; background:var(--paper-2); }
+#sell-root .footer-inner{ max-width:1080px; margin:0 auto; }
+#sell-root .foot-top{ border-bottom:1px solid rgba(247,242,231,0.15); padding-bottom:36px; margin-bottom:24px; }
+#sell-root .foot-top .logo{ color:var(--paper); }
+#sell-root .foot-top p{ color:var(--sage-light); max-width:32ch; margin-top:10px; font-size:0.92rem; }
+#sell-root .foot-bottom{ display:flex; justify-content:space-between; font-size:0.82rem; color:var(--ink-soft); flex-wrap:wrap; gap:10px; }
+
+@media (max-width:860px){ #sell-root .layout{ grid-template-columns:1fr; gap:32px; padding:32px 20px 60px; } #sell-root .preview{ position:static; } }
+@media (max-width:720px){
+  #sell-root .nav-links{ display:none; }
+  #sell-root nav{ padding:14px 18px; }
+  #sell-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
+  #sell-root .row2{ grid-template-columns:1fr; }
+  #sell-root .actions{ flex-direction:column; align-items:stretch; }
+  #sell-root .actions .btn{ text-align:center; justify-content:center; }
+}
+
+/* dark mode adaptation for doodles */
+
+
+#sell-root svg [stroke="#1F3A2E"]{ stroke:var(--forest); }
+#sell-root svg [fill="#1F3A2E"]:not([fill-opacity="0"]){ fill:var(--forest); }
+#sell-root svg [stroke="#4A6B4A"]{ stroke:var(--moss); }
+#sell-root svg [fill="#4A6B4A"]:not([fill-opacity="0"]){ fill:var(--moss); }
+#sell-root svg [stroke="#5C5A4D"]{ stroke:var(--ink-soft); }
+</style>
 </head>
 <body>
 
-<div class="app-shell">
-  <div class="back-row row between">
-    <a href="index.html" class="icon-btn" aria-label="Back">←</a>
-    <span class="header-title">Post an ad</span>
-    <span style="width:40px;"></span>
+<div id="sell-root">
+<div class="nav-bar">
+<nav>
+  <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+  <div class="nav-links">
+    <a href="browse.html">Browse</a>
+    <a href="community.html">Community</a>
+    <a href="messages.html">Messages</a>
+    <a href="help.html">Help</a>
+  </div>
+  <a class="nav-cta active" href="post-ad.html">Sell something</a>
+</nav>
+</div>
+
+<div class="layout">
+  <div>
+    <div class="head">
+      <h1>Post a listing</h1>
+      <p>Two minutes, a few real photos, and your neighbours will see it. You can edit or take it down any time.</p>
+    </div>
+
+    <form id="postForm">
+      <div class="field">
+        <label>What are you selling?</label>
+        <input type="text" id="f-title" placeholder="e.g. Wooden study chair" required>
+        <div class="hint">Be specific. "Wooden study chair" beats "chair".</div>
+      </div>
+
+      <div class="field">
+        <label>Photos</label>
+        <label class="upload" id="drop">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4A6B4A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15 L4 19 L20 19 L20 15"/><path d="M12 4 L12 15"/><path d="M6 10 L12 4 L18 10"/></svg>
+          <strong>Drop photos here, or click to upload</strong>
+          <span>Real photos of the actual item. Up to 5.</span>
+          <!-- accept extended to include video -- the old form supports
+               short video uploads (real, documented feature) and this
+               design's image/* filter would have silently dropped that. -->
+          <input type="file" id="f-photos" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" multiple>
+        </label>
+        <div class="thumbs" id="thumbs"></div>
+        <div class="hint">Up to 5 photos or short videos, real ones from your device — JPG, PNG or WebP (5MB max), or MP4/MOV (up to 60s, 25MB max).</div>
+        <p class="hint" id="upload-progress"></p>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Price (₹)</label>
+          <input type="number" id="f-price" min="0" placeholder="450" required>
+        </div>
+        <div class="field">
+          <!-- Real condition values (New/Used) -- populated by script at the
+               end of this file, replacing this design's fake "Like new /
+               Good / Well used" 3-point scale, which doesn't match what
+               the database actually accepts. -->
+          <label>Condition</label>
+          <select id="f-condition" required></select>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <!-- Real categories -- populated by script, replacing this
+               design's placeholder labels (Thrift shops, Home decor, etc.)
+               which aren't real listing categories. -->
+          <label>Category</label>
+          <select id="f-category" required></select>
+        </div>
+        <div class="field" style="position:relative;">
+          <!-- Real geocoded locality picker (Nominatim autocomplete + map
+               preview), replacing this design's 3-option fake dropdown.
+               A closed list of fake neighbourhood names can't produce the
+               real lat/lng/city/state every listing needs for Nearby,
+               city grouping, and the sitemap -- there's no way to keep
+               this as a <select> without losing that, so it's swapped for
+               the same real input the rest of the app already uses. -->
+          <label for="f-locality">Locality</label>
+          <input type="text" id="f-locality" placeholder="Start typing an area or city..." autocomplete="off" required>
+          <div class="map-preview" id="map-preview" hidden style="margin-top:8px;border-radius:10px;overflow:hidden;height:140px;"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="How long you've had it, any dents or scratches, why you're letting it go." required></textarea>
+        <div class="hint">Honesty builds trust. Mention what's not perfect.</div>
+        <div class="hint"><span id="desc-count">0</span>/600</div>
+        <p class="hint" id="desc-short-hint" hidden>💡 A bit more detail helps buyers trust the listing — try mentioning condition, age, or what's included.</p>
+      </div>
+
+      <!-- Honesty confirmation -- present on the old form, missing from
+           this design entirely, so added back rather than dropped: this
+           gates real submission (the same way it did before). -->
+      <div class="field" style="display:flex;gap:8px;align-items:flex-start;">
+        <input type="checkbox" id="f-honest" required style="margin-top:3px;" />
+        <label for="f-honest" style="font-weight:400;">I confirm this listing is accurate and I'm the rightful owner or seller of this item.</label>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Publish listing</button>
+        <button type="button" class="btn btn-ghost" id="clearBtn">Clear</button>
+      </div>
+    </form>
+
+    <div class="success" id="success">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1F3A2E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12 L11 15 L16 9"/></svg>
+      <h2>Published</h2>
+      <p>Your listing is now visible to neighbours in your locality. You can edit or take it down from your dashboard.</p>
+      <a class="btn btn-primary" href="browse.html" id="success-link">See it in Browse</a>
+    </div>
   </div>
 
-  <form class="form-wrap" id="ad-form">
-    <div class="form-row">
-      <label>Photos</label>
-      <!-- Two separate inputs, not one — `capture` reliably restricts a
-           file input to camera-only on many mobile browsers instead of
-           adding it as an extra option, so relying on a single input for
-           both meant gallery selection silently disappeared. -->
-      <input type="file" id="f-photos-camera" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" capture="environment" multiple hidden />
-      <input type="file" id="f-photos-gallery" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" multiple hidden />
-      <div class="img-upload-row" id="img-upload-row"></div>
-      <div class="row" id="add-photo-row" style="gap:8px;margin-top:10px;">
-        <button type="button" class="btn btn-outline btn-sm" style="flex:1;" onclick="document.getElementById('f-photos-camera').click()">📷 Take a photo</button>
-        <button type="button" class="btn btn-outline btn-sm" style="flex:1;" onclick="document.getElementById('f-photos-gallery').click()">🖼️ Choose from gallery</button>
-      </div>
-      <div class="hint">Up to 5 photos or short videos, real ones from your device — JPG, PNG or WebP (5MB max), or MP4/MOV (up to 60s, 25MB max).</div>
-      <p class="upload-progress" id="upload-progress"></p>
+  <aside class="preview">
+    <div class="preview-doodle">
+      <svg viewBox="0 0 260 140" fill="none" stroke="#1F3A2E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <!-- two neighbours exchanging an item -->
+        <circle cx="70" cy="45" r="10"/>
+        <path d="M70 55 C58 58 54 70 56 88 L84 88 C86 70 82 58 70 55Z"/>
+        <path d="M56 78 L70 78 L84 78" stroke-width="0.7"/>
+        <path d="M56 88 L52 118 L62 118 L66 88 M84 88 L88 118 L78 118 L74 88" stroke-width="0.8"/>
+        <!-- extended hands with item -->
+        <path d="M84 70 L110 78" stroke-width="1.2"/>
+        <path d="M110 78 L120 74 L128 78 L120 82 Z"/>
+        <path d="M115 76 L115 80 M120 74 L120 82" stroke-width="0.6"/>
+        <path d="M128 78 L150 70" stroke-width="1.2"/>
+        <!-- second neighbour -->
+        <circle cx="180" cy="45" r="10"/>
+        <path d="M180 55 C168 58 164 70 166 88 L194 88 C196 70 192 58 180 55Z"/>
+        <path d="M166 78 L180 78 L194 78" stroke-width="0.7"/>
+        <path d="M166 88 L162 118 L172 118 L176 88 M194 88 L198 118 L188 118 L184 88" stroke-width="0.8"/>
+        <!-- plants -->
+        <path d="M14 118 C14 108 17 100 19 96 C21 100 24 108 24 118Z" stroke-width="0.9"/>
+        <path d="M236 118 C236 108 239 100 241 96 C243 100 246 108 246 118Z" stroke-width="0.9"/>
+        <!-- ground -->
+        <path d="M0 130 Q130 120 260 130" stroke-width="1"/>
+      </svg>
     </div>
-
-    <div class="form-row">
-      <label for="f-title">Title</label>
-      <input type="text" id="f-title" placeholder="e.g. iPhone 13, 128GB" required maxlength="80" />
+    <h3>Live preview</h3>
+    <div class="preview-card">
+      <div class="preview-thumb" id="p-thumb">Photo preview</div>
+      <div class="preview-title" id="p-title">Your listing title</div>
+      <div class="preview-price" id="p-price">₹0</div>
+      <div class="preview-meta" id="p-meta">Sector 12 · Good</div>
     </div>
-
-    <div class="form-row">
-      <label>Category</label>
-      <div class="chip-select" id="cat-chips"></div>
+    <div class="trust-band">
+      <strong>What buyers will see</strong>
+      Your verified name, your seller history, and reviews from past deals. No burner accounts allowed.
     </div>
-
-    <div class="two-col">
-      <div class="form-row">
-        <label for="f-price">Price (₹)</label>
-        <input type="number" id="f-price" placeholder="e.g. 15000" min="0" required />
-      </div>
-      <div class="form-row" style="position:relative;">
-        <label for="f-locality">Locality</label>
-        <input type="text" id="f-locality" placeholder="Start typing an area or city..." autocomplete="off" required />
-        <div class="map-preview" id="map-preview" hidden></div>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <label>Condition</label>
-      <div class="chip-select" id="cond-chips"></div>
-    </div>
-
-    <div class="form-row">
-      <label for="f-desc">Description</label>
-      <textarea id="f-desc" placeholder="e.g. Selling my iPhone 13, 128GB, used for 1 year. Minor scratch on back, screen is perfect. Includes original box and charger. Selling because I upgraded." required maxlength="600"></textarea>
-      <div class="hint">
-        A good description covers:
-        <ul style="margin:4px 0 0 18px;padding:0;">
-          <li>Condition — any wear, damage, or defects</li>
-          <li>How long you've used it</li>
-          <li>Why you're selling</li>
-          <li>What's included (box, charger, accessories...)</li>
-          <li>Any flaws worth knowing about upfront</li>
-        </ul>
-      </div>
-      <div class="hint"><span id="desc-count">0</span>/600</div>
-      <p class="hint" id="desc-short-hint" hidden>💡 A bit more detail helps buyers trust the listing — try mentioning condition, age, or what's included.</p>
-    </div>
-
-    <div class="form-row confirm-box">
-      <input type="checkbox" id="f-honest" required style="margin-top:3px;" />
-      <label for="f-honest">I confirm this listing is accurate and I'm the rightful owner or seller of this item.</label>
-    </div>
-
-    <button type="submit" class="btn btn-fill btn-block">Publish listing</button>
-    <div style="height:20px;"></div>
-  </form>
+  </aside>
 </div>
+
+<footer>
+  <div class="footer-inner">
+  <div class="foot-top">
+    <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+    <p>A sustainable, trust-first marketplace, built around a neighbourhood, not an algorithm.</p>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 MohallaMarketplace</span>
+    <span>Built for the neighbourhood, not the algorithm.</span>
+  </div>
+  </div>
+</footer>
+</div>
+<!-- /#sell-root -->
 
 <div id="bottom-nav-root"></div>
 
+<link rel="stylesheet" href="css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/maps-client.js"></script>
@@ -109,6 +301,12 @@
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
+  /* Real functionality below -- ported from the previous post-ad.html,
+     retargeting this design's markup (a single unified photo drop zone
+     instead of two camera/gallery buttons -- fine here since this design
+     never set the `capture` attribute that caused the old split; a real
+     locality autocomplete input instead of the fake 3-option <select>;
+     real condition/category values instead of placeholder labels). */
   let selectedCond = null;
   let selectedCategory = null;
   let selectedPlace = null; // { locality, city, state, lat, lng } from Places Autocomplete
@@ -121,28 +319,31 @@
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
   const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/quicktime"];
 
-  function renderPhotoRow() {
-    const el = document.getElementById("img-upload-row");
-    el.innerHTML = selectedPhotos.map((p, i) => `
-      <div class="img-drop filled">
-        ${p.isVideo
-          ? `<video src="${p.previewUrl}" muted playsinline preload="metadata"></video>`
-          : `<img src="${p.previewUrl}" alt="Photo ${i + 1}" />`}
-        <button type="button" class="img-remove-btn" onclick="removePhoto(${i})" aria-label="Remove photo">✕</button>
+  const photosInput = document.getElementById("f-photos");
+  const dropEl = document.getElementById("drop");
+  const thumbsEl = document.getElementById("thumbs");
+  const pThumb = document.getElementById("p-thumb");
+
+  function renderThumbs() {
+    thumbsEl.innerHTML = selectedPhotos.map((p, i) => `
+      <div class="thumb" style="background-image:${p.isVideo ? "none" : `url(${p.previewUrl})`};display:flex;align-items:center;justify-content:center;">
+        ${p.isVideo ? `<video src="${p.previewUrl}" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></video>` : ""}
+        <button type="button" onclick="removePhoto(${i})" aria-label="Remove">×</button>
       </div>
     `).join("");
-    document.getElementById("add-photo-row").hidden = selectedPhotos.length >= MAX_PHOTOS;
+    if (pThumb) {
+      if (selectedPhotos[0] && !selectedPhotos[0].isVideo) { pThumb.style.backgroundImage = `url(${selectedPhotos[0].previewUrl})`; pThumb.textContent = ""; }
+      else if (selectedPhotos[0]) { pThumb.style.backgroundImage = ""; pThumb.textContent = "🎬 Video"; }
+      else { pThumb.style.backgroundImage = ""; pThumb.textContent = "Photo preview"; }
+    }
   }
 
   function removePhoto(i) {
     URL.revokeObjectURL(selectedPhotos[i].previewUrl);
     selectedPhotos.splice(i, 1);
-    renderPhotoRow();
+    renderThumbs();
   }
 
-  /* Reads a video file's duration without uploading it anywhere — a
-     throwaway <video> element + its own object URL, resolved once the
-     browser has parsed enough of the file to know how long it runs. */
   function getVideoDuration(file) {
     return new Promise((resolve, reject) => {
       const probe = document.createElement("video");
@@ -153,9 +354,8 @@
     });
   }
 
-  async function handlePhotoPick(fileList, sourceInput) {
+  async function addFiles(fileList) {
     const incoming = Array.from(fileList);
-    sourceInput.value = ""; // allow re-picking the same file later
     for (const file of incoming) {
       if (selectedPhotos.length >= MAX_PHOTOS) { toast(`Up to ${MAX_PHOTOS} photos`); break; }
       const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
@@ -175,25 +375,27 @@
       }
       selectedPhotos.push({ file, previewUrl: URL.createObjectURL(file), isVideo });
     }
-    renderPhotoRow();
+    renderThumbs();
   }
 
-  function buildChips(containerId, items, stateSetter) {
-    const el = document.getElementById(containerId);
-    el.innerHTML = items.map((item) => {
-      const val = typeof item === "string" ? item : item.value;
-      const label = typeof item === "string" ? item : item.label;
-      const icon = typeof item === "string" ? "" : (item.icon || "");
-      return `<label class="opt" data-val="${escapeHtml(val)}"><input type="radio" name="${containerId}" value="${escapeHtml(val)}" />${icon}${escapeHtml(label)}</label>`;
-    }).join("");
-    el.querySelectorAll(".opt").forEach((opt) => {
-      opt.addEventListener("click", () => {
-        el.querySelectorAll(".opt").forEach((o) => o.classList.remove("active"));
-        opt.classList.add("active");
-        stateSetter(opt.dataset.val);
-      });
-    });
+  photosInput.addEventListener("change", (e) => { addFiles(e.target.files); e.target.value = ""; });
+  ["dragover", "dragenter"].forEach((ev) => dropEl.addEventListener(ev, (e) => { e.preventDefault(); dropEl.classList.add("dragover"); }));
+  ["dragleave", "drop"].forEach((ev) => dropEl.addEventListener(ev, (e) => { e.preventDefault(); dropEl.classList.remove("dragover"); }));
+  dropEl.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+
+  function refreshPreview() {
+    const titleEl = document.getElementById("p-title");
+    const priceEl = document.getElementById("p-price");
+    const metaEl = document.getElementById("p-meta");
+    if (!titleEl) return;
+    titleEl.textContent = document.getElementById("f-title").value.trim() || "Your listing title";
+    const n = parseInt(document.getElementById("f-price").value, 10);
+    priceEl.textContent = "₹" + (isNaN(n) ? "0" : n.toLocaleString());
+    const locLabel = selectedPlace ? selectedPlace.locality : (document.getElementById("f-locality").value || "Locality");
+    metaEl.textContent = `${locLabel} · ${selectedCond || document.getElementById("f-condition").value || "Condition"}`;
   }
+  ["f-title", "f-price", "f-locality"].forEach((id) => document.getElementById(id).addEventListener("input", refreshPreview));
+  document.getElementById("f-condition").addEventListener("change", refreshPreview);
 
   document.addEventListener("DOMContentLoaded", async () => {
     await initPage("sell");
@@ -201,12 +403,10 @@
     if (!session) return; // requireAuth already redirected to login
 
     // Progressive verification gate: posting a listing requires a confirmed
-    // email. (The brief's table calls for "phone verified" here, but real
-    // phone OTP was explicitly deferred in Phase 0 — no account could ever
-    // satisfy that yet, which would block every listing. Email confirmation
-    // is the real, working equivalent signal, so that's what's enforced.)
+    // email -- same real gate as before, this design has no equivalent so
+    // it's ported as-is rather than dropped.
     if (!Store.getUser().emailVerified) {
-      document.querySelector(".app-shell").innerHTML = `
+      document.getElementById("sell-root").innerHTML = `
         ${backRowHtml("Post an ad")}
         <div class="empty-state">
           <div class="big">📧</div>
@@ -218,8 +418,15 @@
       return;
     }
 
-    buildChips("cond-chips", CONDITIONS, (v) => selectedCond = v);
-    buildChips("cat-chips", CATEGORIES.map((c) => ({ value: c, label: c, icon: CATEGORY_ICONS[c] })), (v) => selectedCategory = v);
+    const condSelect = document.getElementById("f-condition");
+    condSelect.innerHTML = CONDITIONS.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    selectedCond = CONDITIONS[0];
+
+    const catSelect = document.getElementById("f-category");
+    catSelect.innerHTML = CATEGORIES.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    selectedCategory = CATEGORIES[0];
+    condSelect.addEventListener("change", (e) => { selectedCond = e.target.value; refreshPreview(); });
+    catSelect.addEventListener("change", (e) => { selectedCategory = e.target.value; });
 
     const localityInput = document.getElementById("f-locality");
     const mapPreview = document.getElementById("map-preview");
@@ -232,40 +439,47 @@
     mountPlacesAutocomplete(localityInput, (place) => {
       selectedPlace = place;
       mountLeafletMap(mapPreview, place.lat, place.lng, { zoom: 13 });
+      refreshPreview();
     });
-    // Typing over a previously-selected place invalidates it — only a fresh
-    // pick from the dropdown (or the pre-filled profile value above) counts
-    // as a real, geocoded place.
     localityInput.addEventListener("input", () => { selectedPlace = null; mapPreview.hidden = true; });
 
-    renderPhotoRow();
-    document.getElementById("f-photos-camera").addEventListener("change", (e) => handlePhotoPick(e.target.files, e.target));
-    document.getElementById("f-photos-gallery").addEventListener("change", (e) => handlePhotoPick(e.target.files, e.target));
+    renderThumbs();
+    refreshPreview();
 
     document.getElementById("f-desc").addEventListener("input", (e) => {
       const len = e.target.value.trim().length;
       document.getElementById("desc-count").textContent = e.target.value.length;
-      // A soft nudge, never a blocker — hidden once empty (nothing to nudge
-      // about yet) or once past the threshold, shown only in between.
       document.getElementById("desc-short-hint").hidden = len === 0 || len >= MIN_DESC_CHARS;
     });
 
-    document.getElementById("ad-form").addEventListener("submit", async (e) => {
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      document.getElementById("postForm").reset();
+      selectedPhotos.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+      selectedPhotos = [];
+      selectedPlace = null;
+      mapPreview.hidden = true;
+      selectedCond = CONDITIONS[0];
+      selectedCategory = CATEGORIES[0];
+      renderThumbs();
+      refreshPreview();
+    });
+
+    document.getElementById("postForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const category = selectedCategory;
       const price = Number(document.getElementById("f-price").value);
-      const typedLocality = document.getElementById("f-locality").value.trim();
+      const typedLocality = localityInput.value.trim();
       if (!typedLocality) { toast("Please add a locality"); return; }
       if (!selectedPlace) { toast("Please pick a locality from the suggestions"); return; }
       const place = selectedPlace;
       if (!category) { toast("Please pick a category"); return; }
       if (!selectedCond) { toast("Please pick a condition"); return; }
       if (selectedPhotos.length === 0) { toast("Add at least one real photo or video of the item"); return; }
+      if (!document.getElementById("f-honest").checked) { toast("Please confirm the listing is accurate"); return; }
 
       const submitBtn = e.target.querySelector("button[type=submit]");
       const progressEl = document.getElementById("upload-progress");
       submitBtn.disabled = true;
-      progressEl.classList.add("active");
 
       let newListing;
       try {
@@ -282,7 +496,6 @@
         toast(err.message || "Couldn't publish — try again");
         submitBtn.disabled = false;
         submitBtn.textContent = "Publish listing";
-        progressEl.classList.remove("active");
         return;
       }
 
@@ -302,16 +515,15 @@
         await Store.updateListingImages(newListing.id, urls);
       } catch (err) {
         toast("Listing published, but saving the photo/video list failed — try re-adding them from the listing.");
-        setTimeout(() => { window.location.href = "listing.html?id=" + newListing.id; }, 900);
-        return;
       }
 
-      if (failCount > 0) {
-        toast(`Listing published — ${failCount} file${failCount === 1 ? "" : "s"} didn't upload, the rest did.`);
-      } else {
-        toast("Listing published!");
-      }
-      setTimeout(() => { window.location.href = "listing.html?id=" + newListing.id; }, 500);
+      if (failCount > 0) toast(`Listing published — ${failCount} file${failCount === 1 ? "" : "s"} didn't upload, the rest did.`);
+
+      document.getElementById("success-link").href = "listing.html?id=" + newListing.id;
+      document.getElementById("success-link").textContent = "See your listing";
+      document.getElementById("postForm").style.display = "none";
+      document.getElementById("success").classList.add("show");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
 </script>

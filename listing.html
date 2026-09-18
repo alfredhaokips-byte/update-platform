@@ -155,7 +155,7 @@
     const canShare = typeof navigator.share === "function";
 
     root.innerHTML = `
-      ${backRowHtml(null, `<div class="row" style="gap:8px;"><a class="icon-btn" href="help.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}" title="Report this listing">⚑</a><button type="button" class="icon-btn" onclick="shareListing()" aria-label="Share" title="Share">↗</button></div>`)}
+      ${backRowHtml(null, `<div class="row" style="gap:8px;"><a class="icon-btn" href="report.html?type=${encodeURIComponent("Fake or misleading listing")}&listing=${listing.id}" title="Report this listing">⚑</a><button type="button" class="icon-btn" onclick="shareListing()" aria-label="Share" title="Share">↗</button></div>`)}
       <div class="detail-wrap">
         <div class="detail-imgs">
           ${galleryUrls.map((url, i) => `

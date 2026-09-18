@@ -9,319 +9,573 @@
   gtag('js', new Date());
   gtag('config', 'G-ZRDE5VY8FE');
 </script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
-<title>Marketplace — Buy & sell in your community</title>
+<title>MohallaMarketplace: Buy less. Trust more. Belong to your mohalla.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css" />
-
-<!-- Landing-page-only layout: a taller, more editorial hero/showcase treatment
-     than the rest of the app, but sharing the same design tokens (warm ivory,
-     sage, clay) and fonts as everywhere else. Scoped entirely to #landing-root
-     so its extra layout rules don't leak into other pages. -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
-  /* Uses the shared design tokens from css/style.css (var(--bg), var(--sage),
-     var(--clay), var(--marigold), etc.) directly — so this section gets dark
-     mode for free. Only layout, not color, is scoped here. */
-  #landing-root{ -webkit-font-smoothing:antialiased; }
-  #landing-root a{ color:inherit; text-decoration:none; }
-  #landing-root .wrap{ max-width:1220px; margin:0 auto; padding:0 40px; }
+#landing-root{
+  --paper:#F7F2E7;
+  --paper-2:#F0E9D8;
+  --forest:#1F3A2E;
+  --moss:#4A6B4A;
+  --sage:#8FAE86;
+  --sage-light:#DCE8D4;
+  --marigold:#D9A441;
+  --ink:#2A2A22;
+  --ink-soft:#5C5A4D;
+}
 
-  #landing-root header{ position:sticky; top:16px; z-index:40; padding:0 24px; }
-  #landing-root .nav-pill{
-    max-width:1180px; margin:0 auto;
-    background:var(--surface); border:1px solid var(--border-2);
-    border-radius:100px; padding:12px 20px;
-    display:flex; align-items:center; gap:28px;
-    box-shadow:var(--shadow);
-  }
-  #landing-root .brand{ display:flex; align-items:center; gap:9px; font-size:16px; font-weight:800; }
-  #landing-root .brand img{ display:block; width:auto; }
-  #landing-root .nav-links{ display:flex; gap:24px; font-size:14px; font-weight:600; color:var(--muted); margin-right:auto; }
-  #landing-root .btn-pill{ display:inline-flex; align-items:center; gap:8px; padding:11px 20px; border-radius:100px; font-size:13.5px; font-weight:700; border:none; }
-  #landing-root .btn-sage{ background:var(--sage); color:#fff; }
-  #landing-root .btn-sage svg{ width:14px; height:14px; }
 
-  #landing-root .hero{ padding:60px 24px 0; }
-  #landing-root .hero-inner{
-    max-width:1180px; margin:0 auto; border-radius:32px; overflow:hidden;
-    position:relative; min-height:520px; display:flex; align-items:center; justify-content:center; text-align:center;
-    background:
-      linear-gradient(180deg, rgba(20,22,15,0.05) 0%, rgba(20,22,15,0.55) 100%),
-      linear-gradient(120deg, var(--sage-deep) 0%, var(--sage) 45%, var(--marigold) 100%);
-  }
-  #landing-root .hero-illustration{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
-  #landing-root .hero-inner > div{ position:relative; z-index:1; }
-  #landing-root .hero-badge{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.16); color:#fff; font-size:13px; font-weight:600; padding:8px 16px; border-radius:100px; margin-bottom:28px; backdrop-filter:blur(6px); }
-  #landing-root .hero-badge svg{ width:14px; height:14px; }
-  #landing-root .hero h1{ color:#fff; font-size:clamp(34px,5vw,58px); font-weight:600; line-height:1.12; max-width:16ch; margin:0 auto 20px; }
-  #landing-root .hero h1 em{ font-style:italic; font-weight:500; }
-  #landing-root .hero p{ color:rgba(255,255,255,0.85); font-size:16.5px; max-width:44ch; margin:0 auto 32px; }
-  #landing-root .hero-actions{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; padding:0 20px; }
-  #landing-root .hero-actions .btn-pill.light{ background:#fff; color:var(--sage-deep); }
-  #landing-root .hero-actions .btn-pill.ghost{ background:rgba(255,255,255,0.14); color:#fff; border:1px solid rgba(255,255,255,0.35); }
+#landing-root *{box-sizing:border-box; margin:0; padding:0;}
+#landing-root{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  line-height:1.5;
+  overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(31,58,46,0.035) 1px, transparent 0);
+  background-size:26px 26px;
+}
+#landing-root h1, #landing-root h2, #landing-root h3{ font-family:'Inter',sans-serif; color:var(--forest); font-weight:700; letter-spacing:-0.02em; }
+#landing-root a{ color:inherit; text-decoration:none; }
+#landing-root .wrap{ max-width:1080px; margin:0 auto; padding:0 24px; }
 
-  #landing-root .stats-band{ background:var(--bg-alt); padding:56px 0 68px; text-align:center; }
-  #landing-root .stats-lead{ color:var(--muted); font-size:15px; margin-bottom:36px; }
-  #landing-root .stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); max-width:860px; margin:0 auto; }
-  #landing-root .stat{ padding:0 20px; }
-  #landing-root .stat .num{ color:var(--ink); font-size:clamp(28px,4vw,44px); font-weight:800; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
-  #landing-root .stat .label{ color:var(--muted); font-size:13.5px; margin-top:8px; }
+/* nav */
 
-  #landing-root section{ padding:80px 0; }
-  #landing-root .pillars-head{ text-align:center; max-width:600px; margin:0 auto 44px; }
-  #landing-root .pillars-head .eyebrow{ font-size:12.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage-deep); margin-bottom:12px; }
-  #landing-root .pillars-head h2{ font-size:clamp(26px,3.4vw,36px); font-weight:500; }
-  #landing-root .pillar-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
-  #landing-root .pillar-card{ background:var(--surface); border:1px solid var(--border-2); border-radius:20px; padding:32px 28px; }
-  #landing-root .pillar-icon{ width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
-  #landing-root .pillar-icon svg{ width:22px; height:22px; }
-  #landing-root .pillar-card h3{ font-weight:600; font-size:19px; margin-bottom:8px; }
-  #landing-root .pillar-card p{ font-size:14px; color:var(--muted); line-height:1.6; }
 
-  #landing-root .cat-head{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:30px; }
-  #landing-root .cat-head h2{ font-weight:500; font-size:clamp(26px,3.2vw,34px); }
-  #landing-root .toggle-pair{ display:flex; background:var(--bg-alt); border-radius:100px; padding:4px; }
-  #landing-root .toggle-pair a{ padding:8px 18px; border-radius:100px; font-size:13px; font-weight:600; color:var(--muted); }
+#landing-root .nav-bar{ background:var(--paper); }
+#landing-root nav{ display:flex; align-items:center; justify-content:space-between; padding:20px 24px; max-width:1080px; margin:0 auto; }
+#landing-root .logo{ display:flex; align-items:center; gap:2px; }
+#landing-root .logo-svg{ height:38px; width:auto; display:block; }
+#landing-root .logo-img{ height:44px; width:auto; display:block; }
+@media (max-width:520px){ #landing-root .logo-svg{ height:32px; } #landing-root .logo-img{ height:36px; } }
+#landing-root .nav-links{ display:flex; gap:28px; font-size:0.94rem; color:var(--ink-soft); }
+#landing-root .nav-links a:hover{ color:var(--forest); }
+#landing-root .nav-cta{ background:var(--forest); color:var(--paper); padding:9px 18px; border-radius:10px; font-weight:600; font-size:0.9rem; }
+#landing-root .nav-cta:hover{ background:var(--moss); }
 
-  #landing-root .showcase{ padding:0 0 100px; }
-  #landing-root .showcase-inner{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
-  #landing-root .show-card{ background:var(--surface); border:1px solid var(--border-2); border-radius:18px; overflow:hidden; }
-  #landing-root .show-thumb{ aspect-ratio:4/3; background:linear-gradient(135deg, var(--sage-bg), var(--bg-alt)); position:relative; overflow:hidden; }
-  #landing-root .show-thumb img, #landing-root .show-thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
-  #landing-root .show-cond{ position:absolute; bottom:8px; left:8px; background:rgba(10,10,12,0.72); color:#fff; font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; }
-  #landing-root .show-save{ position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.92); border:none; font-size:14px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); }
-  #landing-root .show-save.active{ color:var(--clay); }
-  #landing-root .show-body{ padding:15px 16px; }
-  #landing-root .show-body .name{ font-weight:600; font-size:13.5px; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  #landing-root .show-body .price{ font-weight:800; font-size:17px; margin-bottom:8px; }
-  #landing-root .show-seller{ display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--muted); }
-  #landing-root .show-seller svg{ width:12px; height:12px; color:var(--sage-deep); flex-shrink:0; }
+/* hero */
 
-  #landing-root .cta-band{ background:var(--ink); padding:90px 0; text-align:center; }
-  #landing-root .cta-band h2{ color:var(--bg); font-size:clamp(28px,4.2vw,44px); max-width:16ch; margin:0 auto 16px; }
-  #landing-root .cta-band p{ color:var(--muted-2); font-size:16px; max-width:44ch; margin:0 auto 32px; }
 
-  #landing-root .contact-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
-  #landing-root .contact-pill{ background:var(--surface); border:1px solid var(--border-2); color:var(--ink); }
-  #landing-root .contact-pill svg{ width:18px; height:18px; flex-shrink:0; }
+#landing-root .hero{ padding:36px 24px 100px; position:relative; background:var(--paper); overflow:hidden; }
+#landing-root .hero-inner{ max-width:1080px; margin:0 auto; position:relative; z-index:2; padding-top:20px; }
+#landing-root .cloud{ display:none; }
+#landing-root .sparkle{ display:none; }
+#landing-root .stamp{
+  display:inline-flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--moss);
+  border:1px solid var(--sage); border-radius:30px; padding:6px 14px; margin-bottom:22px;
+}
+#landing-root .stamp::before{ content:"●"; font-size:0.5rem; color:var(--marigold); }
+#landing-root .hero h1{ font-size:clamp(2.4rem,5.6vw,4rem); max-width:12ch; line-height:1.06; color:var(--forest); }
+#landing-root .underline{ position:relative; white-space:nowrap; color:var(--marigold); }
+#landing-root .underline svg{ position:absolute; left:0; bottom:-10px; width:100%; height:14px; }
+#landing-root .hero p{ max-width:44ch; color:var(--ink-soft); font-size:1.08rem; margin-top:20px; }
+#landing-root .hero-ctas{ display:flex; gap:14px; margin-top:32px; flex-wrap:wrap; }
+#landing-root .btn{ padding:13px 26px; border-radius:10px; font-weight:600; font-size:0.95rem; display:inline-flex; align-items:center; gap:8px; transition:transform .15s ease, opacity .15s ease; cursor:pointer; border:none; font-family:'Inter',sans-serif; }
+#landing-root .btn:hover{ transform:translateY(-2px); opacity:0.92; }
+#landing-root .btn-primary{ background:var(--forest); color:var(--paper); }
+#landing-root .btn-primary:hover{ background:var(--moss); }
+#landing-root .btn-ghost{ background:transparent; color:var(--forest); border:2px solid var(--forest); }
+#landing-root .btn-ghost:hover{ background:var(--sage-light); }
 
-  #landing-root footer{ background:var(--bg-alt); padding:56px 0 32px; }
-  #landing-root .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:32px; margin-bottom:44px; }
-  #landing-root .footer-grid .brand{ margin-bottom:12px; }
-  #landing-root .footer-grid p{ color:var(--muted); font-size:14px; max-width:30ch; line-height:1.5; }
-  #landing-root .footer-grid h4{ color:var(--muted); font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:14px; }
-  #landing-root .footer-grid ul{ list-style:none; display:flex; flex-direction:column; gap:9px; margin:0; padding:0; }
-  #landing-root .footer-grid a{ font-size:14px; color:var(--ink); }
-  #landing-root .footer-bottom{ display:flex; justify-content:space-between; padding-top:22px; border-top:1px solid var(--border-2); color:var(--muted); font-size:12.5px; flex-wrap:wrap; gap:8px; }
+#landing-root .counter-row{ display:flex; gap:40px; margin-top:52px; flex-wrap:wrap; }
+#landing-root .counter .num{ font-family:'Inter',sans-serif; font-size:2.1rem; color:var(--forest); font-weight:700; }
+#landing-root .counter .label{ font-size:0.85rem; color:var(--ink-soft); }
 
-  @media (max-width: 1000px){
-    #landing-root .pillar-grid, #landing-root .showcase-inner{ grid-template-columns:1fr 1fr; }
-    #landing-root .nav-links{ display:none; }
-    #landing-root .footer-grid{ grid-template-columns:1fr 1fr; }
-  }
-  @media (max-width: 900px){
-    #landing-root .wrap, #landing-root .nav-inner{ padding-left:24px; padding-right:24px; }
-    #landing-root .stats-grid{ grid-template-columns:1fr; gap:26px; }
-  }
-  @media (max-width: 480px){
-    #landing-root .wrap{ padding-left:16px; padding-right:16px; }
-    #landing-root header{ padding:0 12px; }
-    #landing-root .nav-pill{ padding:10px 14px; gap:12px; }
-    #landing-root .hero-actions .btn-pill{ width:100%; }
-  }
+#landing-root .hero-grid{ display:grid; grid-template-columns:1.1fr 0.9fr; gap:40px; align-items:center; }
+#landing-root .hero-illustration{ width:100%; }
+#landing-root .hero-illustration svg{ width:100%; height:auto; }
+@media (max-width:860px){ #landing-root .hero-grid{ grid-template-columns:1fr; } #landing-root .hero-illustration{ max-width:380px; margin:32px auto 0; } }
+#landing-root .scallops{ display:none; }
+
+/* marquee */
+
+
+#landing-root .marquee-band{ background:var(--sage-light); overflow:hidden; padding:12px 0; }
+#landing-root .marquee-track{ display:flex; gap:48px; white-space:nowrap; animation:scroll-left 30s linear infinite; width:max-content; }
+#landing-root .marquee-track span{ font-family:'Inter',sans-serif; font-weight:600; color:var(--forest); font-size:0.85rem; letter-spacing:0.02em; }
+@keyframes scroll-left{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+
+/* pillars */
+
+
+#landing-root .pillars{ padding:70px 24px; background:var(--paper-2); }
+#landing-root .pillars-inner{ max-width:1080px; margin:0 auto; }
+#landing-root .pillars h2{ font-size:clamp(1.7rem,3.4vw,2.3rem); max-width:16ch; margin-bottom:8px; }
+#landing-root .pillars > .pillars-inner > p{ color:var(--ink-soft); margin-bottom:36px; }
+#landing-root .tabs{ display:flex; gap:8px; margin-bottom:32px; flex-wrap:wrap; }
+#landing-root .tab{ padding:9px 18px; border-radius:24px; font-size:0.88rem; font-weight:600; background:transparent; border:1.5px solid var(--sage); color:var(--moss); cursor:pointer; font-family:inherit; transition:all .15s ease; }
+#landing-root .tab.active{ background:var(--forest); border-color:var(--forest); color:var(--paper); }
+#landing-root .pillar-panel{ display:none; }
+#landing-root .pillar-panel.active{ display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:center; }
+#landing-root .pillar-panel h3{ font-size:1.5rem; margin-bottom:12px; }
+#landing-root .pillar-panel p{ color:var(--ink-soft); max-width:42ch; }
+#landing-root .pillar-visual{ background:var(--sage-light); border-radius:18px; aspect-ratio:1/0.82; display:flex; align-items:center; justify-content:center; padding:24px; color:var(--forest); }
+#landing-root .pillar-visual svg{ width:100%; height:100%; }
+#landing-root .pillar-visual svg path, #landing-root .pillar-visual svg circle, #landing-root .pillar-visual svg rect, #landing-root .pillar-visual svg ellipse{ stroke:var(--forest); }
+#landing-root .pillar-visual svg [fill]:not([fill="none"]){ fill:var(--forest); }
+
+/* trending */
+
+
+#landing-root .trending{ padding:70px 24px; max-width:1080px; margin:0 auto; }
+#landing-root .trending-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:28px; }
+#landing-root .trending-head h2{ font-size:clamp(1.7rem,3.4vw,2.3rem); }
+#landing-root .trending-head a{ font-size:0.9rem; font-weight:600; color:var(--moss); border-bottom:1.5px solid var(--moss); padding-bottom:2px; }
+#landing-root .cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+#landing-root .card{ background:var(--paper-2); border-radius:20px; padding:20px; border:1px solid rgba(31,58,46,0.09); transition:transform .25s ease, box-shadow .25s ease; cursor:pointer; }
+#landing-root .card:hover{ transform:perspective(600px) rotateX(2deg) translateY(-6px); box-shadow:0 18px 30px -14px rgba(31,58,46,0.28); }
+#landing-root .card-thumb{ background:var(--sage-light); border-radius:14px; aspect-ratio:4/3; margin-bottom:14px; display:flex; align-items:center; justify-content:center; padding:18px; position:relative; overflow:hidden; }
+#landing-root .card-thumb svg{ width:78%; height:78%; }
+#landing-root .card-thumb svg path, #landing-root .card-thumb svg circle, #landing-root .card-thumb svg rect{ stroke:var(--forest); }
+/* Real listing photos fill the thumb edge-to-edge, unlike the decorative
+   placeholder icons above -- added for real data, not in the original design. */
+#landing-root .card-thumb.has-photo{ padding:0; }
+#landing-root .card-thumb img, #landing-root .card-thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
+#landing-root .card-save{ position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(247,242,231,0.92); border:none; font-size:14px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); cursor:pointer; }
+#landing-root .card-save.active{ color:var(--marigold); }
+#landing-root .card h4{ font-family:'Inter',sans-serif; font-size:1.02rem; color:var(--forest); margin-bottom:4px; font-weight:600; }
+#landing-root .card .price{ font-weight:700; color:var(--marigold); font-size:1rem; margin-bottom:6px; }
+#landing-root .card .meta{ font-size:0.8rem; color:var(--ink-soft); }
+
+/* CTA band */
+
+
+#landing-root .cta-band{ background:linear-gradient(135deg,#16261D 0%, var(--forest) 60%); color:var(--paper); padding:70px 24px; text-align:left; position:relative; overflow:hidden; }
+#landing-root .cta-band .wrap{ position:relative; z-index:1; }
+#landing-root .cta-band h2{ color:var(--paper); font-size:clamp(1.8rem,3.8vw,2.6rem); max-width:16ch; }
+#landing-root .cta-band p{ color:var(--sage-light); margin-top:14px; max-width:44ch; }
+#landing-root .cta-band .btn-primary{ background:var(--marigold); color:var(--forest); margin-top:26px; }
+#landing-root .cta-band .btn-primary:hover{ background:#E8B75A; }
+#landing-root .leaf{ position:absolute; width:280px; height:280px; right:-40px; top:-40px; pointer-events:none; }
+
+#landing-root footer{ padding:50px 24px 30px; max-width:1080px; margin:0 auto; }
+#landing-root footer{ padding:50px 24px 30px; background:var(--paper-2); }
+#landing-root .footer-inner{ max-width:1080px; margin:0 auto; }
+#landing-root .foot-top{ display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; border-bottom:1px solid rgba(31,58,46,0.15); padding-bottom:36px; margin-bottom:24px; }
+
+#landing-root .foot-brand p{ color:var(--ink-soft); max-width:32ch; margin-top:10px; font-size:0.92rem; }
+#landing-root .foot-cols{ display:flex; gap:56px; flex-wrap:wrap; }
+#landing-root .foot-col h5{ font-size:0.85rem; color:var(--forest); margin-bottom:12px; font-weight:700; }
+#landing-root .foot-col a{ display:block; font-size:0.88rem; color:var(--ink-soft); margin-bottom:8px; }
+#landing-root .foot-col a:hover{ color:var(--forest); }
+#landing-root .foot-bottom{ display:flex; justify-content:space-between; font-size:0.82rem; color:var(--ink-soft); flex-wrap:wrap; gap:10px; }
+
+@media (max-width:720px){
+  #landing-root .nav-links{ display:none; }
+  #landing-root nav{ padding:14px 18px; }
+  #landing-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
+  #landing-root .cards{ grid-template-columns:1fr; }
+  #landing-root .pillar-panel.active{ grid-template-columns:1fr; }
+  #landing-root .pillar-visual{ order:-1; max-width:220px; margin:0 auto; }
+  #landing-root .counter-row{ gap:24px; margin-top:36px; }
+  #landing-root .counter .num{ font-size:1.7rem; }
+  #landing-root .hero{ padding:24px 20px 80px; }
+  #landing-root .hero p{ font-size:1rem; }
+  #landing-root .pillars, #landing-root .trending, #landing-root .cta-band{ padding:52px 20px; }
+  #landing-root .foot-cols{ gap:32px; }
+  #landing-root footer{ padding:40px 20px 24px; }
+}
+
+/* dark mode adaptation for doodles */
+
+
+#landing-root svg [stroke="#1F3A2E"]{ stroke:var(--forest); }
+#landing-root svg [fill="#1F3A2E"]:not([fill-opacity="0"]){ fill:var(--forest); }
+#landing-root svg [stroke="#4A6B4A"]{ stroke:var(--moss); }
+#landing-root svg [fill="#4A6B4A"]:not([fill-opacity="0"]){ fill:var(--moss); }
+#landing-root svg [stroke="#5C5A4D"]{ stroke:var(--ink-soft); }
 </style>
 </head>
 <body>
 
 <!-- ============ LANDING PAGE (signed-out visitors) ============ -->
 <div id="landing-root" hidden>
-
-  <header>
-    <div class="nav-pill">
-      <a href="index.html" class="brand">
-        <img src="img/logo-lockup.png" alt="Mohalla Market" height="30" />
-      </a>
-      <nav class="nav-links">
-        <a href="browse.html">Browse</a>
-        <a href="#pillars">Sustainability</a>
-        <a href="help.html">Trust &amp; Safety</a>
-      </nav>
-      <a href="login.html" style="font-size:14px;font-weight:600;">Log in</a>
-      <a href="signup.html?redirect=post-ad.html" class="btn-pill btn-sage">Sell something<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    </div>
-  </header>
-
-  <section class="hero">
-    <div class="hero-inner">
-      <!-- Original hand-built illustration (not stock photography) — a flat
-           mohalla skyline with two neighbours exchanging an item, echoing the
-           logo's own flat-geometric style. Purely decorative, behind the text,
-           low-opacity so it never competes with contrast. -->
-      <svg class="hero-illustration" viewBox="0 0 1180 520" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-        <g opacity="0.14" fill="#fff">
-          <path d="M0 460 L60 460 L60 400 L100 400 L100 460 L170 460 L170 370 L210 340 L250 370 L250 460 L330 460 L330 410 L370 410 L370 460 L460 460 L460 380 L500 350 L540 380 L540 460 L620 460 L620 400 L660 400 L660 460 L740 460 L740 420 L780 390 L820 420 L820 460 L900 460 L900 370 L940 340 L980 370 L980 460 L1060 460 L1060 410 L1100 410 L1100 460 L1180 460 L1180 520 L0 520 Z"/>
-        </g>
-        <g opacity="0.22">
-          <circle cx="520" cy="470" r="30" fill="#fff"/>
-          <circle cx="660" cy="470" r="30" fill="#fff"/>
-          <rect x="574" y="452" width="32" height="26" rx="4" fill="#fff" transform="rotate(-8 590 465)"/>
-        </g>
-        <g opacity="0.16" fill="#fff">
-          <circle cx="120" cy="90" r="5"/>
-          <circle cx="980" cy="70" r="4"/>
-          <circle cx="1080" cy="150" r="6"/>
-          <circle cx="70" cy="200" r="4"/>
-        </g>
-      </svg>
-      <div>
-        <div class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M11 20A7 7 0 0 1 4 13c0-4 4-10 7-10s7 6 7 10a7 7 0 0 1-7 7z"/></svg><span id="hero-badge-text">Neighbours already trading</span></div>
-        <h1>Buy less. Trust more. <em>Belong</em> to your mohalla.</h1>
-        <p>Give things a second life with people you can actually vouch for — every deal keeps something out of a landfill and puts a face behind the price tag.</p>
-        <div class="hero-actions">
-          <a href="browse.html" class="btn-pill light">Explore the marketplace</a>
-          <a href="signup.html?redirect=post-ad.html" class="btn-pill ghost">Sell something</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="stats-band">
-    <div class="wrap">
-      <div class="stats-lead" id="stats-lead">Growing every week</div>
-      <div class="stats-grid" id="hero-stats"></div>
-    </div>
+<div class="nav-bar">
+<nav>
+  <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+  <div class="nav-links">
+    <a href="browse.html">Browse</a>
+    <a href="community.html">Community</a>
+    <a href="messages.html">Messages</a>
+    <a href="help.html">Help</a>
   </div>
-
-  <section id="pillars">
-    <div class="wrap">
-      <div class="pillars-head">
-        <div class="eyebrow">What we stand for</div>
-        <h2>Not just another place to buy things</h2>
-      </div>
-      <div class="pillar-grid">
-        <div class="pillar-card">
-          <div class="pillar-icon" style="background:var(--sage-bg);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--sage-deep)" stroke-width="1.8"><path d="M11 20A7 7 0 0 1 4 13c0-4 4-10 7-10s7 6 7 10a7 7 0 0 1-7 7z"/><path d="M11 20v-6"/></svg></div>
-          <h3>Sustainability</h3>
-          <p>Every second-hand deal is one less thing manufactured, shipped, and thrown away. Reuse, don't replace.</p>
-        </div>
-        <div class="pillar-card">
-          <div class="pillar-icon" style="background:var(--clay-bg);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--clay)" stroke-width="1.8"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/><path d="M9 12l2 2 4-4"/></svg></div>
-          <h3>Trust</h3>
-          <p>Verified identities, visible histories, and reviews that only exist after a real transaction happened.</p>
-        </div>
-        <div class="pillar-card">
-          <div class="pillar-icon" style="background:var(--sage-bg);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--sage-deep)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <h3>Community</h3>
-          <p>Public Q&amp;A, local tips, and neighbours who vouch for each other — not a faceless national feed.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="showcase">
-    <div class="wrap">
-      <div class="cat-head">
-        <h2>Trending this week</h2>
-        <a href="browse.html" class="btn-pill" style="border:1px solid var(--border-2);">See all</a>
-      </div>
-      <div class="showcase-inner" id="showcase-grid"></div>
-    </div>
-  </section>
-
-  <div class="cta-band">
-    <div class="wrap">
-      <!-- Original illustration: a parcel with a sprig growing from it — reuse,
-           not landfill. Flat geometric style, matching the logo/icon set. -->
-      <svg width="72" height="72" viewBox="0 0 72 72" style="margin:0 auto 20px;display:block;" aria-hidden="true">
-        <path d="M14 28 L36 18 L58 28 L58 54 L36 64 L14 54 Z" fill="var(--sage-deep)"/>
-        <path d="M14 28 L36 38 L58 28" fill="none" stroke="var(--bg)" stroke-width="2"/>
-        <path d="M36 38 L36 64" stroke="var(--bg)" stroke-width="2"/>
-        <path d="M36 18 C34 12 28 8 22 9 C23 15 28 19 34 19 Z" fill="var(--sage)"/>
-        <path d="M36 18 C38 10 45 6 52 8 C50 15 44 20 37 19 Z" fill="var(--marigold)"/>
-      </svg>
-      <h2>Got something to sell?</h2>
-      <p>Post it in under two minutes, with real photos — buyers see your seller history before they even message you.</p>
-      <a href="signup.html?redirect=post-ad.html" class="btn-pill" style="background:var(--bg);color:var(--ink);display:inline-flex;">Sell something</a>
-    </div>
-  </div>
-
-  <section id="contact">
-    <div class="wrap">
-      <div class="pillars-head">
-        <div class="eyebrow">Get in touch</div>
-        <h2>Questions? Reach out.</h2>
-      </div>
-      <div class="contact-row">
-        <a href="https://www.instagram.com/mohallamarketplace/" target="_blank" rel="noopener noreferrer" class="btn-pill contact-pill">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>
-          @mohallamarketplace
-        </a>
-        <a href="mailto:mohallamarketplace@gmail.com" class="btn-pill contact-pill">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
-          mohallamarketplace@gmail.com
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <div class="wrap">
-      <div class="footer-grid">
-        <div>
-          <a href="index.html" class="brand">
-            <img src="img/logo-lockup.png" alt="Mohalla Market" height="26" />
-          </a>
-          <p>A sustainable, trust-first marketplace — built around a neighbourhood, not an algorithm.</p>
-          <form id="newsletter-form" style="margin-top:18px;max-width:280px;">
-            <p style="font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Get updates on new listings &amp; features</p>
-            <div style="display:flex;gap:8px;">
-              <input type="email" id="newsletter-email" placeholder="you@example.com" required
-                style="flex:1;min-width:0;border:1.5px solid var(--border-2);border-radius:10px;padding:10px 12px;font-size:13px;background:var(--surface);color:var(--ink);" />
-              <button type="submit" class="btn-pill btn-sage" style="padding:10px 16px;">Join</button>
-            </div>
-            <p id="newsletter-msg" style="font-size:12px;color:var(--sage-deep);margin-top:8px;" hidden></p>
-          </form>
-        </div>
-        <div>
-          <h4>Marketplace</h4>
-          <ul>
-            <li><a href="browse.html">Browse listings</a></li>
-            <li><a href="signup.html?redirect=post-ad.html">Sell something</a></li>
-            <li><a href="signup.html">Create account</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Our values</h4>
-          <ul>
-            <li><a href="index.html#pillars">Sustainability</a></li>
-            <li><a href="help.html">Trust &amp; safety</a></li>
-            <li><a href="index.html#pillars">Community</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Support</h4>
-          <ul>
-            <li><a href="help.html">Help centre</a></li>
-            <li><a href="login.html">Sign in</a></li>
-            <li><a href="https://www.instagram.com/mohallamarketplace/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
-            <li><a href="mailto:mohallamarketplace@gmail.com">Email us</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span id="footer-copyright">© 2026 Mohalla Market</span>
-        <span>Built for the neighbourhood, not the algorithm.</span>
-      </div>
-    </div>
-  </footer>
+  <a class="nav-cta" href="post-ad.html">Sell something</a>
+</nav>
 </div>
 
-<!-- ============ APP FEED (signed-in users) ============ -->
+<section class="hero">
+  <span class="sparkle" style="top:18%; left:6%;">✦</span>
+  <span class="sparkle" style="top:62%; left:16%; animation-delay:.8s;">✦</span>
+  <span class="sparkle" style="top:30%; right:8%; animation-delay:1.4s;">✦</span>
+  <svg class="cloud" style="top:14%; right:14%; width:110px;" viewBox="0 0 100 50"><ellipse cx="30" cy="30" rx="26" ry="16" fill="#D9A441" opacity="0.9"/><ellipse cx="55" cy="22" rx="20" ry="14" fill="#D9A441" opacity="0.9"/><ellipse cx="72" cy="32" rx="18" ry="12" fill="#D9A441" opacity="0.9"/></svg>
+  <svg class="cloud" style="bottom:22%; left:2%; width:90px;" viewBox="0 0 100 50"><ellipse cx="30" cy="30" rx="26" ry="16" fill="#D9A441" opacity="0.55"/><ellipse cx="60" cy="24" rx="20" ry="14" fill="#D9A441" opacity="0.55"/></svg>
+  <div class="hero-inner">
+    <div class="hero-grid">
+    <div>
+    <span class="stamp">Growing every week, one mohalla at a time</span>
+    <h1>Buy less. Trust more.<br>
+      <span class="underline">Belong</span>
+      to your mohalla.
+      <svg viewBox="0 0 200 14" preserveAspectRatio="none"><path d="M2 8 Q 50 2, 100 8 T 198 6" stroke="#D9A441" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+    </h1>
+    <p>Give things a second life with people you can actually vouch for, because every deal keeps something out of a landfill and puts a face behind the price tag.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="browse.html">Explore the marketplace</a>
+      <a class="btn btn-ghost" href="post-ad.html">Sell something</a>
+    </div>
+    <div class="counter-row">
+      <div class="counter"><div class="num" id="counter-deals" data-target="0">0</div><div class="label">deals done, not landfilled</div></div>
+      <div class="counter"><div class="num" id="counter-listings" data-target="0">0</div><div class="label">listings live right now</div></div>
+      <div class="counter"><div class="num" id="counter-localities" data-target="0">0</div><div class="label">mohallas active</div></div>
+    </div>
+    </div>
+    <div class="hero-illustration">
+      <svg viewBox="0 0 420 440" fill="none" stroke="#1F3A2E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <!-- top bunting -->
+        <path d="M10 30 Q210 5 410 30" stroke-width="1.4"/>
+        <path d="M40 33 l8 14 l8 -12" stroke-width="1.2"/>
+        <path d="M90 25 l8 14 l8 -12" stroke-width="1.2"/>
+        <path d="M140 20 l8 14 l8 -12" stroke-width="1.2"/>
+        <path d="M200 18 l8 14 l8 -12" stroke-width="1.2"/>
+        <path d="M260 20 l8 14 l8 -12" stroke-width="1.2"/>
+        <path d="M320 25 l8 14 l8 -12" stroke-width="1.2"/>
+        <path d="M370 30 l8 14 l8 -12" stroke-width="1.2"/>
+
+        <!-- LEFT STALL (striped awning) -->
+        <path d="M35 100 L35 78 L145 78 L145 100"/>
+        <path d="M35 100 L145 100" stroke-width="1.4"/>
+        <path d="M55 78 L55 100 M75 78 L75 100 M95 78 L95 100 M115 78 L115 100 M135 78 L135 100" stroke-width="1"/>
+        <!-- stall bunting -->
+        <path d="M50 108 Q90 118 130 108" stroke-width="1"/>
+        <path d="M65 111 l5 8 l5 -7" stroke-width="0.9"/>
+        <path d="M90 114 l5 8 l5 -7" stroke-width="0.9"/>
+        <path d="M115 111 l5 8 l5 -7" stroke-width="0.9"/>
+        <!-- stall counter -->
+        <path d="M35 100 L35 175 L145 175 L145 100" stroke-width="1"/>
+        <path d="M35 155 L145 155" stroke-width="1"/>
+        <!-- seller behind counter -->
+        <circle cx="90" cy="125" r="8"/>
+        <path d="M85 121 q5 -3 10 0" stroke-width="0.8"/>
+        <path d="M90 133 C82 135 78 145 79 155 L101 155 C102 145 98 135 90 133Z"/>
+        <path d="M83 140 L83 150 M97 140 L97 150" stroke-width="0.8"/>
+        <!-- goods on counter -->
+        <rect x="45" y="160" width="10" height="14"/>
+        <rect x="60" y="158" width="10" height="16"/>
+        <rect x="75" y="162" width="10" height="12"/>
+        <rect x="110" y="160" width="10" height="14"/>
+        <rect x="125" y="158" width="10" height="16"/>
+        <!-- plants beside stall -->
+        <path d="M25 175 L35 175 L33 195 L27 195 Z"/>
+        <path d="M27 175 C27 168 29 162 30 158 C31 162 33 168 33 175Z"/>
+        <path d="M28 168 q-4 -2 -6 2 M32 165 q4 -3 6 0" stroke-width="0.9"/>
+        <path d="M147 175 L157 175 L155 195 L149 195 Z"/>
+        <path d="M149 175 C149 168 151 162 152 158 C153 162 155 168 155 175Z"/>
+
+        <!-- MIDDLE small stall -->
+        <path d="M180 110 L180 92 L235 92 L235 110" stroke-width="1"/>
+        <path d="M180 110 L235 110" stroke-width="1.2"/>
+        <path d="M192 92 L192 110 M204 92 L204 110 M216 92 L216 110 M228 92 L228 110" stroke-width="0.9"/>
+        <path d="M180 110 L180 160 L235 160 L235 110" stroke-width="0.9"/>
+        <path d="M180 145 L235 145" stroke-width="0.8"/>
+        <rect x="188" y="148" width="6" height="10"/>
+        <rect x="198" y="150" width="6" height="8"/>
+        <rect x="208" y="147" width="6" height="11"/>
+        <rect x="218" y="149" width="6" height="9"/>
+
+        <!-- RIGHT STALL (fruit stand with awning) -->
+        <path d="M280 100 L300 82 L380 82 L400 100"/>
+        <path d="M280 100 L400 100" stroke-width="1.4"/>
+        <path d="M295 82 L305 100 M320 82 L322 100 M345 82 L344 100 M370 82 L365 100" stroke-width="1"/>
+        <path d="M280 100 L280 175 L400 175 L400 100" stroke-width="1"/>
+        <path d="M280 155 L400 155" stroke-width="1"/>
+        <!-- seller -->
+        <circle cx="340" cy="125" r="8"/>
+        <path d="M340 133 C332 135 328 145 329 155 L351 155 C352 145 348 135 340 133Z"/>
+        <!-- fruit bowls -->
+        <path d="M290 155 Q300 165 310 155 Z"/>
+        <circle cx="295" cy="152" r="2"/><circle cx="300" cy="150" r="2"/><circle cx="305" cy="152" r="2"/>
+        <path d="M320 155 Q332 168 344 155 Z"/>
+        <circle cx="326" cy="150" r="2"/><circle cx="332" cy="148" r="2"/><circle cx="338" cy="150" r="2"/><circle cx="332" cy="152" r="2"/>
+        <path d="M360 155 Q374 168 388 155 Z"/>
+        <circle cx="366" cy="150" r="2"/><circle cx="372" cy="148" r="2"/><circle cx="378" cy="150" r="2"/>
+
+        <!-- FOREGROUND path (winding) -->
+        <path d="M50 260 Q140 240 200 270 Q260 300 210 340 Q160 380 240 400" stroke-width="1.2" stroke-dasharray="0"/>
+        <path d="M55 265 Q145 245 205 275 Q265 305 215 345 Q165 385 245 405" stroke-width="1"/>
+
+        <!-- LEFT: person browsing (with striped shirt) -->
+        <circle cx="105" cy="220" r="10"/>
+        <path d="M100 216 q5 -3 10 0" stroke-width="0.8"/>
+        <path d="M105 230 C94 233 90 246 92 260 L118 260 C120 246 116 233 105 230Z"/>
+        <path d="M96 240 L118 240 M96 246 L118 246 M96 252 L118 252" stroke-width="0.7"/>
+        <path d="M92 260 L88 285 L98 285 L100 260" stroke-width="0.9"/>
+        <path d="M118 260 L122 285 L112 285 L110 260" stroke-width="0.9"/>
+
+        <!-- MIDDLE: couple walking, holding hands -->
+        <circle cx="180" cy="248" r="9"/>
+        <circle cx="205" cy="245" r="9"/>
+        <path d="M180 257 C170 260 166 272 168 285 L192 285 C194 272 190 260 180 257Z"/>
+        <path d="M205 254 C195 257 191 269 193 285 L217 285 C219 269 215 257 205 254Z"/>
+        <path d="M192 275 L193 275" stroke-width="1.4"/>
+        <path d="M168 285 L164 310 L174 310 L176 285 M192 285 L196 310 L186 310 L184 285" stroke-width="0.9"/>
+        <path d="M193 285 L189 312 L199 312 L201 285 M217 285 L221 312 L211 312 L209 285" stroke-width="0.9"/>
+        <!-- basket -->
+        <path d="M215 285 L228 285 L226 300 L217 300 Z" stroke-width="0.8"/>
+        <path d="M217 285 Q222 275 228 285" stroke-width="0.8"/>
+
+        <!-- DOG small -->
+        <path d="M130 285 Q136 280 145 282 Q152 282 155 288 L155 296 L150 296 L149 292 L142 292 L141 296 L136 296 Z" stroke-width="0.9"/>
+        <path d="M156 288 Q160 285 158 293" stroke-width="0.7"/>
+        <circle cx="152" cy="286" r="0.6" fill="#1F3A2E"/>
+
+        <!-- SITTING DOG right -->
+        <path d="M300 260 L308 260 L310 270 L315 275 L315 285 L305 285 L303 275 Z" stroke-width="0.9"/>
+        <path d="M300 260 Q296 254 300 250 Q304 254 302 260" stroke-width="0.8"/>
+        <circle cx="304" cy="256" r="0.6" fill="#1F3A2E"/>
+        <path d="M315 275 Q320 270 322 278" stroke-width="0.7"/>
+
+        <!-- FOREGROUND: person carrying plants (right) -->
+        <circle cx="345" cy="225" r="10"/>
+        <path d="M345 235 C335 238 331 250 333 265 L357 265 C359 250 355 238 345 235Z"/>
+        <!-- pots being carried -->
+        <path d="M320 258 L338 258 L336 275 L322 275 Z" stroke-width="0.9"/>
+        <path d="M325 258 C325 250 327 245 329 242 C331 245 333 250 333 258Z" stroke-width="0.9"/>
+        <path d="M328 250 q-3 -1 -5 1 M331 248 q3 -2 5 0" stroke-width="0.7"/>
+        <path d="M333 265 L323 258" stroke-width="0.9"/>
+        <path d="M333 265 L345 272 L347 265" stroke-width="0.9"/>
+
+        <!-- flower plot bottom-right -->
+        <rect x="320" y="330" width="60" height="20" stroke-width="0.9"/>
+        <path d="M330 330 C330 322 333 316 335 314 C337 316 340 322 340 330Z" stroke-width="0.8"/>
+        <path d="M350 330 C350 322 353 316 355 314 C357 316 360 322 360 330Z" stroke-width="0.8"/>
+        <path d="M370 330 C370 322 372 316 374 314 C376 316 378 322 378 330Z" stroke-width="0.8"/>
+
+        <!-- big flower left decorative -->
+        <circle cx="30" cy="260" r="5"/>
+        <path d="M30 260 L30 300 Q34 320 20 340" stroke-width="0.9"/>
+        <path d="M27 285 q-8 -2 -12 6 M32 305 q10 -2 14 6" stroke-width="0.9"/>
+
+        <!-- scattered leaves -->
+        <path d="M250 200 q6 -4 10 2" stroke-width="0.8"/>
+        <path d="M60 200 q6 -4 10 2" stroke-width="0.8"/>
+        <path d="M395 350 q-6 -4 -10 2" stroke-width="0.8"/>
+
+        <!-- small sign / A-frame -->
+        <path d="M245 300 L255 275 L265 300 Z" stroke-width="0.9"/>
+        <path d="M248 288 L262 288" stroke-width="0.8"/>
+        <path d="M251 293 L260 293" stroke-width="0.8"/>
+
+        <!-- ground line -->
+        <path d="M0 420 Q210 405 420 420" stroke-width="1.2"/>
+      </svg>
+    </div>
+    </div>
+  </div>
+  <svg class="scallops" viewBox="0 0 400 12" preserveAspectRatio="none">
+    <path d="M0,12 L0,6 Q20,12 40,6 Q60,12 80,6 Q100,12 120,6 Q140,12 160,6 Q180,12 200,6 Q220,12 240,6 Q260,12 280,6 Q300,12 320,6 Q340,12 360,6 Q380,12 400,6 L400,12 Z" fill="#F0E9D8"/>
+  </svg>
+</section>
+
+<div class="marquee-band">
+  <div class="marquee-track">
+    <span>Reuse, don't replace &nbsp; · &nbsp; Verified neighbours &nbsp; · &nbsp; Built for your mohalla &nbsp; · &nbsp;</span>
+    <span>Reuse, don't replace &nbsp; · &nbsp; Verified neighbours &nbsp; · &nbsp; Built for your mohalla &nbsp; · &nbsp;</span>
+  </div>
+</div>
+
+<section class="pillars" id="pillars">
+  <div class="pillars-inner">
+    <h2>Not just another place to buy things</h2>
+    <p>Three things guide every listing, every chat, every deal.</p>
+    <div class="tabs">
+      <button class="tab active" data-tab="0">Sustainability</button>
+      <button class="tab" data-tab="1">Trust</button>
+      <button class="tab" data-tab="2">Community</button>
+    </div>
+    <div class="pillar-panel active" data-panel="0">
+      <div><h3>Reuse, don't replace</h3><p>Every second-hand deal is one less thing manufactured, shipped, and thrown away. We track the small wins that add up across a mohalla.</p></div>
+      <div class="pillar-visual">
+        <svg viewBox="0 0 200 160" fill="none" stroke="#1F3A2E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M100 145 L100 70"/>
+          <path d="M100 95 C70 95 55 75 58 48 C82 52 100 68 100 95Z"/>
+          <path d="M100 80 C130 80 145 60 142 35 C118 40 100 55 100 80Z"/>
+          <path d="M100 115 C78 115 66 100 68 82 C88 86 100 98 100 115Z"/>
+          <ellipse cx="100" cy="148" rx="34" ry="6"/>
+          <path d="M20 30 q10 -8 18 0" stroke-width="2"/>
+          <path d="M170 100 q10 -6 16 2" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+    <div class="pillar-panel" data-panel="1">
+      <div><h3>Verified, not anonymous</h3><p>Real identities, visible histories, and reviews that only exist after a transaction actually happened. No bots, no burner accounts.</p></div>
+      <div class="pillar-visual">
+        <svg viewBox="0 0 200 160" fill="none" stroke="#1F3A2E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M55 90 L85 100 L100 92 L120 78 L135 82 L112 100 L95 112 L70 108 L50 100 Z"/>
+          <path d="M60 88 L38 70 L38 55"/>
+          <path d="M130 80 L152 62 L152 48"/>
+          <circle cx="100" cy="35" r="16"/>
+          <path d="M84 40 l32 0" stroke-width="1.6" opacity="0.5"/>
+          <path d="M70 130 q30 -14 60 0" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+    <div class="pillar-panel" data-panel="2">
+      <div><h3>Neighbours, not a feed</h3><p>Public Q&A, local tips, and people who vouch for each other in the same lanes and lifts they see you in every day.</p></div>
+      <div class="pillar-visual">
+        <svg viewBox="0 0 240 200" fill="none" stroke="#1F3A2E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <!-- back table with baskets -->
+          <path d="M30 70 L100 70 L92 95 L38 95 Z"/>
+          <path d="M40 78 C46 74 54 74 60 78" stroke-width="1.2"/>
+          <path d="M62 76 C68 72 76 72 82 76" stroke-width="1.2"/>
+          <path d="M30 95 L26 130 M100 95 L96 130" stroke-width="1.3"/>
+          <!-- seated neighbour left sorting produce -->
+          <circle cx="30" cy="110" r="8"/>
+          <path d="M30 118 C20 121 16 132 18 146 L44 146 C46 132 42 121 30 118Z"/>
+          <path d="M18 132 L4 140 M44 132 L58 128" stroke-width="1.3"/>
+          <path d="M0 165 L60 165" stroke-width="1.3"/>
+          <!-- front communal table -->
+          <path d="M75 118 L190 118 L178 155 L86 155 Z"/>
+          <path d="M92 128 C98 124 106 124 111 128 M120 126 C126 122 134 122 140 126 M148 130 C154 126 162 126 168 130" stroke-width="1.1"/>
+          <path d="M86 155 L80 190 M178 155 L184 190" stroke-width="1.3"/>
+          <!-- three neighbours at table -->
+          <circle cx="100" cy="98" r="9"/>
+          <path d="M100 107 C88 110 83 123 85 140 L116 140 C118 123 112 110 100 107Z"/>
+          <circle cx="140" cy="94" r="9"/>
+          <path d="M140 103 C128 106 123 119 125 138 L156 138 C158 119 152 106 140 103Z"/>
+          <circle cx="178" cy="100" r="9"/>
+          <path d="M178 109 C168 112 163 124 165 142 L192 142 C194 124 188 112 178 109Z"/>
+          <path d="M85 140 L70 150 M116 140 L128 148" stroke-width="1.2"/>
+          <path d="M125 138 L110 146 M158 138 L172 146" stroke-width="1.2"/>
+          <path d="M165 142 L150 150 M192 142 L206 138" stroke-width="1.2"/>
+          <!-- standing neighbour with basket, right -->
+          <circle cx="212" cy="96" r="8"/>
+          <path d="M212 104 C204 107 200 118 202 132 L224 132 C226 118 220 107 212 104Z"/>
+          <path d="M200 118 C193 114 186 116 186 122 C186 128 194 130 200 126" stroke-width="1.2"/>
+          <path d="M202 132 L198 165 M224 132 L228 165" stroke-width="1.3"/>
+          <!-- ground -->
+          <path d="M0 190 Q120 178 240 190" stroke-width="1.4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="trending" id="trending">
+  <div class="trending-head">
+    <h2>Trending this week</h2>
+    <a href="browse.html">See all →</a>
+  </div>
+  <svg viewBox="0 0 400 16" style="width:100%; height:16px; margin-bottom:28px;" preserveAspectRatio="none">
+    <path d="M0 3 L400 3" stroke="#4A6B4A" stroke-width="1.5" opacity="0.4"/>
+    <path d="M40 3 l10 13 l10 -13" stroke="#D9A441" stroke-width="1.5" fill="none" opacity="0.7"/>
+    <path d="M100 3 l10 13 l10 -13" stroke="#D9A441" stroke-width="1.5" fill="none" opacity="0.7"/>
+    <path d="M160 3 l10 13 l10 -13" stroke="#D9A441" stroke-width="1.5" fill="none" opacity="0.7"/>
+  </svg>
+  <!-- Real listings, rendered by renderLanding() in the script at the end
+       of this file (replaces this design's 3 hardcoded placeholder cards). -->
+  <div class="cards" id="trending-cards"></div>
+</section>
+
+<section class="cta-band">
+  <span class="leaf">
+    <svg viewBox="0 0 300 300" fill="none" stroke="#D9A441" stroke-width="2" opacity="0.35">
+      <path d="M150 260 C150 200 150 140 150 60"/>
+      <path d="M150 220 C110 210 90 180 95 140 C130 150 150 180 150 220Z"/>
+      <path d="M150 170 C190 160 210 130 205 90 C170 100 150 130 150 170Z"/>
+      <path d="M150 120 C120 112 105 88 110 58 C138 66 150 90 150 120Z"/>
+    </svg>
+  </span>
+  <div class="wrap">
+    <h2>Got something to sell?</h2>
+    <p>Post it in under two minutes, with real photos. Buyers see your seller history before they even message you.</p>
+    <a class="btn btn-primary" href="post-ad.html">Sell something</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+  <div class="foot-top">
+    <div class="foot-brand">
+      <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+      <p>A sustainable, trust-first marketplace, built around a neighbourhood, not an algorithm.</p>
+      <!-- Real newsletter signup (Store.subscribeNewsletter) -- present on
+           the old landing page, with no equivalent slot in this design, so
+           added back here in the same relative spot (brand column, under
+           the tagline) rather than dropped. -->
+      <form id="newsletter-form" style="margin-top:16px;max-width:260px;">
+        <p style="font-size:0.78rem;font-weight:700;color:var(--moss);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Get updates on new listings</p>
+        <div style="display:flex;gap:8px;">
+          <input type="email" id="newsletter-email" placeholder="you@example.com" required
+            style="flex:1;min-width:0;border:1.5px solid var(--sage);border-radius:8px;padding:9px 11px;font-size:0.85rem;background:var(--paper);color:var(--ink);font-family:inherit;" />
+          <button type="submit" class="btn btn-primary" style="padding:9px 16px;font-size:0.85rem;">Join</button>
+        </div>
+        <p id="newsletter-msg" style="font-size:0.78rem;color:var(--moss);margin-top:6px;" hidden></p>
+      </form>
+    </div>
+    <div class="foot-cols">
+      <div class="foot-col"><h5>Marketplace</h5><a href="browse.html">Browse listings</a><a href="post-ad.html">Sell something</a><a href="signup.html">Create account</a></div><div class="foot-col"><h5>Community</h5><a href="community.html">Notice board</a><a href="messages.html">Messages</a></div>
+      <div class="foot-col"><h5>Our values</h5><a href="#pillars">Sustainability</a><a href="#pillars">Trust & safety</a><a href="#pillars">Community</a></div>
+      <!-- Instagram link -- present on the old landing page's dedicated
+           "Get in touch" section, with no equivalent section in this
+           design, so added back here alongside the other real Support
+           links rather than dropped. -->
+      <div class="foot-col"><h5>Support</h5><a href="help.html">Help centre</a><a href="login.html">Sign in</a><a href="https://www.instagram.com/mohallamarketplace/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="mailto:mohallamarketplace@gmail.com">Email us</a></div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span id="footer-copyright">© 2026 MohallaMarketplace</span>
+    <span>Built for the neighbourhood, not the algorithm.</span>
+  </div>
+  </div>
+</footer>
+</div>
+<!-- /#landing-root -->
+
+<script>
+// tab toggle
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.pillar-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector('.pillar-panel[data-panel="'+tab.dataset.tab+'"]').classList.add('active');
+  });
+});
+// animated counters on view
+const counters = document.querySelectorAll('.counter .num');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const el = e.target;
+      const target = parseInt(el.dataset.target,10);
+      let cur = 0;
+      const step = Math.max(1, Math.round(target/60));
+      const tick=()=>{
+        cur += step;
+        if(cur>=target){ el.textContent = target.toLocaleString(); return; }
+        el.textContent = cur.toLocaleString();
+        requestAnimationFrame(tick);
+      };
+      tick();
+      io.unobserve(el);
+    }
+  });
+},{threshold:0.4});
+counters.forEach(c=>io.observe(c));
+</script>
+
+<!-- ============ APP FEED (signed-in users) ============
+     Not part of the new design (it only covers the signed-out landing
+     page) -- this block is the existing, untouched feed experience, kept
+     exactly as it was so signed-in users don't lose location/Nearby/
+     category browsing. See integration notes. -->
 <div class="app-shell" id="feed-root" hidden>
   <div class="page-top">
     <div class="row between loc-row" id="loc-row" onclick="openLocationPicker()">
@@ -364,6 +618,7 @@
   </div>
 </div>
 
+<link rel="stylesheet" href="css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/maps-client.js"></script>
@@ -371,12 +626,12 @@
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
+  /* Real functionality below -- ported from the previous index.html,
+     unchanged except for retargeting DOM ids/classes that this new design
+     renamed (noted inline at each spot). */
   let scope = "all";
   let allListings = [];
 
-  /* "Nearby" = the signed-in user's saved city. Signed out, or signed in but
-     no locality picked yet, falls back to the app's default home city rather
-     than gating browsing behind a location prompt. */
   function nearbyCity() {
     const user = Store.getUser();
     return (user && user.locality) ? user.city : HOME_CITY;
@@ -391,10 +646,6 @@
     else renderTrending();
   }
 
-  /* Real GPS distance is strictly an enhancement on top of the existing
-     city-based Nearby — only requested on a tap (never on page load), only
-     asked once per session, and any decline/failure just falls back to the
-     city match silently rather than blocking or erroring. */
   async function maybeUseGeoThenRender() {
     if (!Store.getCachedGeo() && !geoAskedThisSession) {
       geoAskedThisSession = true;
@@ -420,7 +671,7 @@
         listings = withDistance.sort((a, b) => a._distanceKm - b._distanceKm);
         sortedByDistance = true;
       } else {
-        listings = listings.filter((l) => l.city === nearbyCity()); // no listings have real coordinates yet — fall back
+        listings = listings.filter((l) => l.city === nearbyCity());
       }
     } else if (scope === "nearby") {
       listings = listings.filter((l) => l.city === nearbyCity());
@@ -440,7 +691,7 @@
     document.getElementById("loc-value").textContent = label;
   }
 
-  let pickedPlace = null; // { locality, city, state, lat, lng } from Places Autocomplete
+  let pickedPlace = null;
   let locPickerMounted = false;
 
   function openLocationPicker() {
@@ -485,27 +736,19 @@
     }
   });
 
-  /* ---------- Landing page: showcase cards (real data) ---------- */
-  const SHOWCASE_VERIFIED_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="5"/><path d="M9 12.5 7 21l5-3 5 3-2-8.5"/></svg>`;
-
-  function showcaseCardHtml(listing) {
+  /* ---------- Landing page: trending cards (real data), matching this
+     new design's .card/.card-thumb/.card-save markup instead of the old
+     .show-card structure. ---------- */
+  function newTrendingCardHtml(listing) {
     const seller = getSellerById(listing.sellerId);
     const saved = Store.isSaved(listing.id);
-    const trust = isSellerVerified(seller)
-      ? `${SHOWCASE_VERIFIED_SVG}Verified · ${escapeHtml(listing.locality)}`
-      : `Unverified · ${escapeHtml(listing.locality)}`;
     return `
-      <a href="listing.html?id=${listing.id}" class="show-card">
-        <div class="show-thumb">
+      <a href="listing.html?id=${listing.id}" class="card">
+        <div class="card-thumb has-photo">
           ${listingThumbHtml(listing, 400, 300)}
-          <span class="show-cond">${escapeHtml(listing.condition)}</span>
-          <button class="show-save ${saved ? "active" : ""}" title="Save" onclick="handleSaveClick(event,'${listing.id}')">${saved ? "♥" : "♡"}</button>
+          <button type="button" class="card-save ${saved ? "active" : ""}" title="Save" onclick="handleSaveClick(event,'${listing.id}')">${saved ? "♥" : "♡"}</button>
         </div>
-        <div class="show-body">
-          <div class="name">${escapeHtml(listing.title)}</div>
-          <div class="price">${formatPrice(listing.price)}</div>
-          <div class="show-seller">${trust}</div>
-        </div>
+        <h4>${escapeHtml(listing.title)}</h4><div class="price">${formatPrice(listing.price)}</div><div class="meta">${escapeHtml(listing.locality)} · ${escapeHtml(listing.condition)}</div>
       </a>
     `;
   }
@@ -513,34 +756,36 @@
   async function renderLanding() {
     const listings = await Store.getListings();
 
-    const trending = [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 4);
-    document.getElementById("showcase-grid").innerHTML = trending.length
-      ? trending.map(showcaseCardHtml).join("")
-      : `<p style="grid-column:1/-1;color:var(--muted);">No listings yet — be the first to post one.</p>`;
+    const trending = [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 3);
+    document.getElementById("trending-cards").innerHTML = trending.length
+      ? trending.map(newTrendingCardHtml).join("")
+      : `<p style="grid-column:1/-1;color:var(--ink-soft);">No listings yet — be the first to post one.</p>`;
 
     const localityCount = new Set(listings.map((l) => l.locality)).size;
-    // No real verification tier exists yet (see isSellerVerified() in
-    // js/data.js), so a "Verified sellers" stat here would always read 0 —
-    // "Deals done" is a real, already-tracked number instead of a hollow one.
+    // Same reasoning as the old page: no real verification tier exists, so
+    // this design's "verified neighbours trading" stat would always read 0
+    // — relabeled above to real, honestly-tracked numbers instead.
     const dealsCount = Array.from(new Set(listings.map((l) => l.sellerId)))
       .map(getSellerById).reduce((sum, s) => sum + (s ? s.deals : 0), 0);
 
-    document.getElementById("hero-badge-text").textContent = listings.length > 0
-      ? `${listings.length}+ neighbours already trading`
-      : "Be the first to trade in your mohalla";
-    document.getElementById("stats-lead").textContent = `Growing in ${HOME_CITY.split(",")[0]} and beyond`;
-    document.getElementById("footer-copyright").textContent = `© 2026 Mohalla Market · ${HOME_CITY}`;
-    document.getElementById("hero-stats").innerHTML = `
-      <div class="stat"><div class="num">${listings.length}</div><div class="label">Active listings</div></div>
-      <div class="stat"><div class="num">${localityCount}</div><div class="label">Localities covered</div></div>
-      <div class="stat"><div class="num">${dealsCount}</div><div class="label">Deals done</div></div>
-    `;
+    // Set both textContent and data-target: the count-up animation reads
+    // data-target when the hero scrolls into view, but the hero can already
+    // be on-screen before this fetch resolves, so textContent is also set
+    // directly to guarantee the real number is what's visible either way.
+    const counterListings = document.getElementById("counter-listings");
+    const counterDeals = document.getElementById("counter-deals");
+    const counterLocalities = document.getElementById("counter-localities");
+    counterListings.dataset.target = listings.length; counterListings.textContent = listings.length.toLocaleString();
+    counterDeals.dataset.target = dealsCount; counterDeals.textContent = dealsCount.toLocaleString();
+    counterLocalities.dataset.target = localityCount; counterLocalities.textContent = localityCount.toLocaleString();
+
+    document.getElementById("footer-copyright").textContent = `© 2026 MohallaMarketplace · ${HOME_CITY}`;
   }
 
   async function renderFeed() {
     allListings = await Store.getListings();
 
-    scope = "all"; // All India is the default view — the user switches to Nearby explicitly
+    scope = "all";
     document.querySelectorAll("#scope-cats .pill-btn").forEach((b) => b.classList.toggle("active", b.dataset.scope === scope));
     renderLocValue();
 
@@ -557,12 +802,10 @@
     await Store.primeCache();
 
     if (Store.isLoggedIn()) {
-      await initPage("home"); // mounts the bottom nav + unread-message dot
+      await initPage("home");
       document.getElementById("feed-root").hidden = false;
       await renderFeed();
     } else {
-      // No bottom nav on the landing page — it's a marketing page for
-      // logged-out visitors, not part of the in-app tab flow.
       document.getElementById("landing-root").hidden = false;
       await renderLanding();
 

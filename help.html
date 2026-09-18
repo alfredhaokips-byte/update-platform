@@ -9,164 +9,245 @@
   gtag('js', new Date());
   gtag('config', 'G-ZRDE5VY8FE');
 </script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
-<title>Help & Safety — Marketplace</title>
+<title>Help centre — Marketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+#help-root{
+  --paper:#F7F2E7; --paper-2:#F0E9D8; --forest:#1F3A2E; --moss:#4A6B4A; --sage:#8FAE86;
+  --sage-light:#DCE8D4; --marigold:#D9A441; --ink:#2A2A22; --ink-soft:#5C5A4D;
+}
+
+
+#help-root *{box-sizing:border-box; margin:0; padding:0;}
+#help-root{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.55; }
+#help-root h1, #help-root h2, #help-root h3{ color:var(--forest); font-weight:700; letter-spacing:-0.02em; }
+#help-root a{ color:inherit; text-decoration:none; }
+
+#help-root .nav-bar{ background:var(--paper); border-bottom:1px solid rgba(31,58,46,0.1); }
+#help-root nav{ display:flex; align-items:center; justify-content:space-between; padding:20px 24px; max-width:1080px; margin:0 auto; }
+#help-root .logo{ display:flex; align-items:center; gap:2px; }
+#help-root .logo-svg{ height:38px; width:auto; display:block; }
+#help-root .logo-img{ height:44px; width:auto; display:block; }
+@media (max-width:520px){ #help-root .logo-svg{ height:32px; } #help-root .logo-img{ height:36px; } }
+#help-root .nav-links{ display:flex; gap:28px; font-size:0.94rem; color:var(--ink-soft); }
+#help-root .nav-links a:hover, #help-root .nav-links a.active{ color:var(--forest); }
+#help-root .nav-cta{ background:var(--forest); color:var(--paper); padding:9px 18px; border-radius:10px; font-weight:600; font-size:0.9rem; }
+
+#help-root .head{ max-width:1080px; margin:0 auto; padding:56px 24px 32px; }
+#help-root .head-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:36px; align-items:center; }
+#help-root .head h1{ font-size:clamp(2rem,4.4vw,2.8rem); max-width:16ch; }
+#help-root .head p{ color:var(--ink-soft); margin-top:12px; max-width:54ch; font-size:1.05rem; }
+#help-root .head-doodle svg{ width:100%; height:auto; }
+@media (max-width:720px){ #help-root .head-grid{ grid-template-columns:1fr; } #help-root .head-doodle{ max-width:300px; margin:0 auto; } }
+
+#help-root .search-box{ max-width:560px; display:flex; align-items:center; gap:8px; background:var(--paper-2); border:1px solid rgba(31,58,46,0.15); border-radius:12px; padding:12px 16px; margin-top:24px; }
+#help-root .search-box input{ border:none; background:none; outline:none; font-family:inherit; font-size:0.96rem; color:var(--ink); width:100%; }
+#help-root .search-box:focus-within{ outline:2px solid var(--sage); outline-offset:1px; }
+
+#help-root .sections{ max-width:1080px; margin:0 auto; padding:8px 24px 80px; display:grid; grid-template-columns:1fr 1fr; gap:56px; }
+#help-root .col h2{ font-size:1.15rem; margin-bottom:16px; padding-bottom:12px; border-bottom:1.5px solid var(--sage); }
+
+#help-root details{ border-bottom:1px solid rgba(31,58,46,0.12); padding:16px 0; }
+#help-root details summary{ list-style:none; cursor:pointer; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; font-weight:600; color:var(--forest); font-size:0.98rem; }
+#help-root details summary::-webkit-details-marker{ display:none; }
+#help-root details summary::after{ content:"+"; font-size:1.4rem; color:var(--moss); line-height:1; transition:transform .2s ease; flex-shrink:0; }
+#help-root details[open] summary::after{ transform:rotate(45deg); }
+#help-root details p{ margin-top:10px; color:var(--ink-soft); font-size:0.94rem; }
+
+#help-root .contact{ background:var(--forest); color:var(--paper); padding:56px 24px; }
+#help-root .contact-inner{ max-width:1080px; margin:0 auto; display:grid; grid-template-columns:1.2fr 1fr; gap:40px; align-items:center; }
+#help-root .contact h2{ color:var(--paper); font-size:clamp(1.6rem,3.2vw,2.2rem); max-width:18ch; }
+#help-root .contact p{ color:var(--sage-light); margin-top:12px; max-width:44ch; }
+#help-root .contact-links{ display:flex; flex-direction:column; gap:14px; }
+#help-root .contact-item{ background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:16px 18px; display:flex; justify-content:space-between; align-items:center; gap:16px; color:var(--paper); transition:background .15s ease; }
+#help-root .contact-item:hover{ background:rgba(255,255,255,0.1); }
+#help-root .contact-item strong{ display:block; font-size:0.98rem; }
+#help-root .contact-item span{ color:var(--sage-light); font-size:0.85rem; }
+#help-root .contact-item::after{ content:"→"; color:var(--marigold); font-size:1.1rem; }
+
+#help-root footer{ padding:50px 24px 30px; background:var(--paper-2); border-top:1px solid rgba(31,58,46,0.1); }
+#help-root .footer-inner{ max-width:1080px; margin:0 auto; }
+#help-root .foot-top{ border-bottom:1px solid rgba(247,242,231,0.15); padding-bottom:36px; margin-bottom:24px; }
+#help-root .foot-top .logo{ color:var(--paper); }
+#help-root .foot-top p{ color:var(--sage-light); max-width:32ch; margin-top:10px; font-size:0.92rem; }
+#help-root .foot-bottom{ display:flex; justify-content:space-between; font-size:0.82rem; color:var(--ink-soft); flex-wrap:wrap; gap:10px; }
+
+@media (max-width:860px){ #help-root .sections, #help-root .contact-inner{ grid-template-columns:1fr; gap:36px; } #help-root .head-grid{ grid-template-columns:1fr; } #help-root .head-doodle{ max-width:320px; margin:0 auto; } }
+@media (max-width:720px){
+  #help-root .nav-links{ display:none; }
+  #help-root nav{ padding:14px 18px; }
+  #help-root .nav-cta{ padding:8px 14px; font-size:0.84rem; }
+  #help-root .head{ padding:36px 20px 20px; }
+  #help-root .sections{ padding:8px 20px 60px; }
+  #help-root .contact{ padding:44px 20px; }
+}
+
+/* dark mode adaptation for doodles */
+
+
+#help-root svg [stroke="#1F3A2E"]{ stroke:var(--forest); }
+#help-root svg [fill="#1F3A2E"]:not([fill-opacity="0"]){ fill:var(--forest); }
+#help-root svg [stroke="#4A6B4A"]{ stroke:var(--moss); }
+#help-root svg [fill="#4A6B4A"]:not([fill-opacity="0"]){ fill:var(--moss); }
+#help-root svg [stroke="#5C5A4D"]{ stroke:var(--ink-soft); }
+</style>
 </head>
 <body>
+<div id="help-root">
 
-<div class="app-shell">
-  <div class="back-row row between">
-    <a href="account.html" class="icon-btn" aria-label="Back">←</a>
-    <span class="header-title">Help &amp; Safety</span>
-    <span style="width:40px;"></span>
+<div class="nav-bar">
+<nav>
+  <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+  <div class="nav-links">
+    <a href="browse.html">Browse</a>
+    <a href="community.html">Community</a>
+    <a href="messages.html">Messages</a>
+    <a href="help.html" class="active">Help</a>
   </div>
-
-  <div class="form-wrap" style="padding-top:6px;">
-    <p class="section-title" style="padding:0;margin-bottom:4px;">Staying safe</p>
-    <div style="margin-bottom:8px;">
-      <div class="safety-tip-row"><span class="ic">🤝</span><p>Meet in a public place, ideally during daytime, for any handover.</p></div>
-      <div class="safety-tip-row"><span class="ic">🔍</span><p>Inspect the item carefully before paying — don't rely on photos alone.</p></div>
-      <div class="safety-tip-row"><span class="ic">💳</span><p>Avoid advance payments, especially to sellers who aren't verified.</p></div>
-      <div class="safety-tip-row"><span class="ic">💬</span><p>Keep the conversation in Marketplace chat until you're ready to meet — it keeps a record if something goes wrong.</p></div>
-    </div>
-
-    <p class="section-title" style="padding:0;margin-top:22px;margin-bottom:2px;">Raise a concern</p>
-    <p style="font-size:12.5px;color:var(--muted);padding:0 0 16px;">Tell us what happened — reports about scams, unsafe behavior, or platform bugs go straight to our trust & safety queue.</p>
-
-    <div id="context-chip"></div>
-
-    <form id="report-form">
-      <div class="form-row">
-        <label>What's this about?</label>
-        <div class="report-type-list" id="type-list"></div>
-      </div>
-      <div class="form-row">
-        <label for="r-desc">Tell us more</label>
-        <textarea id="r-desc" placeholder="Describe what happened, including any relevant dates or names..." required maxlength="500"></textarea>
-        <div class="hint"><span id="desc-count">0</span>/500</div>
-      </div>
-      <button type="submit" class="btn btn-fill btn-block">Submit report</button>
-    </form>
-
-    <p class="section-title" style="padding:0;margin-top:26px;">Your reports</p>
-    <div id="reports-list"></div>
-    <div class="empty-state" id="reports-empty" hidden style="padding:30px 20px;">
-      <div class="big">🛡️</div>
-      <h3>No reports filed</h3>
-      <p>Anything you report will show up here with its status.</p>
-    </div>
-
-    <div style="height:20px;"></div>
-  </div>
+  <a class="nav-cta" href="post-ad.html">Sell something</a>
+</nav>
 </div>
+
+<section class="head">
+  <div class="head-grid">
+  <div class="head-copy">
+  <h1>How can we help?</h1>
+  <p>Answers to the things neighbours ask most, from posting a first listing to reporting a bad deal.</p>
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="#5C5A4D" stroke-width="1.4"/><path d="M11 11 L14.5 14.5" stroke="#5C5A4D" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <input id="q" type="text" placeholder="Search the help centre">
+  </div>
+  </div>
+  <div class="head-doodle">
+    <svg viewBox="0 0 300 220" fill="none" stroke="#1F3A2E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- small stall -->
+      <path d="M40 90 L40 74 L120 74 L120 90"/>
+      <path d="M40 90 L120 90"/>
+      <path d="M55 74 L55 90 M70 74 L70 90 M85 74 L85 90 M100 74 L100 90 M115 74 L115 90" stroke-width="0.8"/>
+      <path d="M40 90 L40 150 L120 150 L120 90" stroke-width="0.9"/>
+      <path d="M40 135 L120 135" stroke-width="0.8"/>
+      <!-- shopkeeper -->
+      <circle cx="80" cy="108" r="7"/>
+      <path d="M80 115 C74 117 71 125 72 135 L88 135 C89 125 86 117 80 115Z"/>
+      <!-- question mark speech bubble above -->
+      <path d="M62 55 L82 55 Q92 55 92 45 L92 35 Q92 25 82 25 L62 25 Q52 25 52 35 L52 45 Q52 55 62 55 L62 60 L58 55" stroke-width="0.9"/>
+      <text x="66" y="46" font-family="Inter, sans-serif" font-weight="700" font-size="14" fill="#1F3A2E" stroke="none">?</text>
+      <!-- customer asking, with a bag -->
+      <circle cx="180" cy="110" r="10"/>
+      <path d="M180 120 C170 123 166 133 167 148 L193 148 C194 133 190 123 180 120Z"/>
+      <path d="M167 148 L164 178 L172 178 L175 148 M193 148 L196 178 L188 178 L185 148" stroke-width="0.8"/>
+      <!-- bag -->
+      <path d="M197 142 L215 142 L213 165 L199 165 Z" stroke-width="0.9"/>
+      <path d="M201 142 Q206 133 213 142" stroke-width="0.8"/>
+      <!-- second person waving -->
+      <circle cx="245" cy="108" r="9"/>
+      <path d="M245 117 C236 120 232 130 233 146 L257 146 C258 130 254 120 245 117Z"/>
+      <path d="M258 128 L270 118 Q276 114 275 108" stroke-width="1.2"/>
+      <path d="M233 146 L230 178 L238 178 L241 146 M257 146 L260 178 L252 178 L249 146" stroke-width="0.8"/>
+      <!-- speech bubble beside -->
+      <path d="M260 65 L290 65 Q296 65 296 71 L296 82 Q296 88 290 88 L280 88 L273 96 L275 88 L260 88 Q254 88 254 82 L254 71 Q254 65 260 65Z" stroke-width="0.9"/>
+      <path d="M262 75 L288 75 M262 81 L280 81" stroke-width="0.8"/>
+      <!-- plants -->
+      <path d="M20 175 C20 162 24 155 26 152 C28 155 32 162 32 175Z" stroke-width="0.9"/>
+      <path d="M285 175 C285 162 289 155 291 152 C293 155 297 162 297 175Z" stroke-width="0.9"/>
+      <!-- ground -->
+      <path d="M0 195 Q150 185 300 195" stroke-width="1"/>
+    </svg>
+  </div>
+  </div>
+</section>
+
+<section class="sections">
+  <div class="col">
+    <h2>Buying</h2>
+    <details><summary>How do I know a seller is who they say they are?</summary><p>Every seller is verified by ID and phone before their first listing goes live. On any listing you'll see their real name, how long they've been on MohallaMarketplace, and reviews left by past buyers who completed deals with them.</p></details>
+    <details><summary>Is there any buyer protection?</summary><p>Because deals happen face-to-face inside your mohalla, we don't hold funds like a big marketplace. We do give you a review trail, a report button on every listing, and a moderator who reads every report within a working day.</p></details>
+    <details><summary>Can I ask questions before meeting?</summary><p>Yes. Use the Ask button on any listing. Your question and the seller's answer become public on that listing, so future buyers benefit from the same information.</p></details>
+    <details><summary>What if the item isn't as described?</summary><p>Don't complete the deal. Walk away, and open a report from the listing. Sellers with confirmed reports lose their verified badge and can be removed after repeat issues.</p></details>
+
+    <h2 style="margin-top:36px;">Selling</h2>
+    <details><summary>How long does it take to post a listing?</summary><p>About two minutes. Title, a few real photos, price, condition, category, and locality. That's all we ask for.</p></details>
+    <details><summary>Does MohallaMarketplace take a cut?</summary><p>No. Listing is free and we don't touch the money. We stay funded through optional bumps for high-volume sellers and a small monthly plan for shops.</p></details>
+    <details><summary>Can I edit or take down a listing?</summary><p>Any time, from your dashboard. Sold items are marked "sold" rather than deleted, so your seller history stays visible for future buyers.</p></details>
+  </div>
+
+  <div class="col">
+    <h2>Trust and safety</h2>
+    <details><summary>How does verification work?</summary><p>You upload a government ID once. Our team matches it to your account name and confirms it's you. Your ID is never shown to other users. Only your verified badge and real name are.</p></details>
+    <details><summary>Someone is behaving badly. What do I do?</summary><p>Open the report button on their listing or profile. Reports go straight to a human moderator. For anything urgent or unsafe, call local police first and let us know after.</p></details>
+    <details><summary>Where do I meet a buyer or seller?</summary><p>Somewhere public inside your mohalla during daylight if you can. Building lobbies, cafes, and community halls are common. Never share your flat number until you've agreed on the deal.</p></details>
+
+    <h2 style="margin-top:36px;">Your account</h2>
+    <details><summary>Can I change my locality?</summary><p>Yes, from settings. Your listings will move with you. Your seller history and reviews stay attached to your account.</p></details>
+    <details><summary>How do I delete my account?</summary><p>From settings, choose "Close my account". Active listings come down immediately. Reviews you left on others stay, so their history isn't erased when you leave.</p></details>
+    <details><summary>What data do you keep about me?</summary><p>Your name, contact details, listings, reviews, and chat history. We don't sell any of it to advertisers. Full details in the privacy policy.</p></details>
+  </div>
+</section>
+
+<section class="contact">
+  <div class="contact-inner">
+    <div>
+      <h2>Still stuck? Talk to a human.</h2>
+      <p>A small team reads every message. We're slower than a chatbot, but you'll get an actual answer from an actual person.</p>
+    </div>
+    <div class="contact-links">
+      <a class="contact-item" href="mailto:mohallamarketplace@gmail.com">
+        <div><strong>Email us</strong><span>mohallamarketplace@gmail.com</span></div>
+      </a>
+      <a class="contact-item" href="https://www.instagram.com/mohallamarketplace/">
+        <div><strong>Instagram</strong><span>@mohallamarketplace</span></div>
+      </a>
+      <a class="contact-item" href="report.html">
+        <div><strong>Report an unsafe listing</strong><span>Straight to a moderator, within a working day</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+  <div class="foot-top">
+    <a class="logo" href="index.html" aria-label="MohallaMarketplace"><img class="logo-img" src="img/logo.png" alt="MohallaMarketplace" /></a>
+    <p>A sustainable, trust-first marketplace, built around a neighbourhood, not an algorithm.</p>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 MohallaMarketplace</span>
+    <span>Built for the neighbourhood, not the algorithm.</span>
+  </div>
+  </div>
+</footer>
+</div>
+<!-- /#help-root -->
 
 <div id="bottom-nav-root"></div>
 
+<link rel="stylesheet" href="css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
 <script>
-  let selectedType = null;
-  let listingsById = new Map();
-  const ctxListingId = qs("listing");
-  const ctxSellerId = qs("seller");
-  const presetType = qs("type");
-
-  function buildTypeList() {
-    const el = document.getElementById("type-list");
-    el.innerHTML = REPORT_TYPES.map((t) => `
-      <label>
-        <input type="radio" name="report-type" value="${escapeHtml(t)}" ${t === presetType ? "checked" : ""} />
-        ${escapeHtml(t)}
-      </label>
-    `).join("");
-    if (presetType && REPORT_TYPES.includes(presetType)) selectedType = presetType;
-    el.querySelectorAll("input[type=radio]").forEach((r) => {
-      r.addEventListener("change", (e) => { selectedType = e.target.value; });
+  // simple client-side filter across all FAQ items (unchanged from the design)
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    const term = q.value.toLowerCase().trim();
+    document.querySelectorAll('details').forEach((d) => {
+      const text = d.textContent.toLowerCase();
+      d.style.display = (!term || text.includes(term)) ? '' : 'none';
+      if (term && text.includes(term)) d.setAttribute('open', '');
+      else if (!term) d.removeAttribute('open');
     });
-  }
+  });
 
-  function renderContextChip() {
-    const el = document.getElementById("context-chip");
-    const listing = ctxListingId ? listingsById.get(ctxListingId) : null;
-    const seller = ctxSellerId ? getSellerById(ctxSellerId) : null;
-    if (!listing && !seller) { el.innerHTML = ""; return; }
-    const label = listing ? `Reporting listing: ${listing.title}` : `Reporting user: ${seller.name}`;
-    el.innerHTML = `<div class="review-card" style="margin-bottom:14px;"><p style="font-size:12.5px;font-weight:700;">📎 ${escapeHtml(label)}</p></div>`;
-  }
-
-  async function renderReports() {
-    const reports = await Store.getReports();
-    const list = document.getElementById("reports-list");
-    const empty = document.getElementById("reports-empty");
-    if (reports.length === 0) { list.innerHTML = ""; empty.hidden = false; return; }
-    empty.hidden = true;
-    list.innerHTML = reports.map((r) => {
-      const listing = r.listingId ? listingsById.get(r.listingId) : null;
-      const seller = r.sellerId ? getSellerById(r.sellerId) : null;
-      const ref = listing ? listing.title : (seller ? seller.name : null);
-      return `
-        <div class="report-card">
-          <div class="row between">
-            <span class="type">${escapeHtml(r.type)}</span>
-            <span class="report-status">${escapeHtml(r.status)}</span>
-          </div>
-          <p class="desc">${escapeHtml(r.description)}</p>
-          <p class="meta">${ref ? "Re: " + escapeHtml(ref) + " · " : ""}${timeAgo(r.createdAt)}</p>
-        </div>
-      `;
-    }).join("");
-  }
-
-  document.addEventListener("DOMContentLoaded", async () => {
-    await initPage("account");
-    const session = await Auth.requireAuth();
-    if (!session) return;
-
-    const listings = await Store.getListings();
-    listingsById = new Map(listings.map((l) => [l.id, l]));
-    if (ctxSellerId) await Store.fetchProfile(ctxSellerId).catch(() => {});
-
-    buildTypeList();
-    renderContextChip();
-    await renderReports();
-
-    document.getElementById("r-desc").addEventListener("input", (e) => {
-      document.getElementById("desc-count").textContent = e.target.value.length;
-    });
-
-    document.getElementById("report-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (!selectedType) { toast("Please choose what this is about"); return; }
-      const description = document.getElementById("r-desc").value.trim();
-      if (!description) { toast("Please describe what happened"); return; }
-
-      try {
-        await Store.addReport({
-          type: selectedType,
-          description,
-          listingId: ctxListingId || null,
-          sellerId: ctxSellerId || null,
-        });
-        toast("Report submitted — our team will review it shortly");
-        document.getElementById("report-form").reset();
-        const checked = document.querySelector("input[name=report-type]:checked");
-        selectedType = checked ? checked.value : null;
-        document.getElementById("desc-count").textContent = "0";
-        await renderReports();
-      } catch (err) {
-        toast(err.message || "Couldn't submit report — try again");
-      }
-    });
+  document.addEventListener('DOMContentLoaded', async () => {
+    await initPage('help');
   });
 </script>
 </body>
