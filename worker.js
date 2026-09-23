@@ -10,6 +10,11 @@
 // routing systems, and the deployed site was serving assets with no custom
 // script attached until now, which is why /sitemap.xml was 404ing.
 
+// Same title/description/alt wording rules the browser uses (js/seo.js is a
+// plain script that registers globalThis.MMSeo; imported here for that side
+// effect, and wrangler bundles it into the Worker).
+import "./js/seo.js";
+
 const FALLBACK_SUPABASE_URL = "https://ecdsteardeybzfnnidym.supabase.co";
 const FALLBACK_SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjZHN0ZWFyZGV5Ynpmbm5pZHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzQ4MjIsImV4cCI6MjEwNDk1MDgyMn0.UbEGXbtLxOyesowBr4bhDFm3ntgoXf--QbVgU21JCd8";
@@ -75,6 +80,80 @@ async function buildSitemap(env) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Listing pages: real title / description / Open Graph tags in the HTML
+// itself. listing.html also sets these with JavaScript once the listing
+// loads, which is enough for Google, but WhatsApp, Instagram, Reddit, Slack
+// and most other link-preview bots read only the raw HTML and never run
+// scripts. Without this, every shared listing previewed as "Listing |
+// MohallaMarketplace". If anything here fails, the page is served exactly as
+// before (the client-side code still fixes the title in the browser).
+// ---------------------------------------------------------------------------
+const LISTING_ID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+async function fetchListingForMeta(env, id) {
+  const SUPABASE_URL = (env && env.SUPABASE_URL) || FALLBACK_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = (env && env.SUPABASE_ANON_KEY) || FALLBACK_SUPABASE_ANON_KEY;
+  const r = await fetch(
+    `${SUPABASE_URL}/rest/v1/listings?select=id,title,price,locality,city,images&id=eq.${id}&limit=1`,
+    {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+      // Short edge cache: a burst of preview bots hitting one shared link
+      // makes one Supabase call, and an edited title shows within minutes.
+      cf: { cacheTtl: 300, cacheEverything: true },
+    }
+  );
+  if (!r.ok) return null;
+  const rows = await r.json();
+  return Array.isArray(rows) && rows[0] ? rows[0] : null;
+}
+
+async function listingPageWithMeta(request, env, assetResponse) {
+  const id = ((new URL(request.url).searchParams.get("id") || "").match(LISTING_ID_RE) || [null])[0];
+  if (!id || !assetResponse.ok) return assetResponse;
+
+  let listing = null;
+  try {
+    listing = await fetchListingForMeta(env, id);
+  } catch (err) {
+    console.error("listing meta: fetch failed", err);
+  }
+  if (!listing) return assetResponse;
+
+  const SEO = globalThis.MMSeo;
+  const title = SEO.listingTitle(listing);
+  const description = SEO.listingDescription(listing);
+  const image = SEO.listingImage(listing);
+  const pageUrl = `${SITE_URL}/listing.html?id=${listing.id}`;
+
+  // content values are escaped by HTMLRewriter's setAttribute / setInnerContent.
+  const content = (value) => ({ element(el) { if (value) el.setAttribute("content", value); } });
+  let rewriter = new HTMLRewriter()
+    .on("title", { element(el) { el.setInnerContent(title); } })
+    .on('meta[name="description"]', content(description))
+    .on('meta[property="og:title"]', content(title))
+    .on('meta[property="og:description"]', content(description))
+    .on('meta[property="og:image"]', content(image))
+    .on("head", {
+      element(el) {
+        // Tags that only make sense per listing, so they aren't in the
+        // static file at all.
+        const esc = (v) => String(v).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+        el.append(`<meta property="og:url" content="${esc(pageUrl)}">\n`, { html: true });
+        el.append(`<link rel="canonical" href="${esc(pageUrl)}">\n`, { html: true });
+        el.append(`<meta name="twitter:title" content="${esc(title)}">\n`, { html: true });
+        el.append(`<meta name="twitter:description" content="${esc(description)}">\n`, { html: true });
+        if (image) el.append(`<meta name="twitter:image" content="${esc(image)}">\n`, { html: true });
+      },
+    });
+
+  const out = rewriter.transform(assetResponse);
+  const headers = new Headers(out.headers);
+  // Page body now depends on live data; don't let a stale copy stick around.
+  headers.set("Cache-Control", "public, max-age=0, s-maxage=300");
+  return new Response(out.body, { status: out.status, headers });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -105,6 +184,11 @@ export default {
     // locally, not assumed: without this, the homepage itself 404s.
     if (url.pathname === "/") {
       return env.ASSETS.fetch(new Request(new URL("/index.html", request.url), request));
+    }
+
+    if (url.pathname === "/listing.html" && request.method === "GET") {
+      const asset = await env.ASSETS.fetch(request);
+      return listingPageWithMeta(request, env, asset);
     }
 
     // Everything else — every .html/.css/.js/image — is served by the

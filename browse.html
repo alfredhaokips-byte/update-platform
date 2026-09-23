@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
-<title>Browse: MohallaMarketplace</title>
+<title>Browse Listings | MohallaMarketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -247,6 +247,7 @@
 <script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
+<script src="js/seo.js"></script>
 <script>
   /* Real functionality below -- ported from the previous browse.html,
      retargeting this design's ids/classes (search/locality/condition/sort
@@ -276,6 +277,11 @@
     const cond = document.getElementById("condition").value;
     const sort = document.getElementById("sort").value;
     const cat = document.querySelector(".chip.active").dataset.cat;
+
+    // Title follows the filters actually applied (from ?cat=/?loc= or picked
+    // on the page), using only values that matched a real category or a
+    // locality some listing has — an arbitrary ?cat= never reaches the title.
+    document.title = MMSeo.browseTitle(cat === "all" ? "" : cat, loc);
 
     let items = allListings.filter((l) => {
       if (q && !l.title.toLowerCase().includes(q) && !l.desc.toLowerCase().includes(q)) return false;

@@ -37,7 +37,12 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
-    "html_handling": "none"
+    "html_handling": "none",
+    // Static assets are normally served without running worker.js at all,
+    // which would skip the listing-page tag rewriting (worker.js,
+    // listingPageWithMeta). This routes just that one page through the
+    // Worker first; every other file is still served straight from assets.
+    "run_worker_first": ["/listing.html"]
   },
 
   // Both values are already public (the same anon key is embedded in every

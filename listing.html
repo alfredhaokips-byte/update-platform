@@ -14,7 +14,18 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180.png" />
-<title>Listing — Marketplace</title>
+<title>Listing | MohallaMarketplace</title>
+<!-- Placeholder values: worker.js rewrites all of these with the real
+     listing's details before the page is sent (so link-preview bots that
+     don't run JavaScript see them), and js/seo.js sets them again once the
+     listing loads in the browser. -->
+<meta name="description" content="Buy and sell second-hand items directly with people in your neighbourhood on MohallaMarketplace.">
+<meta property="og:site_name" content="MohallaMarketplace">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Listing | MohallaMarketplace">
+<meta property="og:description" content="Buy and sell second-hand items directly with people in your neighbourhood on MohallaMarketplace.">
+<meta property="og:image" content="https://mohallamarketplace.in/img/logo-lockup.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
@@ -419,6 +430,7 @@
 <script src="js/auth.js"></script>
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
+<script src="js/seo.js"></script>
 <script>
   // Pull the UUID out of the param rather than using it raw: chat apps often
   // glue trailing characters onto a shared link (a dash, a period, the rest
@@ -454,7 +466,7 @@
       <div class="lightbox-slide">
         ${isVideoUrl(url)
           ? `<video src="${url}" controls playsinline></video>`
-          : `<img src="${url}" alt="${escapeHtml(listing.title)}" />`}
+          : `<img src="${url}" alt="${escapeHtml(photoAlt(i))}" />`}
       </div>
     `).join("");
     document.getElementById("lightbox").hidden = false;
@@ -504,12 +516,19 @@
     return action();
   }
 
+  /* "Study Table in Rohini" for the first photo; later ones get a number so
+     each photo's alt text is distinct. */
+  function photoAlt(i) {
+    const base = MMSeo.listingImageAlt(listing);
+    return i > 0 ? `${base}, photo ${i + 1}` : base;
+  }
+
   /* Gallery: one large tile + a thumbnail per real photo/video. */
   function showMedia(i) {
     const url = galleryUrls[i];
     document.getElementById("main-media").innerHTML = isVideoUrl(url)
       ? `<video src="${url}" controls playsinline></video><button type="button" class="detail-img-expand" onclick="openLightbox(${i})" aria-label="View full screen">⤢</button>`
-      : `<img src="${url}" alt="${escapeHtml(listing.title)}" title="View full screen" onclick="openLightbox(${i})" />`;
+      : `<img src="${url}" alt="${escapeHtml(photoAlt(i))}" title="View full screen" onclick="openLightbox(${i})" />`;
     document.querySelectorAll("#listing-root .thumb").forEach((t, n) => t.classList.toggle("active", n === i));
   }
 
@@ -527,6 +546,7 @@
   async function renderListing() {
     listing = listingId ? await Store.getListingById(listingId) : null;
     if (!listing) {
+      document.title = "Listing not found | MohallaMarketplace";
       renderState("🙈", "Listing not found", "It may have been sold or removed.");
       return;
     }
@@ -535,7 +555,12 @@
     const sellerStats = Store.reviewStats(reviews);
     const trust = await Store.getSellerTrustStats(listing.sellerId).catch(() => ({ responseRatePct: null }));
     const vouchStats = await Store.getVouchStats(listing.sellerId, listing.id).catch(() => ({ count: 0, vouched: false, sample: [] }));
-    document.title = listing.title + " — Marketplace";
+    MMSeo.applyMeta({
+      title: MMSeo.listingTitle(listing),
+      description: MMSeo.listingDescription(listing),
+      image: MMSeo.listingImage(listing),
+      url: `${window.location.origin}/listing.html?id=${listing.id}`,
+    });
 
     galleryUrls = listingGalleryUrls(listing);
     const saved = Store.isSaved(listing.id);
@@ -569,7 +594,7 @@
                 <div class="thumb ${i === 0 ? "active" : ""}" onclick="showMedia(${i})" role="button" aria-label="Show ${isVideoUrl(url) ? "video" : "photo"} ${i + 1}">
                   ${isVideoUrl(url)
                     ? `<video src="${url}" muted playsinline preload="metadata"></video><span class="video-badge">${ICON.play}</span>`
-                    : `<img src="${url}" alt="" loading="lazy" />`}
+                    : `<img src="${url}" alt="${escapeHtml(photoAlt(i))}" loading="lazy" />`}
                 </div>
               `).join("")}
             </div>` : ""}

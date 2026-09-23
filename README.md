@@ -1400,6 +1400,31 @@ real platform:
   character picker, chat, Buy Now and location-picker modals. Markup and logic
   are unchanged.
 
+## Signed-in home redesigned; confirmation-link check
+
+- **"The confirmation link goes to an old-looking site" — verified end to end,
+  and it wasn't the link.** A fresh signup on the live site was confirmed via
+  the emailed link: it landed on `mohallamarketplace.in/#` (fragment consumed),
+  the account got one session, its profile existed, `email_verified` was
+  mirrored and the `signup_pending` marker was cleared — i.e. Site URL, the
+  `emailRedirectTo` request, the `{{ .ConfirmationURL }}` template (no
+  hardcoded domain), Cloudflare caching and the landing logic were all
+  correct. What looked "old" was the **signed-in home page**: the pre-redesign
+  feed under the new header, which is where any signed-in visitor lands.
+- **Signed-in home restyled** in `index.html` (same features and element ids:
+  location picker, All India/Nearby + GPS, category chips, trending grid with
+  saved hearts, unread dot). It now sits inside `#landing-root` so it shares
+  the new header, tokens and `.card` styles with the landing, uses the new
+  search/chip/heading styling from `browse.html`, and has a site footer like
+  every other page. Cards are the landing's; in Nearby mode they also show the
+  distance.
+- **Still open (dashboard/infra):** the Redirect URLs allow-list still lists the
+  old Vercel domain, whose deployment is still serving a frozen old build even
+  after disconnecting from GitHub (delete it, or remove it from the allow-list);
+  `notify-new-message`/`notify-new-vouch` are deployed with the old `SITE_URL`
+  (deployed before it was corrected in source) and `send-welcome-email` is not
+  deployed at all — `supabase functions deploy` is needed for those.
+
 ## What's NOT built yet
 
 Per the phased briefs, everything below is intentionally deferred:
